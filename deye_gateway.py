@@ -35,7 +35,7 @@ CONFIG = {
     },
     "server": {
         "host": "0.0.0.0",
-        "port": 8000,
+        "port": 8800,  # Изменен порт
         "max_concurrent_writes": 2,  # Безопасное ограничение
         "write_cooldown": 5  # секунд между записями
     },
@@ -228,13 +228,13 @@ class DeyeGateway:
                 
             if register_def.data_type == "U_DWORD":
                 # Чтение 32-битного значения
-                result = self.client.read_holding_registers(address, 2)
+                result = self.client.read_holding_registers(address, slave_id=self.config["modbus"]["slave_id"])
                 if not result.isError():
                     value = result.registers[0] + (result.registers[1] << 16)
                     return value * register_def.scale
             else:
                 # Чтение 16-битного значения
-                result = self.client.read_holding_registers(address, 1)
+                result = self.client.read_holding_registers(address, slave_id=self.config["modbus"]["slave_id"])
                 if not result.isError():
                     value = result.registers[0]
                     if register_def.data_type == "S_WORD":
@@ -279,7 +279,7 @@ class DeyeGateway:
             if register_def.data_type == "S_WORD" and raw_value < 0:
                 raw_value = raw_value + 65536
                 
-            result = self.client.write_register(address, raw_value)
+            result = self.client.write_register(address, raw_value, slave_id=self.config["modbus"]["slave_id"])
             if not result.isError():
                 logger.info(f"Successfully wrote register {address}: {value}")
                 self.safety_manager.finish_write()
@@ -361,7 +361,8 @@ class WriteRequest(BaseModel):
 async def startup_event():
     """Запуск при старте приложения"""
     logger.info("Starting Deye Gateway Server")
-    await gateway.connect()
+    # Не подключаемся автоматически, ждем первого запроса
+    logger.info("Server ready - waiting for inverter connection")
     
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -486,6 +487,6 @@ if __name__ == "__main__":
         "deye_gateway:app",
         host=CONFIG["server"]["host"],
         port=CONFIG["server"]["port"],
-        reload=True,
+        reload=False,
         log_level="info"
     )

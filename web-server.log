@@ -16,3 +16,5 @@
 192.168.26.20 - - [28/Oct/2026 12:09:13] "GET /api/test-functionality HTTP/1.1" 404 -
 192.168.26.20 - - [28/Oct/2026 12:09:15] code 404, message File not found
 192.168.26.20 - - [28/Oct/2026 12:09:15] "GET /api/emulator-status HTTP/1.1" 404 -
+127.0.0.1 - - [31/Oct/2026 10:55:11] code 404, message File not found
+127.0.0.1 - - [31/Oct/2026 10:55:11] "GET /api/status HTTP/1.1" 404 -
