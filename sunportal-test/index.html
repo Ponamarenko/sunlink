@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunPortal - Real Server Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .content {
+            padding: 30px 20px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .status-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .status-item label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .status-item span {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .endpoint-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .endpoint-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            background: #e8f5e8;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        
+        .result h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .result pre {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .inverter-info {
+            background: #fff3cd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .inverter-info h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .inverter-info p {
+            color: #856404;
+            margin-bottom: 5px;
+        }
+        
+        .connection-status {
+            background: #d1ecf1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .connection-status h4 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+        
+        .connection-status p {
+            color: #0c5460;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌞 SunPortal Real Server</h1>
+            <p>Testing the real SunPortal server with Deye inverter</p>
+        </div>
+        
+        <div class="content">
+            <div class="connection-status">
+                <h4>🔗 Connection Information</h4>
+                <p><strong>Server URL:</strong> <span id="server-url">http://192.168.25.117:8080</span></p>
+                <p><strong>Web Interface:</strong> <span id="web-url">http://192.168.25.117:8081</span></p>
+                <p><strong>Status:</strong> <span id="connection-status">Testing...</span></p>
+            </div>
+            
+            <div class="inverter-info">
+                <h4>🔧 Inverter Information</h4>
+                <p><strong>Model:</strong> Deye SUN-12K-SG02LP1-EU-AM3</p>
+                <p><strong>IP:</strong> 192.168.25.15:502</p>
+                <p><strong>Slave ID:</strong> 1</p>
+                <p><strong>Collector:</strong> Running (30s interval)</p>
+            </div>
+            
+            <div class="status-card">
+                <h3>📊 Server Status</h3>
+                <div class="status-grid" id="server-status">
+                    <div class="status-item">
+                        <label>Status:</label>
+                        <span id="status-value">Checking...</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Version:</label>
+                        <span id="version-value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Collector:</label>
+                        <span id="collector-value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <label>Last Update:</label>
+                        <span id="update-value">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>🔗 Live Data</h3>
+                <button class="btn" onclick="testLiveData()">Get Live Inverter Data</button>
+                <div id="live-result" class="result"></div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>⏰ TOU Management</h3>
+                <button class="btn" onclick="testTOUData()">Get TOU Rates</button>
+                <button class="btn" onclick="testTOUWrite()">Test TOU Write</button>
+                <div id="tou-result" class="result"></div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>🌤️ Weather</h3>
+                <button class="btn" onclick="testWeatherData()">Get Weather Data</button>
+                <button class="btn" onclick="testForecastData()">Get Weather Forecast</button>
+                <div id="weather-result" class="result"></div>
+            </div>
+            
+            <div class="endpoint-section">
+                <h3>📊 History & Blackout</h3>
+                <button class="btn" onclick="testHistoryData()">Get History Data</button>
+                <button class="btn" onclick="testBlackoutData()">Get Blackout Status</button>
+                <button class="btn" onclick="testCollectorStatus()">Get Collector Status</button>
+                <div id="history-result" class="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isTesting = false;
+        
+        function showResult(elementId, title, content, isError = false) {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.innerHTML = `
+                <div class="result ${isError ? 'error' : ''}">
+                    <h4>${title}</h4>
+                    <pre>${content}</pre>
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+        }
+        
+        function setLoading(buttonId, loading) {
+            const btn = document.querySelector(`button[onclick="${buttonId}()"]`);
+            if (loading) {
+                btn.innerHTML = '<span class="loading"></span>Loading...';
+                btn.disabled = true;
+            } else {
+                btn.disabled = false;
+                // Restore button text
+                if (buttonId === 'testLiveData') btn.innerHTML = 'Get Live Inverter Data';
+                else if (buttonId === 'testTOUData') btn.innerHTML = 'Get TOU Rates';
+                else if (buttonId === 'testTOUWrite') btn.innerHTML = 'Test TOU Write';
+                else if (buttonId === 'testWeatherData') btn.innerHTML = 'Get Weather Data';
+                else if (buttonId === 'testForecastData') btn.innerHTML = 'Get Weather Forecast';
+                else if (buttonId === 'testHistoryData') btn.innerHTML = 'Get History Data';
+                else if (buttonId === 'testBlackoutData') btn.innerHTML = 'Get Blackout Status';
+                else if (buttonId === 'testCollectorStatus') btn.innerHTML = 'Get Collector Status';
+            }
+        }
+        
+        async function testConnection() {
+            try {
+                const response = await fetch('http://192.168.25.117:8080/api/status');
+                const data = await response.json();
+                
+                document.getElementById('connection-status').textContent = 'Connected ✅';
+                document.getElementById('connection-status').style.color = '#28a745';
+                
+                return true;
+            } catch (error) {
+                document.getElementById('connection-status').textContent = 'Failed ❌';
+                document.getElementById('connection-status').style.color = '#dc3545';
+                return false;
+            }
+        }
+        
+        async function testServerStatus() {
+            try {
+                const response = await fetch('http://192.168.25.117:8080/api/status');
+                const data = await response.json();
+                
+                document.getElementById('status-value').textContent = data.status;
+                document.getElementById('version-value').textContent = data.version;
+                document.getElementById('collector-value').textContent = data.collector;
+                document.getElementById('update-value').textContent = new Date(data.timestamp).toLocaleTimeString();
+                
+            } catch (error) {
+                document.getElementById('status-value').textContent = 'Error';
+                document.getElementById('version-value').textContent = 'Error';
+                document.getElementById('collector-value').textContent = 'Error';
+                document.getElementById('update-value').textContent = 'Error';
+            }
+        }
+        
+        async function testLiveData() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            setLoading('testLiveData', true);
+            showResult('live-result', 'Testing Live Data', 'Collecting data from inverter...');
+            
+            try {
+                const response = await fetch('http://192.168.25.117:8080/api/live/raw');
+                const data = await response.json();
+                
+                let result = '🔋 Live Inverter Data:\n\n';
+                data.forEach(item => {
+                    result += `⏰ Timestamp: ${item.timestamp}\n`;
+                    result += `🌞 PV Power: ${item.pv_power} W\n`;
+                    result += `🔋 Battery SOC: ${item.battery_soc}%\n`;
+                    result += `🔋 Battery Voltage: ${item.battery_voltage} V\n`;
+                    result += `🔋 Battery Power: ${item.battery_power} W\n`;
+                    result += `🌡️ Battery Temp: ${item.battery_temp}°C\n`;
+                    result += `🌐 Grid Power: ${item.grid_power} W\n`;
+                    result += `💡 Load Power: ${item.load_power} W\n`;
+                    result += `📊 Source: ${item.source}\n\n`;
+                });
+                
+                showResult('live-result', '✅ Live Data Retrieved', result, false);
+            } catch (error) {
+                showResult('live-result', '❌ Live Data Error', `Error: ${error.message}`, true);
+            } finally {
+                isTesting = false;
+                setLoading('testLiveData', false);
+            }
+        }
+        
+        async function testTOUData() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            setLoading('testTOUData', true);
+            showResult('tou-result', 'Testing TOU Data', 'Getting TOU rates...');
+            
+            try {
+                const response = await fetch('http://192.168.25.117:8080/tou_read.php');
+                const data = await response.json();
+                
+                let result = '⏰ TOU Rate Data:\n\n';
+                result += `💰 Current Rate: ${data.current_rate} €/kWh\n`;
+                result += `📈 Peak Rate: ${data.peak_rate} €/kWh\n`;
+                result += `📉 Off-Peak Rate: ${data.off_peak_rate} €/kWh\n\n`;
+                result += `📅 TOU Schedule:\n`;
+                data.tou_schedule.forEach(slot => {
+                    result += `  ${slot.start} - ${slot.end}: ${slot.rate} €/kWh\n`;
+                });
+                
+                showResult('tou-result', '✅ TOU Data Retrieved', result, false);
+            } catch (error) {
+                showResult('tou-result', '❌ TOU Data Error', `Error: ${error.message}`, true);
+            } finally {
+                isTesting = false;
+                setLoading('testTOUData', false);
+            }
+        }
+        
+        async function testTOUWrite() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            setLoading('testTOUWrite', true);
+            showResult('tou-result', 'Testing TOU Write', 'Writing TOU data...');
+            
+            try {
+                const response = await fetch('http://192.168.25.117:8080/api/tou_write', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'test',
+                        rate: '0.15'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                let result = '⏰ TOU Write Result:\n\n';
+                result += `✅ Status: ${data.status}\n`;
+                result += `🔄 Action: ${data.action}\n`;
+                result += `💰 Rate: ${data.rate}\n`;
+                result += `📝 Message: ${data.message}\n`;
+                result += `⏰ Timestamp: ${data.timestamp}\n`;
+                
+                showResult('tou-result', '✅ TOU Write Successful', result, false);
+            } catch (error) {
+                showResult('tou-result', '❌ TOU Write Error', `Error: ${error.message}`, true);
+            } finally {
+                isTesting = false;
+                setLoading('testTOUWrite', false);
+            }
+        }
+        
+        async function testWeatherData() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            setLoading('testWeatherData', true);
+            showResult('weather-result', 'Testing Weather Data', 'Getting weather data...');
+            
+            try {
+                const response = await fetch('http://192.168.25.117:8080/weather_read.php');
+                const data = await response.json();
+                
+                let result = '🌤️ Weather Data:\n\n';
+                result += `🌡️ Temperature: ${data.temperature}°C\n`;
+                result += `💧 Humidity: ${data.humidity}%\n`;
+                result += `📊 Pressure: ${data.pressure} hPa\n`;
+                result += `💨 Wind Speed: ${data.wind_speed} m/s\n`;
+                result += `🧭 Wind Direction: ${data.wind_direction}°\n`;
+                result += `☁️ Condition: ${data.weather_condition}\n`;
+                result += `⏰ Timestamp: ${data.timestamp}\n`;
+                
+                showResult('weather-result', '✅ Weather Data Retrieved', result, false);
+            } catch (error) {
+                showResult('weather-result', '❌ Weather Data Error', `Error: ${error.message}`, true);
+            } finally {
+                isTesting = false;
+                setLoading('testWeatherData', false);
+            }
+        }
+        
+        async function testForecastData() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            setLoading('testForecastData', true);
+            showResult('weather-result', 'Testing Forecast Data', 'Getting weather forecast...');
+            
+            try {
+                const response = await fetch('http://192.168.25.117:8080/forecast_read.php');
+                const data = await response.json();
+                
+                let result = '📈 Weather Forecast:\n\n';
+                data.forecast.forEach(day => {
+                    result += `📅 ${day.date}:\n`;
+                    result += `  🌡️ High: ${day.high}°C / Low: ${day.low}°C\n`;
+                    result += `  ☁️ Condition: ${day.condition}\n\n`;
+                });
+                
+                showResult('weather-result', '✅ Forecast Data Retrieved', result, false);
+            } catch (error) {
+                showResult('weather-result', '❌ Forecast Data Error', `Error: ${error.message}`, true);
+            } finally {
+                isTesting = false;
+                setLoading('testForecastData', false);
+            }
+        }
+        
+        async function testHistoryData() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            setLoading('testHistoryData', true);
+            showResult('history-result', 'Testing History Data', 'Getting history data...');
+            
+            try {
+                const response = await fetch('http://192.168.25.117:8080/api/history');
+                const data = await response.json();
+                
+                let result = '📊 Historical Data:\n\n';
+                result += `📅 Period: ${data.period}\n\n`;
+                result += `📈 Data Points:\n`;
+                data.data.forEach(point => {
+                    result += `  ⏰ ${point.timestamp}\n`;
+                    result += `    🌞 PV: ${point.pv_power} W\n`;
+                    result += `    🔋 Battery: ${point.battery_power} W\n`;
+                });
+                
+                showResult('history-result', '✅ History Data Retrieved', result, false);
+            } catch (error) {
+                showResult('history-result', '❌ History Data Error', `Error: ${error.message}`, true);
+            } finally {
+                isTesting = false;
+                setLoading('testHistoryData', false);
+            }
+        }
+        
+        async function testBlackoutData() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            setLoading('testBlackoutData', true);
+            showResult('history-result', 'Testing Blackout Data', 'Getting blackout status...');
+            
+            try {
+                const response = await fetch('http://192.168.25.117:8080/api/blackout');
+                const data = await response.json();
+                
+                let result = '⚡ Blackout Status:\n\n';
+                result += `🚨 Blackout Active: ${data.blackout_active ? 'YES' : 'NO'}\n`;
+                result += `🕐 Start Time: ${data.blackout_start || 'N/A'}\n`;
+                result += `🕐 End Time: ${data.blackout_end || 'N/A'}\n`;
+                result += `🔋 Backup Active: ${data.backup_active ? 'YES' : 'NO'}\n`;
+                result += `⏰ Timestamp: ${data.timestamp}\n`;
+                
+                showResult('history-result', '✅ Blackout Status Retrieved', result, false);
+            } catch (error) {
+                showResult('history-result', '❌ Blackout Data Error', `Error: ${error.message}`, true);
+            } finally {
+                isTesting = false;
+                setLoading('testBlackoutData', false);
+            }
+        }
+        
+        async function testCollectorStatus() {
+            if (isTesting) return;
+            isTesting = true;
+            
+            setLoading('testCollectorStatus', true);
+            showResult('history-result', 'Testing Collector Status', 'Getting collector status...');
+            
+            try {
+                const response = await fetch('http://192.168.25.117:8080/api/collector/status');
+                const data = await response.json();
+                
+                let result = '🔄 Collector Status:\n\n';
+                result += `📊 Status: ${data.status}\n`;
+                result += `⏰ Last Update: ${data.last_update || 'N/A'}\n`;
+                result += `🔢 Sensor Count: ${data.sensor_count}\n`;
+                result += `📡 Source: ${data.source}\n`;
+                result += `🏷️ Version: ${data.version}\n\n`;
+                result += `🔧 Inverter:\n`;
+                result += `  Host: ${data.inverter.host}\n`;
+                result += `  Port: ${data.inverter.port}\n`;
+                result += `  Slave: ${data.inverter.slave}\n`;
+                result += `  Model: ${data.inverter.model}\n`;
+                
+                showResult('history-result', '✅ Collector Status Retrieved', result, false);
+            } catch (error) {
+                showResult('history-result', '❌ Collector Status Error', `Error: ${error.message}`, true);
+            } finally {
+                isTesting = false;
+                setLoading('testCollectorStatus', false);
+            }
+        }
+        
+        // Auto-test connection and server status on load
+        window.addEventListener('load', () => {
+            testConnection().then(() => {
+                testServerStatus();
+                setTimeout(testLiveData, 1000);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+{"current_rate": "0.15", "peak_rate": "0.25", "off_peak_rate": "0.10", "tou_schedule": [{"start": "00:00", "end": "06:00", "rate": "0.10"}, {"start": "06:00", "end": "18:00", "rate": "0.25"}, {"start": "18:00", "end": "24:00", "rate": "0.15"}]}

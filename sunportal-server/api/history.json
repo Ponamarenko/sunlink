@@ -1,0 +1,8 @@
+{
+  "period": "day",
+  "data": [
+    {"timestamp": "2026-10-27T00:00:00Z", "pv_power": 0, "battery_power": 100},
+    {"timestamp": "2026-10-27T06:00:00Z", "pv_power": 1000, "battery_power": 200},
+    {"timestamp": "2026-10-27T12:00:00Z", "pv_power": 3000, "battery_power": 500}
+  ]
+}

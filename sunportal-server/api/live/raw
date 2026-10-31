@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-10-27T12:30:00Z",
+    "pv_power": 2500,
+    "battery_soc": 75,
+    "battery_voltage": 48.2,
+    "battery_power": 500,
+    "battery_temp": 25.5,
+    "grid_power": 0,
+    "load_power": 2000
+  }
+]

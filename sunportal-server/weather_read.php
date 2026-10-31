@@ -1,0 +1,1 @@
+{"temperature": 22.5, "humidity": 65, "pressure": 1013, "wind_speed": 5.2, "wind_direction": 180, "weather_condition": "partly_cloudy"}

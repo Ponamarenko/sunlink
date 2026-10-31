@@ -1,0 +1,22 @@
+[Unit]
+Description=Deye Gateway Server
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=deye
+WorkingDirectory=/opt/deye-gateway
+Environment=PATH=/opt/deye-gateway/venv/bin
+ExecStart=/opt/deye-gateway/venv/bin/python /opt/deye-gateway/deye_gateway.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Безопасные ограничения
+LimitNOFILE=65536
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

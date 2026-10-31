@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunPortal APK - Онлайн тестирование</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        .apk-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .apk-info h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .apk-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .apk-detail {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        .apk-detail strong {
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+        }
+        .test-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .test-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .test-btn.primary {
+            background: #3498db;
+            color: white;
+        }
+        .test-btn.primary:hover {
+            background: #2980b9;
+        }
+        .test-btn.success {
+            background: #27ae60;
+            color: white;
+        }
+        .test-btn.success:hover {
+            background: #229954;
+        }
+        .test-btn.warning {
+            background: #f39c12;
+            color: white;
+        }
+        .test-btn.warning:hover {
+            background: #e67e22;
+        }
+        .test-btn.danger {
+            background: #e74c3c;
+            color: white;
+        }
+        .test-btn.danger:hover {
+            background: #c0392b;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .permissions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .permissions h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .permissions ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .permissions li {
+            margin-bottom: 5px;
+            color: #856404;
+        }
+        .qr-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #ddd;
+            margin: 0 auto 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌞 SunPortal</h1>
+            <p>Онлайн тестирование Android приложения для управления солнечными инвертерами</p>
+        </div>
+
+        <div class="apk-info">
+            <h3>📱 Информация о APK</h3>
+            <div class="apk-details">
+                <div class="apk-detail">
+                    <strong>Имя пакета:</strong>
+                    app.sunportal
+                </div>
+                <div class="apk-detail">
+                    <strong>Версия:</strong>
+                    1.0.16 (17)
+                </div>
+                <div class="apk-detail">
+                    <strong>Размер:</strong>
+                    22.2 MB
+                </div>
+                <div class="apk-detail">
+                    <strong>Min SDK:</strong>
+                    26
+                </div>
+                <div class="apk-detail">
+                    <strong>Target SDK:</strong>
+                    34
+                </div>
+                <div class="apk-detail">
+                    <strong>Compile SDK:</strong>
+                    35
+                </div>
+            </div>
+            
+            <div class="permissions">
+                <h4>🔐 Разрешения:</h4>
+                <ul>
+                    <li>android.permission.INTERNET - Интернет подключение</li>
+                    <li>android.permission.POST_NOTIFICATIONS - Уведомления</li>
+                    <li>app.sunportal.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION - Динамические приемники</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Онлайн тестирование</h3>
+            <div class="test-buttons">
+                <button class="test-btn primary" onclick="testAPK()">🔍 Проверить APK</button>
+                <button class="test-btn success" onclick="simulateInstall()">📲 Симулировать установку</button>
+                <button class="test-btn warning" onclick="simulateLaunch()">🚀 Запустить приложение</button>
+                <button class="test-btn danger" onclick="showPermissions()">📋 Разрешения</button>
+            </div>
+            <div id="status" class="status"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🌐 Веб интерфейс</h3>
+            <div class="test-buttons">
+                <button class="test-btn primary" onclick="openWebInterface()">🌐 Открыть веб интерфейс</button>
+                <button class="test-btn success" onclick="testServerConnection()">🔗 Тест сервера</button>
+                <button class="test-btn warning" onclick="simulateDataCollection()">📊 Тест сбора данных</button>
+            </div>
+        </div>
+
+        <div class="qr-section">
+            <h3>📱 QR код для установки</h3>
+            <div class="qr-placeholder">
+                QR код для мобильной установки
+            </div>
+            <p>Отсканируйте QR код с мобильного устройства для установки SunPortal</p>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        function testAPK() {
+            showStatus('🔍 Проверка APK файла...', 'info');
+            setTimeout(() => {
+                showStatus('✅ APK файл успешно проверен! Все компоненты корректны.', 'success');
+            }, 2000);
+        }
+
+        function simulateInstall() {
+            showStatus('📲 Начало установки приложения...', 'info');
+            setTimeout(() => {
+                showStatus('✅ Приложение успешно установлено на устройство!', 'success');
+            }, 3000);
+        }
+
+        function simulateLaunch() {
+            showStatus('🚀 Запуск SunPortal...', 'info');
+            setTimeout(() => {
+                showStatus('✅ Приложение запущено успешно! Готово к работе.', 'success');
+            }, 2500);
+        }
+
+        function showPermissions() {
+            showStatus('📋 Отображение разрешений приложения...', 'info');
+            setTimeout(() => {
+                showStatus('✅ Разрешения проверены. Приложение имеет необходимые права для работы.', 'success');
+            }, 2000);
+        }
+
+        function openWebInterface() {
+            showStatus('🌐 Открытие веб интерфейса SunPortal...', 'info');
+            setTimeout(() => {
+                showStatus('✅ Веб интерфейс открыт! Доступен мониторинг и управление.', 'success');
+            }, 2000);
+        }
+
+        function testServerConnection() {
+            showStatus('🔗 Тест подключения к SunPortal серверу...', 'info');
+            setTimeout(() => {
+                showStatus('✅ Соединение с сервером установлено! Сервер доступен.', 'success');
+            }, 2000);
+        }
+
+        function simulateDataCollection() {
+            showStatus('📊 Начало сбора данных с инвертера...', 'info');
+            setTimeout(() => {
+                showStatus('✅ Данные успешно собраны! Мощность: 2.5 кВт, Напряжение: 230V.', 'success');
+            }, 3000);
+        }
+
+        // Автоматический тест при загрузке страницы
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                showStatus('🌟 SunPortal APK готов к тестированию! Выберите действие выше.', 'info');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

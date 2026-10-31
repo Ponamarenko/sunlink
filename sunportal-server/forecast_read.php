@@ -1,0 +1,1 @@
+{"forecast": [{"date": "2026-10-27", "high": 25, "low": 18, "condition": "sunny"}, {"date": "2026-10-28", "high": 23, "low": 16, "condition": "cloudy"}, {"date": "2026-10-29", "high": 21, "low": 14, "condition": "rainy"}]}
