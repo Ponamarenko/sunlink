@@ -1,23 +1,18 @@
 package com.sunportal.mobile
 
+import android.app.Activity
 import android.os.Bundle
-import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : Activity() {
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         
-        val textView = findViewById<TextView>(R.id.textView)
-        val updateButton = findViewById<Button>(R.id.updateButton)
+        val textView = TextView(this)
+        textView.text = "SunPortal v1.0.2\n\nSunPortal - система моніторингу сонячної енергетики\n\n🌞 Моніторинг сонячної енергії\n🔋 Управління акумулятором\n⚡ Параметри мережі\n📊 Енергетична статистика\n📱 Мобільний контроль"
+        textView.textSize = 18f
         
-        textView.text = "SunPortal v1.0.0\nБілд: 1"
-        
-        updateButton.setOnClickListener {
-            Toast.makeText(this, "Checking updates...", Toast.LENGTH_SHORT).show()
-        }
+        setContentView(textView)
     }
 }
