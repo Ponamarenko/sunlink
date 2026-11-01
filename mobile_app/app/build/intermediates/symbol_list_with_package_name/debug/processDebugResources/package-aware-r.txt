@@ -629,6 +629,8 @@ drawable ic_call_answer_video
 drawable ic_call_answer_video_low
 drawable ic_call_decline
 drawable ic_call_decline_low
+drawable ic_info
+drawable ic_settings
 drawable notification_action_background
 drawable notification_bg
 drawable notification_bg_low
@@ -651,6 +653,7 @@ id FUNCTION
 id META
 id SHIFT
 id SYM
+id about_text
 id accessibility_action_clickable_span
 id accessibility_custom_action_0
 id accessibility_custom_action_1
@@ -706,10 +709,14 @@ id activity_chooser_view_content
 id add
 id alertTitle
 id always
+id api_key
 id async
 id beginning
 id blocking
 id bottom
+id bottom_navigation
+id btn_about
+id btn_connection
 id buttonPanel
 id center_vertical
 id checkbox
@@ -718,6 +725,7 @@ id chronometer
 id collapseActionView
 id content
 id contentPanel
+id content_frame
 id custom
 id customPanel
 id decor_content_parent
@@ -748,6 +756,8 @@ id list_item
 id message
 id middle
 id multiply
+id nav_about
+id nav_connection
 id never
 id none
 id normal
@@ -757,11 +767,14 @@ id notification_main_column_container
 id off
 id on
 id parentPanel
+id password
 id progress_circular
 id progress_horizontal
 id radio
+id report_drawn
 id right_icon
 id right_side
+id save_button
 id screen
 id scrollIndicatorDown
 id scrollIndicatorUp
@@ -777,6 +790,8 @@ id search_plate
 id search_src_text
 id search_voice_btn
 id select_dialog_listview
+id server_address
+id server_port
 id shortcut
 id showCustom
 id showHome
@@ -803,6 +818,7 @@ id tag_transition_group
 id tag_unhandled_key_event_manager
 id tag_unhandled_key_listeners
 id tag_window_insets_animation_callback
+id test_connection_button
 id text
 id text2
 id textSpacerNoButtons
@@ -817,6 +833,7 @@ id unchecked
 id uniform
 id up
 id useLogo
+id username
 id view_tree_lifecycle_owner
 id view_tree_on_back_pressed_dispatcher_owner
 id view_tree_saved_state_registry_owner
@@ -864,7 +881,10 @@ layout abc_search_dropdown_item_icons_2line
 layout abc_search_view
 layout abc_select_dialog_material
 layout abc_tooltip
+layout activity_main
 layout custom_dialog
+layout fragment_about
+layout fragment_connection
 layout ime_base_split_test_activity
 layout ime_secondary_split_test_activity
 layout notification_action
@@ -877,6 +897,7 @@ layout select_dialog_item_material
 layout select_dialog_multichoice_material
 layout select_dialog_singlechoice_material
 layout support_simple_spinner_dropdown_item
+menu bottom_nav_menu
 string abc_action_bar_home_description
 string abc_action_bar_up_description
 string abc_action_menu_overflow_description

@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.sunportal.mobile.app-mergeDebugResources-18:/values-gu/values-gu.xml",
+            "outputFile": "com.sunportal.mobile.app-mergeDebugResources-27:/values-gu/values-gu.xml",
             "map": [
                 {
                     "source": "/root/.gradle/caches/8.9/transforms/a744bfe78247c4f7676c128e734b6398/transformed/core-1.12.0/res/values-gu/values-gu.xml",
