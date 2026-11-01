@@ -4,24 +4,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/white"
-    android:padding="16dp">
+    android:padding="20dp">
     
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:gravity="center"
-        android:padding="16dp"
-        android:textColor="@color/black"/>
+        android:text="SunPortal"
+        android:textSize="24sp"
+        android:textColor="@color/black"
+        android:gravity="center"/>
     
     <Button
         android:id="@+id/updateButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Перевірка оновлення"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/sunportal_primary"
-        android:textColor="@color/white"/>
+        android:text="Check Updates"
+        android:layout_marginTop="20dp"/>
     
 </LinearLayout>

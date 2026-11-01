@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.SunPortal" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:colorPrimary">@color/sunportal_primary</item>
-        <item name="android:colorPrimaryDark">@color/sunportal_primary_dark</item>
-        <item name="android:colorAccent">@color/sunportal_warning</item>
+    <style name="Theme.SunPortal" parent="@android:style/Theme.Light">
         <item name="android:windowBackground">@color/white</item>
     </style>
 </resources>
