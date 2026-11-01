@@ -1,54 +1,91 @@
 package com.sunportal.mobile
 
 import android.os.Bundle
+import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import android.widget.FrameLayout
-import android.widget.Button
-import android.widget.TextView
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
+import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
+import androidx.appcompat.widget.Toolbar
 import com.sunportal.mobile.ui.AboutFragment
 import com.sunportal.mobile.ui.ConnectionFragment
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
-    private lateinit var contentFrame: FrameLayout
-    private lateinit var btnAbout: Button
-    private lateinit var btnConnection: Button
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navView: NavigationView
+    private lateinit var toolbar: Toolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.drawer_layout)
 
-        contentFrame = findViewById(R.id.content_frame)
-        btnAbout = findViewById(R.id.btn_about)
-        btnConnection = findViewById(R.id.btn_connection)
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
-        btnAbout.setOnClickListener {
-            loadAboutFragment()
-        }
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navView = findViewById(R.id.nav_view)
+        navView.setNavigationItemSelectedListener(this)
 
-        btnConnection.setOnClickListener {
-            loadConnectionFragment()
+        // Добавляем кнопку меню на тулбар
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeAsUpIndicator(R.drawable.ic_menu)
         }
 
         // Загружаем начальный фрагмент
         loadAboutFragment()
     }
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_about -> {
+                loadAboutFragment()
+                toolbar.title = "Про додаток"
+            }
+            R.id.nav_connection -> {
+                loadConnectionFragment()
+                toolbar.title = "Підключення"
+            }
+            R.id.nav_logout -> {
+                // TODO: Реализовать выход
+                Toast.makeText(this, "Вихід з додатку", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                drawerLayout.openDrawer(GravityCompat.START)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun loadAboutFragment() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.content_frame, AboutFragment())
             .commit()
-        
-        btnAbout.setBackgroundColor(getColor(R.color.svitgrid_primary))
-        btnConnection.setBackgroundColor(getColor(R.color.svitgrid_secondary))
     }
 
     private fun loadConnectionFragment() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.content_frame, ConnectionFragment())
             .commit()
-        
-        btnConnection.setBackgroundColor(getColor(R.color.svitgrid_primary))
-        btnAbout.setBackgroundColor(getColor(R.color.svitgrid_secondary))
+    }
+
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
     }
 }

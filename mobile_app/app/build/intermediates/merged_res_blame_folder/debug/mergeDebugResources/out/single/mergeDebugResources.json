@@ -1,26 +1,50 @@
 [
     {
-        "merged": "com.sunportal.mobile.app-debug-29:/layout_fragment_about.xml.flat",
-        "source": "com.sunportal.mobile.app-main-31:/layout/fragment_about.xml"
+        "merged": "com.sunportal.mobile.app-debug-37:/layout_drawer_layout.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/layout/drawer_layout.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-debug-29:/drawable_ic_info.xml.flat",
-        "source": "com.sunportal.mobile.app-main-31:/drawable/ic_info.xml"
+        "merged": "com.sunportal.mobile.app-debug-37:/layout_nav_header_main.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/layout/nav_header_main.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-debug-29:/layout_activity_main.xml.flat",
-        "source": "com.sunportal.mobile.app-main-31:/layout/activity_main.xml"
+        "merged": "com.sunportal.mobile.app-debug-37:/layout_activity_main.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/layout/activity_main.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-debug-29:/menu_bottom_nav_menu.xml.flat",
-        "source": "com.sunportal.mobile.app-main-31:/menu/bottom_nav_menu.xml"
+        "merged": "com.sunportal.mobile.app-debug-37:/drawable_ic_exit.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/drawable/ic_exit.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-debug-29:/layout_fragment_connection.xml.flat",
-        "source": "com.sunportal.mobile.app-main-31:/layout/fragment_connection.xml"
+        "merged": "com.sunportal.mobile.app-debug-37:/drawable_ic_info.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/drawable/ic_info.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-debug-29:/drawable_ic_settings.xml.flat",
-        "source": "com.sunportal.mobile.app-main-31:/drawable/ic_settings.xml"
+        "merged": "com.sunportal.mobile.app-debug-37:/layout_fragment_connection.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/layout/fragment_connection.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-debug-37:/drawable_ic_sun.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/drawable/ic_sun.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-debug-37:/menu_drawer_menu.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/menu/drawer_menu.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-debug-37:/drawable_ic_settings.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/drawable/ic_settings.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-debug-37:/layout_fragment_about.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/layout/fragment_about.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-debug-37:/drawable_ic_menu.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/drawable/ic_menu.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-debug-37:/menu_bottom_nav_menu.xml.flat",
+        "source": "com.sunportal.mobile.app-main-39:/menu/bottom_nav_menu.xml"
     }
 ]
