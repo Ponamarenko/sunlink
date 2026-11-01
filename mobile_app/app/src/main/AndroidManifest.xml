@@ -5,7 +5,8 @@
         android:allowBackup="true"
         android:label="SunPortal"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Light">
+        android:theme="@style/Theme.SunPortal"
+        android:exported="true">
         <activity
             android:name=".MainActivity"
             android:exported="true">

@@ -1,42 +1,79 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
 3    package="com.sunportal.mobile"
-4    android:versionCode="1"
-5    android:versionName="1.0.2" >
+4    android:versionCode="3"
+5    android:versionName="1.0.3" >
 6
 7    <uses-sdk
 8        android:minSdkVersion="21"
 9        android:targetSdkVersion="34" />
 10
-11    <application
-11-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:4:5-17:19
-12        android:allowBackup="true"
-12-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:5:9-35
-13        android:debuggable="true"
-14        android:extractNativeLibs="true"
-15        android:label="SunPortal"
-15-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:6:9-34
-16        android:supportsRtl="true"
-16-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:7:9-35
-17        android:theme="@android:style/Theme.Light" >
-17-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:8:9-51
-18        <activity
-18-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:9:9-16:20
-19            android:name="com.sunportal.mobile.MainActivity"
-19-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:10:13-41
-20            android:exported="true" >
-20-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:11:13-36
-21            <intent-filter>
-21-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:12:13-15:29
-22                <action android:name="android.intent.action.MAIN" />
-22-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:13:17-69
-22-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:13:25-66
-23
-24                <category android:name="android.intent.category.LAUNCHER" />
-24-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:14:17-77
-24-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:14:27-74
-25            </intent-filter>
-26        </activity>
-27    </application>
-28
-29</manifest>
+11    <permission
+11-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/a744bfe78247c4f7676c128e734b6398/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+12        android:name="com.sunportal.mobile.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+12-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/a744bfe78247c4f7676c128e734b6398/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+13        android:protectionLevel="signature" />
+13-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/a744bfe78247c4f7676c128e734b6398/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+14
+15    <uses-permission android:name="com.sunportal.mobile.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+15-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/a744bfe78247c4f7676c128e734b6398/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+15-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/a744bfe78247c4f7676c128e734b6398/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+16
+17    <application
+17-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:4:5-18:19
+18        android:allowBackup="true"
+18-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:5:9-35
+19        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+19-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/a744bfe78247c4f7676c128e734b6398/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+20        android:debuggable="true"
+21        android:exported="true"
+21-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:9:9-32
+22        android:extractNativeLibs="true"
+23        android:label="SunPortal"
+23-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:6:9-34
+24        android:supportsRtl="true"
+24-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:7:9-35
+25        android:theme="@style/Theme.SunPortal" >
+25-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:8:9-47
+26        <activity
+26-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:10:9-17:20
+27            android:name="com.sunportal.mobile.MainActivity"
+27-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:11:13-41
+28            android:exported="true" >
+28-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:12:13-36
+29            <intent-filter>
+29-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:13:13-16:29
+30                <action android:name="android.intent.action.MAIN" />
+30-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:14:17-69
+30-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:14:25-66
+31
+32                <category android:name="android.intent.category.LAUNCHER" />
+32-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:15:17-77
+32-->/root/opt/mobile_app/app/src/main/AndroidManifest.xml:15:27-74
+33            </intent-filter>
+34        </activity>
+35
+36        <provider
+36-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/8.9/transforms/c05170772bacbb8717cb4a4aeed41016/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+37            android:name="androidx.startup.InitializationProvider"
+37-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/8.9/transforms/c05170772bacbb8717cb4a4aeed41016/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:25:13-67
+38            android:authorities="com.sunportal.mobile.androidx-startup"
+38-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/8.9/transforms/c05170772bacbb8717cb4a4aeed41016/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:26:13-68
+39            android:exported="false" >
+39-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/8.9/transforms/c05170772bacbb8717cb4a4aeed41016/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:27:13-37
+40            <meta-data
+40-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/8.9/transforms/c05170772bacbb8717cb4a4aeed41016/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+41                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+41-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/8.9/transforms/c05170772bacbb8717cb4a4aeed41016/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:30:17-75
+42                android:value="androidx.startup" />
+42-->[androidx.emoji2:emoji2:1.2.0] /root/.gradle/caches/8.9/transforms/c05170772bacbb8717cb4a4aeed41016/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:31:17-49
+43            <meta-data
+43-->[androidx.lifecycle:lifecycle-process:2.4.1] /root/.gradle/caches/8.9/transforms/6fb3dcee8753aa594d473d868ff94e6c/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:31:13-33:52
+44                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+44-->[androidx.lifecycle:lifecycle-process:2.4.1] /root/.gradle/caches/8.9/transforms/6fb3dcee8753aa594d473d868ff94e6c/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:32:17-78
+45                android:value="androidx.startup" />
+45-->[androidx.lifecycle:lifecycle-process:2.4.1] /root/.gradle/caches/8.9/transforms/6fb3dcee8753aa594d473d868ff94e6c/transformed/jetified-lifecycle-process-2.4.1/AndroidManifest.xml:33:17-49
+46        </provider>
+47    </application>
+48
+49</manifest>

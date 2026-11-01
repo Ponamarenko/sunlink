@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="svitgrid_background">#FBFDFF</color>
+    <color name="svitgrid_primary">#00668A</color>
+    <color name="svitgrid_primary_dark">#004d66</color>
+    <color name="svitgrid_secondary">#4A6B7F</color>
+    <color name="svitgrid_text">#191C1D</color>
+    <color name="svitgrid_text_secondary">#4A6B7F</color>
 </resources>

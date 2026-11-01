@@ -1,6 +1,10 @@
 R_DEF: Internal format may change without notice
 local
-color black
-color white
+color svitgrid_background
+color svitgrid_primary
+color svitgrid_primary_dark
+color svitgrid_secondary
+color svitgrid_text
+color svitgrid_text_secondary
 string app_name
 style Theme.SunPortal
