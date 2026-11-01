@@ -1,12 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.SunPortal" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:colorPrimary">#00668A</item>
-        <item name="android:colorPrimaryDark">#004d66</item>
-        <item name="android:colorAccent">#4A6B7F</item>
-        <item name="android:windowBackground">@color/svitgrid_background</item>
+    <!-- Base application theme -->
+    <style name="Theme.SunPortal" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/svitgrid_primary</item>
+        <item name="colorOnPrimary">@color/neutral_50</item>
+        <item name="colorPrimaryDark">@color/svitgrid_primary_dark</item>
+        <item name="colorPrimaryVariant">@color/svitgrid_primary_light</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/svitgrid_secondary</item>
+        <item name="colorOnSecondary">@color/neutral_50</item>
+        <item name="colorSecondaryVariant">@color/svitgrid_secondary_light</item>
+        
+        <!-- Background colors -->
         <item name="android:colorBackground">@color/svitgrid_background</item>
-        <item name="android:colorControlNormal">#4A6B7F</item>
-        <item name="android:colorControlActivated">#00668A</item>
+        <item name="colorSurface">@color/svitgrid_surface</item>
+        <item name="colorSurfaceVariant">@color/svitgrid_surface_variant</item>
+        <item name="colorOnSurface">@color/svitgrid_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/svitgrid_text_secondary</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/svitgrid_text_primary</item>
+        <item name="android:textColorSecondary">@color/svitgrid_text_secondary</item>
+        <item name="android:textColorTertiary">@color/svitgrid_text_tertiary</item>
+        
+        <!-- Status bar and navigation bar -->
+        <item name="android:statusBarColor">@color/svitgrid_primary</item>
+        <item name="android:navigationBarColor">@color/svitgrid_surface</item>
+        
+        <!-- Toolbar theme -->
+        <item name="toolbarStyle">@style/Widget.SunPortal.Toolbar</item>
+        
+        <!-- Card theme -->
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">4dp</item>
+        
+        <!-- Button theme -->
+        <item name="materialButtonStyle">@style/Widget.SunPortal.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.SunPortal.OutlinedButton</item>
+    </style>
+    
+    <!-- Toolbar style -->
+    <style name="Widget.SunPortal.Toolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="android:background">@color/svitgrid_primary</item>
+        <item name="android:titleTextColor">@color/neutral_50</item>
+        <item name="android:subtitleTextColor">@color/neutral_100</item>
+    </style>
+    
+    <!-- Button style -->
+    <style name="Widget.SunPortal.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">@color/neutral_50</item>
+        <item name="android:background">@color/svitgrid_primary</item>
+        <item name="android:padding">16dp</item>
+    </style>
+    
+    <!-- Outlined button style -->
+    <style name="Widget.SunPortal.OutlinedButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">@color/svitgrid_primary</item>
+        <item name="android:background">@drawable/button_outline</item>
+        <item name="android:padding">16dp</item>
     </style>
 </resources>

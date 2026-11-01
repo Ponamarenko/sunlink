@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="192dp"
+    android:background="@color/svitgrid_primary"
+    android:orientation="vertical"
+    android:gravity="bottom"
+    android:padding="16dp"
+    android:fitsSystemWindows="true">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_sun"
+        android:tint="@color/neutral_50"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SunPortal"
+        android:textColor="@color/neutral_50"
+        android:textSize="24sp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Система моніторингу сонячної енергетики"
+        android:textColor="@color/neutral_100"
+        android:textSize="14sp"
+        android:alpha="0.8"/>
+
+</LinearLayout>

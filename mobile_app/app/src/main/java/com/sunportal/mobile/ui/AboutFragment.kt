@@ -17,14 +17,16 @@ class AboutFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_about, container, false)
         
         val textView = view.findViewById<TextView>(R.id.about_text)
-        textView.text = "SunPortal v1.0.4\n\n" +
+        textView.text = "SunPortal v1.0.6\n\n" +
                        "SunPortal - система моніторингу сонячної енергетики\n\n" +
                        "🌞 Моніторинг сонячної енергії\n" +
                        "🔋 Управління акумулятором\n" +
                        "⚡ Параметри мережі\n" +
                        "📊 Енергетична статистика\n" +
-                       "📱 Мобільний контроль\n\n" +
-                       "© 2026 SunPortal"
+                       "📱 Мобільний контроль\n" +
+                       "🎯 Оптимізація витрат\n\n" +
+                       "© 2026 SunPortal\n" +
+                       "Розроблено в Україні 🇺🇦"
         
         return view
     }

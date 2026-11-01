@@ -1,9 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="svitgrid_background">#FBFDFF</color>
+    <!-- Svitgrid Color Scheme -->
     <color name="svitgrid_primary">#00668A</color>
-    <color name="svitgrid_primary_dark">#004d66</color>
+    <color name="svitgrid_primary_dark">#004D6A</color>
+    <color name="svitgrid_primary_light">#1A8BB8</color>
     <color name="svitgrid_secondary">#4A6B7F</color>
-    <color name="svitgrid_text">#191C1D</color>
+    <color name="svitgrid_secondary_dark">#3A5B6F</color>
+    <color name="svitgrid_secondary_light">#6A8B9F</color>
+    
+    <!-- Background Colors -->
+    <color name="svitgrid_background">#FBFDFF</color>
+    <color name="svitgrid_surface">#FFFFFF</color>
+    <color name="svitgrid_surface_variant">#F5F8FA</color>
+    <color name="svitgrid_surface_inverse">#191C1D</color>
+    
+    <!-- Text Colors -->
+    <color name="svitgrid_text_primary">#191C1D</color>
     <color name="svitgrid_text_secondary">#4A6B7F</color>
+    <color name="svitgrid_text_tertiary">#7A8B9F</color>
+    <color name="svitgrid_text_inverse">#FFFFFF</color>
+    
+    <!-- Status Colors -->
+    <color name="svitgrid_success">#00C851</color>
+    <color name="svitgrid_warning">#FF9800</color>
+    <color name="svitgrid_error">#FF4444</color>
+    <color name="svitgrid_info">#0099CC</color>
+    
+    <!-- Solar Colors -->
+    <color name="solar_yellow">#FFD700</color>
+    <color name="solar_orange">#FF8C00</color>
+    <color name="solar_red">#FF4444</color>
+    <color name="solar_green">#00C851</color>
+    <color name="solar_blue">#0099CC</color>
+    
+    <!-- Neutral Colors -->
+    <color name="neutral_50">#FFFFFF</color>
+    <color name="neutral_100">#F8FAFC</color>
+    <color name="neutral_200">#E2E8F0</color>
+    <color name="neutral_300">#CBD5E1</color>
+    <color name="neutral_400">#94A3B8</color>
+    <color name="neutral_500">#64748B</color>
+    <color name="neutral_600">#475569</color>
+    <color name="neutral_700">#334155</color>
+    <color name="neutral_800">#1E293B</color>
+    <color name="neutral_900">#0F172A</color>
 </resources>

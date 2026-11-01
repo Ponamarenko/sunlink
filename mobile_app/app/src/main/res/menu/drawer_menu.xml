@@ -5,21 +5,35 @@
 
     <group android:checkableBehavior="single">
         <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@drawable/ic_dashboard"
+            android:title="Головний екран"
+            android:visible="true"/>
+        <item
             android:id="@+id/nav_about"
             android:icon="@drawable/ic_info"
-            android:title="Про додаток" />
+            android:title="Про додаток"/>
         <item
             android:id="@+id/nav_connection"
             android:icon="@drawable/ic_settings"
-            android:title="Підключення" />
+            android:title="Підключення"/>
     </group>
+
+    <item android:title="Налаштування">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_preferences"
+                android:title="Налаштування"/>
+        </menu>
+    </item>
 
     <item android:title="Інше">
         <menu>
             <item
                 android:id="@+id/nav_logout"
                 android:icon="@drawable/ic_exit"
-                android:title="Вийти" />
+                android:title="Вийти"/>
         </menu>
     </item>
 

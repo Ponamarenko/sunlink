@@ -2,20 +2,20 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FBFDFF">
+    android:background="@color/svitgrid_background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="24dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Налаштування підключення"
             android:textSize="20sp"
-            android:textColor="#00668A"
+            android:textColor="@color/svitgrid_text_primary"
             android:textStyle="bold"
             android:layout_marginBottom="20dp"/>
 
@@ -24,17 +24,18 @@
             android:layout_height="wrap_content"
             android:text="Адреса сервера"
             android:textSize="16sp"
-            android:textColor="#4A6B7F"
-            android:layout_marginBottom="5dp"/>
+            android:textColor="@color/svitgrid_text_secondary"
+            android:layout_marginBottom="8dp"/>
 
         <EditText
             android:id="@+id/server_address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
-            android:textColor="#191C1D"
+            android:background="@color/svitgrid_surface"
+            android:textColor="@color/svitgrid_text_primary"
             android:padding="12dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="16dp"
+            android:hint="192.168.1.100"
             android:inputType="textUri"/>
 
         <TextView
@@ -42,17 +43,18 @@
             android:layout_height="wrap_content"
             android:text="Порт"
             android:textSize="16sp"
-            android:textColor="#4A6B7F"
-            android:layout_marginBottom="5dp"/>
+            android:textColor="@color/svitgrid_text_secondary"
+            android:layout_marginBottom="8dp"/>
 
         <EditText
             android:id="@+id/server_port"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
-            android:textColor="#191C1D"
+            android:background="@color/svitgrid_surface"
+            android:textColor="@color/svitgrid_text_primary"
             android:padding="12dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="20dp"
+            android:hint="8080"
             android:inputType="number"/>
 
         <TextView
@@ -60,17 +62,18 @@
             android:layout_height="wrap_content"
             android:text="API ключ (якщо використовується)"
             android:textSize="16sp"
-            android:textColor="#4A6B7F"
-            android:layout_marginBottom="5dp"/>
+            android:textColor="@color/svitgrid_text_secondary"
+            android:layout_marginBottom="8dp"/>
 
         <EditText
             android:id="@+id/api_key"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
-            android:textColor="#191C1D"
+            android:background="@color/svitgrid_surface"
+            android:textColor="@color/svitgrid_text_primary"
             android:padding="12dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="24dp"
+            android:hint="Введіть API ключ"
             android:inputType="textPassword"/>
 
         <TextView
@@ -78,17 +81,17 @@
             android:layout_height="wrap_content"
             android:text="Або логін та пароль"
             android:textSize="16sp"
-            android:textColor="#4A6B7F"
-            android:layout_marginBottom="5dp"/>
+            android:textColor="@color/svitgrid_text_secondary"
+            android:layout_marginBottom="8dp"/>
 
         <EditText
             android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
-            android:textColor="#191C1D"
+            android:background="@color/svitgrid_surface"
+            android:textColor="@color/svitgrid_text_primary"
             android:padding="12dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="16dp"
             android:hint="Логін"
             android:inputType="text"/>
 
@@ -96,10 +99,10 @@
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
-            android:textColor="#191C1D"
+            android:background="@color/svitgrid_surface"
+            android:textColor="@color/svitgrid_text_primary"
             android:padding="12dp"
-            android:layout_marginBottom="30dp"
+            android:layout_marginBottom="24dp"
             android:hint="Пароль"
             android:inputType="textPassword"/>
 
@@ -108,21 +111,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Перевірити підключення"
-            android:textColor="#FFFFFF"
-            android:background="#00668A"
+            android:textColor="@color/neutral_50"
+            android:background="@color/svitgrid_primary"
             android:textSize="16sp"
             android:padding="15dp"
-            android:layout_marginBottom="15dp"/>
+            android:layout_marginBottom="12dp"
+            android:drawableStart="@drawable/ic_test_connection"/>
 
         <Button
             android:id="@+id/save_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Зберегти налаштування"
-            android:textColor="#FFFFFF"
-            android:background="#4A6B7F"
+            android:textColor="@color/neutral_50"
+            android:background="@color/svitgrid_secondary"
             android:textSize="16sp"
-            android:padding="15dp"/>
+            android:padding="15dp"
+            android:drawableStart="@drawable/ic_save"/>
 
     </LinearLayout>
 

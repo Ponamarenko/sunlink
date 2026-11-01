@@ -1,14 +1,14 @@
 package com.sunportal.mobile
 
 import android.os.Bundle
-import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
 import androidx.appcompat.widget.Toolbar
+import android.view.MenuItem
+import android.widget.Toast
 import com.sunportal.mobile.ui.AboutFragment
 import com.sunportal.mobile.ui.ConnectionFragment
 
@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
         navView = findViewById(R.id.nav_view)
         navView.setNavigationItemSelectedListener(this)
 
-        // Добавляем кнопку меню на тулбар
+        // Настройка кнопки меню
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             setHomeAsUpIndicator(R.drawable.ic_menu)
@@ -49,8 +49,14 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
                 loadConnectionFragment()
                 toolbar.title = "Підключення"
             }
+            R.id.nav_dashboard -> {
+                // Показываем главный экран
+                toolbar.title = "SunPortal"
+            }
+            R.id.nav_settings -> {
+                Toast.makeText(this, "Налаштування", Toast.LENGTH_SHORT).show()
+            }
             R.id.nav_logout -> {
-                // TODO: Реализовать выход
                 Toast.makeText(this, "Вихід з додатку", Toast.LENGTH_SHORT).show()
             }
         }
@@ -71,13 +77,13 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
     private fun loadAboutFragment() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.content_frame, AboutFragment())
+            .replace(R.id.nav_host_fragment, AboutFragment())
             .commit()
     }
 
     private fun loadConnectionFragment() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.content_frame, ConnectionFragment())
+            .replace(R.id.nav_host_fragment, ConnectionFragment())
             .commit()
     }
 
