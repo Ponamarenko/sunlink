@@ -3,39 +3,14 @@
     <!-- SunPortal Color Scheme -->
     <color name="sunportal_primary">#1976D2</color>
     <color name="sunportal_primary_dark">#1565C0</color>
-    <color name="sunportal_primary_light">#BBDEFB</color>
     <color name="sunportal_warning">#FF9800</color>
     <color name="sunportal_success">#4CAF50</color>
     <color name="sunportal_error">#F44336</color>
     
-    <!-- Material Design Colors -->
-    <color name="md_theme_light_primary">#1976D2</color>
-    <color name="md_theme_light_onPrimary">#FFFFFF</color>
-    <color name="md_theme_light_primaryContainer">#BBDEFB</color>
-    <color name="md_theme_light_onPrimaryContainer">#0D47A1</color>
-    <color name="md_theme_light_secondary">#7B1FA2</color>
-    <color name="md_theme_light_onSecondary">#FFFFFF</color>
-    <color name="md_theme_light_secondaryContainer">#F8BBD0</color>
-    <color name="md_theme_light_onSecondaryContainer">#880E4F</color>
-    <color name="md_theme_light_tertiary">#00838F</color>
-    <color name="md_theme_light_onTertiary">#FFFFFF</color>
-    <color name="md_theme_light_tertiaryContainer">#B2EBF2</color>
-    <color name="md_theme_light_onTertiaryContainer">#004D57</color>
-    <color name="md_theme_light_error">#D32F2F</color>
-    <color name="md_theme_light_onError">#FFFFFF</color>
-    <color name="md_theme_light_errorContainer">#FFCDD2</color>
-    <color name="md_theme_light_onErrorContainer">#B71C1C</color>
-    <color name="md_theme_light_outline">#757575</color>
-    <color name="md_theme_light_background">#FAFAFA</color>
-    <color name="md_theme_light_onBackground">#1A1A1A</color>
-    <color name="md_theme_light_surface">#FAFAFA</color>
-    <color name="md_theme_light_onSurface">#1A1A1A</color>
-    <color name="md_theme_light_surfaceVariant">#E0E0E0</color>
-    <color name="md_theme_light_onSurfaceVariant">#424242</color>
-    <color name="md_theme_light_inverseSurface">#2D2D2D</color>
-    <color name="md_theme_light_inverseOnSurface">#F5F5F5</color>
-    <color name="md_theme_light_inversePrimary">#90CAF9</color>
-    <color name="md_theme_light_surfaceTint">#1976D2</color>
-    <color name="md_theme_light_outlineVariant">#BDBDBD</color>
-    <color name="md_theme_light_scrim">#000000</color>
+    <!-- Basic Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="gray">#808080</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="dark_gray">#424242</color>
 </resources>
