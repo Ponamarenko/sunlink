@@ -36,6 +36,10 @@
         "source": "com.sunportal.mobile.app-main-49:/menu/drawer_menu.xml"
     },
     {
+        "merged": "com.sunportal.mobile.app-debug-47:/drawable_ic_apply.xml.flat",
+        "source": "com.sunportal.mobile.app-main-49:/drawable/ic_apply.xml"
+    },
+    {
         "merged": "com.sunportal.mobile.app-debug-47:/drawable_ic_menu.xml.flat",
         "source": "com.sunportal.mobile.app-main-49:/drawable/ic_menu.xml"
     },
@@ -52,6 +56,10 @@
         "source": "com.sunportal.mobile.app-main-49:/drawable/button_outline.xml"
     },
     {
+        "merged": "com.sunportal.mobile.app-debug-47:/drawable_ic_appearance.xml.flat",
+        "source": "com.sunportal.mobile.app-main-49:/drawable/ic_appearance.xml"
+    },
+    {
         "merged": "com.sunportal.mobile.app-debug-47:/drawable_ic_dashboard.xml.flat",
         "source": "com.sunportal.mobile.app-main-49:/drawable/ic_dashboard.xml"
     },
@@ -66,6 +74,10 @@
     {
         "merged": "com.sunportal.mobile.app-debug-47:/drawable_ic_test_connection.xml.flat",
         "source": "com.sunportal.mobile.app-main-49:/drawable/ic_test_connection.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-debug-47:/layout_fragment_appearance.xml.flat",
+        "source": "com.sunportal.mobile.app-main-49:/layout/fragment_appearance.xml"
     },
     {
         "merged": "com.sunportal.mobile.app-debug-47:/menu_bottom_nav_menu.xml.flat",
