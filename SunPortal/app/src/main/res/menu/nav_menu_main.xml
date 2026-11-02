@@ -36,6 +36,10 @@
             android:id="@+id/nav_tou"
             android:icon="@drawable/ic_tou"
             android:title="@string/nav_tou" />
+        <item
+            android:id="@+id/nav_update"
+            android:icon="@drawable/ic_update"
+            android:title="@string/nav_update" />
     </group>
 
     <item android:title="@string/settings_title">

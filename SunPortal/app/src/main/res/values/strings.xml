@@ -17,6 +17,7 @@
     <string name="nav_tou">TOU</string>
     <string name="nav_settings">Настройки</string>
     <string name="nav_about">О приложении</string>
+    <string name="nav_update">Обновления</string>
     
     <!-- Home Screen -->
     <string name="home_title">SunPortal</string>
@@ -105,6 +106,29 @@
     <string name="about_tech">🔧 Технические характеристики</string>
     <string name="about_support">🆘 Поддержка</string>
     <string name="about_license">📄 Лицензия</string>
+    
+    <!-- Update Screen -->
+    <string name="update_title">Обновления</string>
+    <string name="update_check">🔄 Проверка обновлений</string>
+    <string name="update_check_desc">Проверить наличие новых версий</string>
+    <string name="update_current">📱 Текущая версия</string>
+    <string name="update_available">🎉 Доступное обновление</string>
+    <string name="update_available_desc">Скачать новую версию приложения</string>
+    <string name="update_settings">⚙️ Настройки автообновления</string>
+    <string name="update_settings_desc">Настроить автоматическую проверку обновлений</string>
+    <string name="update_download">Скачать обновление</string>
+    <string name="update_force">Обновить сейчас</string>
+    <string name="update_changelog">📋 Изменения:</string>
+    <string name="update_no_changelog">Нет информации об изменениях</string>
+    <string name="update_size">Размер</string>
+    <string name="update_required">Обязательно</string>
+    <string name="update_recommended">Рекомендуется</string>
+    <string name="update_checking">Проверка обновлений...</string>
+    <string name="update_downloading">Скачивание...</string>
+    <string name="update_completed">Обновление скачано</string>
+    <string name="update_error">Ошибка обновления</string>
+    <string name="update_wifi">Только через Wi-Fi</string>
+    <string name="update_background">Фоновая проверка</string>
     
     <!-- Connection Screen -->
     <string name="connection_title">Настройки подключения</string>

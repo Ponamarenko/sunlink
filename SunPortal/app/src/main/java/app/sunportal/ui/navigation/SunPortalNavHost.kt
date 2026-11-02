@@ -91,6 +91,12 @@ fun SunPortalNavHost(
                 onNavigate = { navController.navigate(it) }
             )
         }
+        
+        composable(Screen.Update.route) {
+            UpdateScreen(
+                onNavigate = { navController.navigate(it) }
+            )
+        }
     }
 }
 
@@ -108,4 +114,5 @@ sealed class Screen(val route: String) {
     object Tou : Screen("tou")
     object Settings : Screen("settings")
     object About : Screen("about")
+    object Update : Screen("update")
 }

@@ -117,6 +117,14 @@ fun HomeScreen(
 
             item {
                 NavigationCard(
+                    title = "🔄 Обновления",
+                    description = "Проверка и скачивание обновлений",
+                    onClick = { onNavigate("update") }
+                )
+            }
+
+            item {
+                NavigationCard(
                     title = "ℹ️ О приложении",
                     description = "Версия и информация",
                     onClick = { onNavigate("about") }
