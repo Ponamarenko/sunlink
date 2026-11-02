@@ -1,0 +1,313 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="app.sunportal.debug"
+4    android:versionCode="33"
+5    android:versionName="1.0.32" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="36" />
+10
+11    <!-- Internet permission -->
+12    <uses-permission android:name="android.permission.INTERNET" />
+12-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:6:5-67
+12-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:6:22-64
+13
+14    <!-- Network state permission -->
+15    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+15-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:9:5-79
+15-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:9:22-76
+16
+17    <!-- Wake lock for background tasks -->
+18    <uses-permission android:name="android.permission.WAKE_LOCK" />
+18-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:12:5-68
+18-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:12:22-65
+19
+20    <!-- Location permissions for weather -->
+21    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+21-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:15:5-81
+21-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:15:22-78
+22    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+22-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:16:5-79
+22-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:16:22-76
+23
+24    <!-- Foreground service for background data collection -->
+25    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+25-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:19:5-77
+25-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:19:22-74
+26
+27    <!-- Boot completed for automatic startup -->
+28    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+28-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:22:5-81
+28-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:22:22-78
+29
+30    <!-- Post notifications -->
+31    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+31-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:25:5-77
+31-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:25:22-74
+32
+33    <!-- Battery optimization exemption -->
+34    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+34-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:28:5-95
+34-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:28:22-92
+35
+36    <!-- Internet download -->
+37    <uses-permission android:name="android.permission.INTERNET" />
+37-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:6:5-67
+37-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:6:22-64
+38    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+38-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:9:5-79
+38-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:9:22-76
+39
+40    <!-- External storage for download -->
+41    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+41-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:35:5-80
+41-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:35:22-77
+42    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+42-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:36:5-81
+42-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:36:22-78
+43    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+43-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:37:5-88
+43-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:37:22-85
+44
+45    <permission
+45-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/eb299d39525eff0018c68b49e6543ffd/transformed/core-1.12.0/AndroidManifest.xml:22:5-24:47
+46        android:name="app.sunportal.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+46-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/eb299d39525eff0018c68b49e6543ffd/transformed/core-1.12.0/AndroidManifest.xml:23:9-81
+47        android:protectionLevel="signature" />
+47-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/eb299d39525eff0018c68b49e6543ffd/transformed/core-1.12.0/AndroidManifest.xml:24:9-44
+48
+49    <uses-permission android:name="app.sunportal.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+49-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/eb299d39525eff0018c68b49e6543ffd/transformed/core-1.12.0/AndroidManifest.xml:26:5-97
+49-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/eb299d39525eff0018c68b49e6543ffd/transformed/core-1.12.0/AndroidManifest.xml:26:22-94
+50
+51    <application
+51-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:39:5-122:19
+52        android:name="app.sunportal.SunPortalApplication"
+52-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:40:9-45
+53        android:allowBackup="true"
+53-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:41:9-35
+54        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+54-->[androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/eb299d39525eff0018c68b49e6543ffd/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
+55        android:dataExtractionRules="@xml/data_extraction_rules"
+55-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:42:9-65
+56        android:debuggable="true"
+57        android:extractNativeLibs="false"
+58        android:fullBackupContent="@xml/backup_rules"
+58-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:43:9-54
+59        android:icon="@mipmap/ic_launcher"
+59-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:44:9-43
+60        android:label="@string/app_name"
+60-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:45:9-41
+61        android:roundIcon="@mipmap/ic_launcher_round"
+61-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:46:9-54
+62        android:supportsRtl="true"
+62-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:47:9-35
+63        android:theme="@style/Theme.SunPortal" >
+63-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:48:9-47
+64
+65        <!-- Main Activity -->
+66        <activity
+66-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:52:9-61:20
+67            android:name="app.sunportal.MainActivity"
+67-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:53:13-41
+68            android:exported="true"
+68-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:54:13-36
+69            android:label="@string/app_name"
+69-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:55:13-45
+70            android:theme="@style/Theme.SunPortal" >
+70-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:56:13-51
+71            <intent-filter>
+71-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:57:13-60:29
+72                <action android:name="android.intent.action.MAIN" />
+72-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:58:17-69
+72-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:58:25-66
+73
+74                <category android:name="android.intent.category.LAUNCHER" />
+74-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:59:17-77
+74-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:59:27-74
+75            </intent-filter>
+76        </activity>
+77
+78        <!-- Boot receiver for automatic startup -->
+79        <receiver
+79-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:64:9-71:20
+80            android:name="app.sunportal.BootReceiver"
+80-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:65:13-41
+81            android:enabled="true"
+81-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:66:13-35
+82            android:exported="true" >
+82-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:67:13-36
+83            <intent-filter>
+83-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:68:13-70:29
+84                <action android:name="android.intent.action.BOOT_COMPLETED" />
+84-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:69:17-79
+84-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:69:25-76
+85            </intent-filter>
+86        </receiver>
+87
+88        <!-- Foreground service for data collection -->
+89        <service
+89-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:74:9-78:56
+90            android:name="app.sunportal.data.collection.DataCollectionService"
+90-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:75:13-66
+91            android:enabled="true"
+91-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:76:13-35
+92            android:exported="false"
+92-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:77:13-37
+93            android:foregroundServiceType="dataSync" />
+93-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:78:13-53
+94
+95        <!-- Foreground service for update checking -->
+96        <service
+96-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:81:9-85:56
+97            android:name="app.sunportal.services.UpdateCheckService"
+97-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:82:13-56
+98            android:enabled="true"
+98-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:83:13-35
+99            android:exported="false"
+99-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:84:13-37
+100            android:foregroundServiceType="dataSync" />
+100-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:85:13-53
+101
+102        <!-- Service for update downloading -->
+103        <service
+103-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:88:9-92:56
+104            android:name="app.sunportal.services.UpdateDownloadService"
+104-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:89:13-59
+105            android:enabled="true"
+105-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:90:13-35
+106            android:exported="false"
+106-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:91:13-37
+107            android:foregroundServiceType="dataSync" />
+107-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:92:13-53
+108
+109        <!-- Test update service -->
+110        <service
+110-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:95:9-99:56
+111            android:name="app.sunportal.services.TestUpdateService"
+111-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:96:13-55
+112            android:enabled="true"
+112-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:97:13-35
+113            android:exported="false"
+113-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:98:13-37
+114            android:foregroundServiceType="dataSync" />
+114-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:99:13-53
+115
+116        <!-- WorkManager initializer -->
+117        <provider
+118            android:name="androidx.startup.InitializationProvider"
+118-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:103:13-67
+119            android:authorities="app.sunportal.debug.androidx-startup"
+119-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:104:13-68
+120            android:exported="false" >
+120-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:105:13-37
+121            <meta-data
+121-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:107:13-109:72
+122                android:name="androidx.work.WorkManagerInitializer"
+122-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:108:17-68
+123                android:value="androidx.work.WorkManagerInitializer" />
+123-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:109:17-69
+124            <meta-data
+124-->[androidx.emoji2:emoji2:1.3.0] /root/.gradle/caches/8.9/transforms/bf8f83e91e9e478b2b7a5cefa1cf9aab/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+125                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+125-->[androidx.emoji2:emoji2:1.3.0] /root/.gradle/caches/8.9/transforms/bf8f83e91e9e478b2b7a5cefa1cf9aab/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:30:17-75
+126                android:value="androidx.startup" />
+126-->[androidx.emoji2:emoji2:1.3.0] /root/.gradle/caches/8.9/transforms/bf8f83e91e9e478b2b7a5cefa1cf9aab/transformed/jetified-emoji2-1.3.0/AndroidManifest.xml:31:17-49
+127            <meta-data
+127-->[androidx.lifecycle:lifecycle-process:2.7.0] /root/.gradle/caches/8.9/transforms/94b068a4836cbf9543ff74ca4edfbbfc/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+128                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+128-->[androidx.lifecycle:lifecycle-process:2.7.0] /root/.gradle/caches/8.9/transforms/94b068a4836cbf9543ff74ca4edfbbfc/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+129                android:value="androidx.startup" />
+129-->[androidx.lifecycle:lifecycle-process:2.7.0] /root/.gradle/caches/8.9/transforms/94b068a4836cbf9543ff74ca4edfbbfc/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+130            <meta-data
+130-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+131                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+131-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+132                android:value="androidx.startup" />
+132-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+133        </provider>
+134
+135        <!-- Download complete receiver -->
+136        <receiver
+136-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:113:9-120:20
+137            android:name="app.sunportal.receivers.DownloadCompleteReceiver"
+137-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:114:13-63
+138            android:enabled="true"
+138-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:115:13-35
+139            android:exported="false" >
+139-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:116:13-37
+140            <intent-filter>
+140-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:117:13-119:29
+141                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+141-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:118:17-82
+141-->/root/opt/SunPortal/app/src/main/AndroidManifest.xml:118:25-79
+142            </intent-filter>
+143        </receiver>
+144
+145        <activity
+145-->[androidx.compose.ui:ui-test-manifest:1.6.8] /root/.gradle/caches/8.9/transforms/33cc8dc2bd2c8a0a01db675ed309dd27/transformed/jetified-ui-test-manifest-1.6.8/AndroidManifest.xml:23:9-25:39
+146            android:name="androidx.activity.ComponentActivity"
+146-->[androidx.compose.ui:ui-test-manifest:1.6.8] /root/.gradle/caches/8.9/transforms/33cc8dc2bd2c8a0a01db675ed309dd27/transformed/jetified-ui-test-manifest-1.6.8/AndroidManifest.xml:24:13-63
+147            android:exported="true" />
+147-->[androidx.compose.ui:ui-test-manifest:1.6.8] /root/.gradle/caches/8.9/transforms/33cc8dc2bd2c8a0a01db675ed309dd27/transformed/jetified-ui-test-manifest-1.6.8/AndroidManifest.xml:25:13-36
+148        <activity
+148-->[androidx.compose.ui:ui-tooling-android:1.6.8] /root/.gradle/caches/8.9/transforms/f8ef99ada2c8a6b892465a69b562aefc/transformed/jetified-ui-tooling-release/AndroidManifest.xml:23:9-25:39
+149            android:name="androidx.compose.ui.tooling.PreviewActivity"
+149-->[androidx.compose.ui:ui-tooling-android:1.6.8] /root/.gradle/caches/8.9/transforms/f8ef99ada2c8a6b892465a69b562aefc/transformed/jetified-ui-tooling-release/AndroidManifest.xml:24:13-71
+150            android:exported="true" />
+150-->[androidx.compose.ui:ui-tooling-android:1.6.8] /root/.gradle/caches/8.9/transforms/f8ef99ada2c8a6b892465a69b562aefc/transformed/jetified-ui-tooling-release/AndroidManifest.xml:25:13-36
+151
+152        <uses-library
+152-->[androidx.window:window:1.0.0] /root/.gradle/caches/8.9/transforms/d18ebe8e66fd04d83de8bdb920d20012/transformed/jetified-window-1.0.0/AndroidManifest.xml:25:9-27:40
+153            android:name="androidx.window.extensions"
+153-->[androidx.window:window:1.0.0] /root/.gradle/caches/8.9/transforms/d18ebe8e66fd04d83de8bdb920d20012/transformed/jetified-window-1.0.0/AndroidManifest.xml:26:13-54
+154            android:required="false" />
+154-->[androidx.window:window:1.0.0] /root/.gradle/caches/8.9/transforms/d18ebe8e66fd04d83de8bdb920d20012/transformed/jetified-window-1.0.0/AndroidManifest.xml:27:13-37
+155        <uses-library
+155-->[androidx.window:window:1.0.0] /root/.gradle/caches/8.9/transforms/d18ebe8e66fd04d83de8bdb920d20012/transformed/jetified-window-1.0.0/AndroidManifest.xml:28:9-30:40
+156            android:name="androidx.window.sidecar"
+156-->[androidx.window:window:1.0.0] /root/.gradle/caches/8.9/transforms/d18ebe8e66fd04d83de8bdb920d20012/transformed/jetified-window-1.0.0/AndroidManifest.xml:29:13-51
+157            android:required="false" />
+157-->[androidx.window:window:1.0.0] /root/.gradle/caches/8.9/transforms/d18ebe8e66fd04d83de8bdb920d20012/transformed/jetified-window-1.0.0/AndroidManifest.xml:30:13-37
+158
+159        <receiver
+159-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+160            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+160-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+161            android:directBootAware="false"
+161-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+162            android:enabled="true"
+162-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+163            android:exported="true"
+163-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+164            android:permission="android.permission.DUMP" >
+164-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+165            <intent-filter>
+165-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+166                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+166-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+166-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+167            </intent-filter>
+168            <intent-filter>
+168-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+169                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+169-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+169-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+170            </intent-filter>
+171            <intent-filter>
+171-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+172                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+172-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+172-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+173            </intent-filter>
+174            <intent-filter>
+174-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+175                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+175-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+175-->[androidx.profileinstaller:profileinstaller:1.3.1] /root/.gradle/caches/8.9/transforms/9b612b64e7ea53084fccb33344aa5f0d/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+176            </intent-filter>
+177        </receiver>
+178    </application>
+179
+180</manifest>

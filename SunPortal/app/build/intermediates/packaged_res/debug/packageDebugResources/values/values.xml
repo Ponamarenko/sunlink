@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#FAFAFA</color>
+    <color name="background_dark">#121212</color>
+    <color name="chart_battery">#FF9800</color>
+    <color name="chart_efficiency">#00BCD4</color>
+    <color name="chart_grid">#2196F3</color>
+    <color name="chart_load">#9C27B0</color>
+    <color name="chart_pv">#4CAF50</color>
+    <color name="error">#F44336</color>
+    <color name="gradient_end">#0A0D12</color>
+    <color name="gradient_start">#131A24</color>
+    <color name="info">#2196F3</color>
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="primary_light">#BBDEFB</color>
+    <color name="primary_variant">#1565C0</color>
+    <color name="secondary">#7C4DFF</color>
+    <color name="secondary_dark">#4A148C</color>
+    <color name="secondary_light">#E1BEE7</color>
+    <color name="secondary_variant">#651FFF</color>
+    <color name="success">#4CAF50</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_dark">#1E1E1E</color>
+    <color name="surface_variant">#F5F5F5</color>
+    <color name="surface_variant_dark">#2C2C2C</color>
+    <color name="svitgrid_accent">#1976D2</color>
+    <color name="svitgrid_cyan">#00BCD4</color>
+    <color name="svitgrid_dark_primary">#131A24</color>
+    <color name="svitgrid_dark_secondary">#0A0D12</color>
+    <color name="svitgrid_green">#388E3C</color>
+    <color name="svitgrid_red">#D32F2F</color>
+    <color name="svitgrid_yellow">#FFC107</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_primary_dark">#FFFFFF</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_secondary_dark">#BDBDBD</color>
+    <color name="warning">#FFC107</color>
+    <string name="about_app">📱 SunPortal</string>
+    <string name="about_license">📄 Лицензия</string>
+    <string name="about_support">🆘 Поддержка</string>
+    <string name="about_tech">🔧 Технические характеристики</string>
+    <string name="about_title">О SunPortal</string>
+    <string name="app_name">SunPortal</string>
+    <string name="appearance_apply">Применить настройки</string>
+    <string name="appearance_font">📏 Размер шрифта</string>
+    <string name="appearance_theme">🎨 Тема</string>
+    <string name="appearance_title">Внешний вид</string>
+    <string name="battery_charging">⚙️ Настройки зарядки</string>
+    <string name="battery_charging_chart">📊 График заряда</string>
+    <string name="battery_presets">🎛️ Пресеты</string>
+    <string name="battery_reserve">⏱️ Оценка резерва</string>
+    <string name="battery_status">🔋 Статус батареи</string>
+    <string name="battery_title">Управление батареей</string>
+    <string name="charts_efficiency">🎯 Эффективность</string>
+    <string name="charts_export">💾 Экспорт данных</string>
+    <string name="charts_period">📈 Статистика за период</string>
+    <string name="charts_power">⚡ График мощности</string>
+    <string name="charts_production">📊 Производство энергии</string>
+    <string name="charts_title">Статистика и графики</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_error">Ошибка</string>
+    <string name="common_loading">Загрузка...</string>
+    <string name="common_ok">ОК</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_success">Успешно</string>
+    <string name="connection_address">Адрес сервера</string>
+    <string name="connection_auto">Автоматическое подключение</string>
+    <string name="connection_save">Сохранить настройки</string>
+    <string name="connection_server">🌐 Сервер</string>
+    <string name="connection_timeout">Таймаут (сек)</string>
+    <string name="connection_title">Настройки подключения</string>
+    <string name="forecast_chart">📈 График прогноза</string>
+    <string name="forecast_stats">📊 Статистика прогноза</string>
+    <string name="forecast_title">Прогноз производства</string>
+    <string name="forecast_today">🌅 Прогноз на сегодня</string>
+    <string name="forecast_week">📅 Прогноз на неделю</string>
+    <string name="home_about">О приложении</string>
+    <string name="home_about_desc">Версия и информация</string>
+    <string name="home_battery">Батарея</string>
+    <string name="home_battery_desc">Управление и статус батареи</string>
+    <string name="home_charts">Графики</string>
+    <string name="home_charts_desc">Статистика и графики</string>
+    <string name="home_forecast">Прогноз</string>
+    <string name="home_forecast_desc">Прогноз производства энергии</string>
+    <string name="home_live">Live</string>
+    <string name="home_live_desc">Мониторинг в реальном времени</string>
+    <string name="home_overview">Обзор</string>
+    <string name="home_overview_desc">Основные показатели системы</string>
+    <string name="home_settings">Настройки</string>
+    <string name="home_settings_desc">Внешний вид и настройки</string>
+    <string name="home_tariffs">Тарифы</string>
+    <string name="home_tariffs_desc">Настройки тарифов</string>
+    <string name="home_title">SunPortal</string>
+    <string name="home_tou">TOU</string>
+    <string name="home_tou_desc">Time of Use управление</string>
+    <string name="live_charts">📈 Графики</string>
+    <string name="live_current_metrics">📊 Текущие показатели</string>
+    <string name="live_flow_scheme">⚡ Схема потоков</string>
+    <string name="live_timeline">🕐 Таймлайн суток</string>
+    <string name="live_title">Live мониторинг</string>
+    <string name="main_activity_title">SunPortal</string>
+    <string name="nav_about">О приложении</string>
+    <string name="nav_battery">Батарея</string>
+    <string name="nav_charts">Графики</string>
+    <string name="nav_forecast">Прогноз</string>
+    <string name="nav_home">Главная</string>
+    <string name="nav_live">Live</string>
+    <string name="nav_overview">Обзор</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="nav_tariffs">Тарифы</string>
+    <string name="nav_tou">TOU</string>
+    <string name="nav_update">Обновления</string>
+    <string name="overview_blackout">🚫 Статус блекаута</string>
+    <string name="overview_energy_flow">⚡ Схема потоков</string>
+    <string name="overview_main_metrics">📊 Основные показатели</string>
+    <string name="overview_system_status">🔧 Статус системы</string>
+    <string name="overview_title">Обзор системы</string>
+    <string name="overview_weather">🌤️ Погода</string>
+    <string name="settings_about">ℹ️ О приложении</string>
+    <string name="settings_appearance">🎨 Внешний вид</string>
+    <string name="settings_notifications">🔔 Уведомления</string>
+    <string name="settings_server">🌐 Сервер</string>
+    <string name="settings_system">🔧 Система</string>
+    <string name="settings_title">Настройки</string>
+    <string name="status_connecting">Подключение...</string>
+    <string name="status_error">Ошибка</string>
+    <string name="status_offline">Офлайн</string>
+    <string name="status_online">Онлайн</string>
+    <string name="tariffs_chart">📈 График тарифов</string>
+    <string name="tariffs_current">💰 Текущие тарифы</string>
+    <string name="tariffs_savings">💎 Экономия</string>
+    <string name="tariffs_settings">⚙️ Настройки тарифов</string>
+    <string name="tariffs_title">Настройки тарифов</string>
+    <string name="tou_auto">🤖 Автоматическое управление</string>
+    <string name="tou_chart">📊 График TOU</string>
+    <string name="tou_settings">⚙️ Настройки TOU</string>
+    <string name="tou_status">⏰ Текущий статус TOU</string>
+    <string name="tou_title">Time of Use управление</string>
+    <string name="unit_ampere">А</string>
+    <string name="unit_celsius">°C</string>
+    <string name="unit_euro">€</string>
+    <string name="unit_kilowatt">кВт</string>
+    <string name="unit_kilowatt_hour">кВт·ч</string>
+    <string name="unit_percent">%</string>
+    <string name="unit_volt">В</string>
+    <string name="unit_watt">Вт</string>
+    <string name="update_available">🎉 Доступное обновление</string>
+    <string name="update_available_desc">Скачать новую версию приложения</string>
+    <string name="update_background">Фоновая проверка</string>
+    <string name="update_changelog">📋 Изменения:</string>
+    <string name="update_check">🔄 Проверка обновлений</string>
+    <string name="update_check_desc">Проверить наличие новых версий</string>
+    <string name="update_checking">Проверка обновлений...</string>
+    <string name="update_completed">Обновление скачано</string>
+    <string name="update_current">📱 Текущая версия</string>
+    <string name="update_download">Скачать обновление</string>
+    <string name="update_downloading">Скачивание...</string>
+    <string name="update_error">Ошибка обновления</string>
+    <string name="update_force">Обновить сейчас</string>
+    <string name="update_no_changelog">Нет информации об изменениях</string>
+    <string name="update_recommended">Рекомендуется</string>
+    <string name="update_required">Обязательно</string>
+    <string name="update_settings">⚙️ Настройки автообновления</string>
+    <string name="update_settings_desc">Настроить автоматическую проверку обновлений</string>
+    <string name="update_size">Размер</string>
+    <string name="update_title">Обновления</string>
+    <string name="update_wifi">Только через Wi-Fi</string>
+    <style name="TextAppearance.SunPortal.Body1" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">400</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Body2" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">400</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Button" parent="TextAppearance.MaterialComponents.Button">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">500</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Caption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">400</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Headline3" parent="TextAppearance.MaterialComponents.Headline3">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Headline4" parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">500</item>
+    </style>
+    <style name="TextAppearance.SunPortal.Subtitle2" parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">500</item>
+    </style>
+    <style name="Theme.SunPortal" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/primary_light</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/secondary_light</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/primary_light</item>
+        
+        
+        <item name="textAppearanceHeadline1">@style/TextAppearance.SunPortal.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.SunPortal.Headline2</item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.SunPortal.Headline3</item>
+        <item name="textAppearanceHeadline4">@style/TextAppearance.SunPortal.Headline4</item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.SunPortal.Headline5</item>
+        <item name="textAppearanceHeadline6">@style/TextAppearance.SunPortal.Headline6</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.SunPortal.Subtitle1</item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.SunPortal.Subtitle2</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.SunPortal.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.SunPortal.Body2</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.SunPortal.Caption</item>
+        <item name="textAppearanceButton">@style/TextAppearance.SunPortal.Button</item>
+    </style>
+    <style name="Theme.SunPortal.Dark" parent="Theme.SunPortal">
+        <item name="colorPrimary">@color/primary_light</item>
+        <item name="colorOnPrimary">@color/primary_dark</item>
+        <item name="colorPrimaryVariant">@color/primary</item>
+        <item name="colorSecondary">@color/secondary_light</item>
+        <item name="colorOnSecondary">@color/secondary_dark</item>
+        <item name="colorSecondaryVariant">@color/secondary</item>
+        <item name="colorBackground">@color/background_dark</item>
+        <item name="colorOnBackground">@color/text_primary_dark</item>
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/text_primary_dark</item>
+        <item name="colorSurfaceVariant">@color/surface_variant_dark</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary_dark</item>
+    </style>
+</resources>

@@ -5,15 +5,6 @@ plugins {
     id("com.google.devtools.ksp") version "1.9.24-1.0.20" apply false
 }
 
-// Настройки для всех модулей
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven("https://jitpack.io")
-    }
-}
-
 // Глобальные настройки
 tasks.register("clean", Delete::class) {
     delete(rootProject.buildDir)

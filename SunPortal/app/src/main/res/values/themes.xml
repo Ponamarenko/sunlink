@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Light Theme -->
-    <style name="Theme.SunPortal" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.SunPortal" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/primary_light</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
@@ -18,18 +18,18 @@
         <item name="colorOnError">@color/primary_light</item>
         
         <!-- Typography -->
-        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.SunPortal.HeadlineLarge</item>
-        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.SunPortal.HeadlineMedium</item>
-        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.SunPortal.HeadlineSmall</item>
-        <item name="textAppearanceTitleLarge">@style/TextAppearance.SunPortal.TitleLarge</item>
-        <item name="textAppearanceTitleMedium">@style/TextAppearance.SunPortal.TitleMedium</item>
-        <item name="textAppearanceTitleSmall">@style/TextAppearance.SunPortal.TitleSmall</item>
-        <item name="textAppearanceBodyLarge">@style/TextAppearance.SunPortal.BodyLarge</item>
-        <item name="textAppearanceBodyMedium">@style/TextAppearance.SunPortal.BodyMedium</item>
-        <item name="textAppearanceBodySmall">@style/TextAppearance.SunPortal.BodySmall</item>
-        <item name="textAppearanceLabelLarge">@style/TextAppearance.SunPortal.LabelLarge</item>
-        <item name="textAppearanceLabelMedium">@style/TextAppearance.SunPortal.LabelMedium</item>
-        <item name="textAppearanceLabelSmall">@style/TextAppearance.SunPortal.LabelSmall</item>
+        <item name="textAppearanceHeadline1">@style/TextAppearance.SunPortal.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.SunPortal.Headline2</item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.SunPortal.Headline3</item>
+        <item name="textAppearanceHeadline4">@style/TextAppearance.SunPortal.Headline4</item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.SunPortal.Headline5</item>
+        <item name="textAppearanceHeadline6">@style/TextAppearance.SunPortal.Headline6</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.SunPortal.Subtitle1</item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.SunPortal.Subtitle2</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.SunPortal.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.SunPortal.Body2</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.SunPortal.Caption</item>
+        <item name="textAppearanceButton">@style/TextAppearance.SunPortal.Button</item>
     </style>
     
     <!-- Dark Theme -->
@@ -49,62 +49,62 @@
     </style>
     
     <!-- Typography Styles -->
-    <style name="TextAppearance.SunPortal.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+    <style name="TextAppearance.SunPortal.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">700</item>
     </style>
     
-    <style name="TextAppearance.SunPortal.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+    <style name="TextAppearance.SunPortal.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">700</item>
     </style>
     
-    <style name="TextAppearance.SunPortal.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+    <style name="TextAppearance.SunPortal.Headline3" parent="TextAppearance.MaterialComponents.Headline3">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">700</item>
     </style>
     
-    <style name="TextAppearance.SunPortal.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+    <style name="TextAppearance.SunPortal.Headline4" parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    
+    <style name="TextAppearance.SunPortal.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    
+    <style name="TextAppearance.SunPortal.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="fontFamily">monospace</item>
+        <item name="fontWeight">700</item>
+    </style>
+    
+    <style name="TextAppearance.SunPortal.Subtitle1" parent="TextAppearance.MaterialComponents.Subtitle1">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">500</item>
     </style>
     
-    <style name="TextAppearance.SunPortal.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+    <style name="TextAppearance.SunPortal.Subtitle2" parent="TextAppearance.MaterialComponents.Subtitle2">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">500</item>
     </style>
     
-    <style name="TextAppearance.SunPortal.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
-        <item name="fontFamily">monospace</item>
-        <item name="fontWeight">500</item>
-    </style>
-    
-    <style name="TextAppearance.SunPortal.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+    <style name="TextAppearance.SunPortal.Body1" parent="TextAppearance.MaterialComponents.Body1">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">400</item>
     </style>
     
-    <style name="TextAppearance.SunPortal.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+    <style name="TextAppearance.SunPortal.Body2" parent="TextAppearance.MaterialComponents.Body2">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">400</item>
     </style>
     
-    <style name="TextAppearance.SunPortal.BodySmall" parent="TextAppearance.Material3.BodySmall">
+    <style name="TextAppearance.SunPortal.Caption" parent="TextAppearance.MaterialComponents.Caption">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">400</item>
     </style>
     
-    <style name="TextAppearance.SunPortal.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
-        <item name="fontFamily">monospace</item>
-        <item name="fontWeight">500</item>
-    </style>
-    
-    <style name="TextAppearance.SunPortal.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
-        <item name="fontFamily">monospace</item>
-        <item name="fontWeight">500</item>
-    </style>
-    
-    <style name="TextAppearance.SunPortal.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+    <style name="TextAppearance.SunPortal.Button" parent="TextAppearance.MaterialComponents.Button">
         <item name="fontFamily">monospace</item>
         <item name="fontWeight">500</item>
     </style>
