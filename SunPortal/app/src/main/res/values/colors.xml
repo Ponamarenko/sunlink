@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_variant">#1565C0</color>
+    <color name="primary_light">#BBDEFB</color>
+    <color name="primary_dark">#0D47A1</color>
+    
+    <!-- Secondary Colors -->
+    <color name="secondary">#7C4DFF</color>
+    <color name="secondary_variant">#651FFF</color>
+    <color name="secondary_light">#E1BEE7</color>
+    <color name="secondary_dark">#4A148C</color>
+    
+    <!-- Background Colors -->
+    <color name="background">#FAFAFA</color>
+    <color name="background_dark">#121212</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_dark">#1E1E1E</color>
+    <color name="surface_variant">#F5F5F5</color>
+    <color name="surface_variant_dark">#2C2C2C</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_primary_dark">#FFFFFF</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_secondary_dark">#BDBDBD</color>
+    
+    <!-- Status Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
+    <color name="error">#F44336</color>
+    <color name="info">#2196F3</color>
+    
+    <!-- Svitgrid Theme Colors -->
+    <color name="svitgrid_dark_primary">#131A24</color>
+    <color name="svitgrid_dark_secondary">#0A0D12</color>
+    <color name="svitgrid_accent">#1976D2</color>
+    <color name="svitgrid_green">#388E3C</color>
+    <color name="svitgrid_yellow">#FFC107</color>
+    <color name="svitgrid_red">#D32F2F</color>
+    <color name="svitgrid_cyan">#00BCD4</color>
+    
+    <!-- Chart Colors -->
+    <color name="chart_pv">#4CAF50</color>
+    <color name="chart_battery">#FF9800</color>
+    <color name="chart_grid">#2196F3</color>
+    <color name="chart_load">#9C27B0</color>
+    <color name="chart_efficiency">#00BCD4</color>
+    
+    <!-- Gradient Colors -->
+    <color name="gradient_start">#131A24</color>
+    <color name="gradient_end">#0A0D12</color>
+</resources>

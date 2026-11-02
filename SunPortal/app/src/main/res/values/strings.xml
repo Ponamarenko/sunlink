@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">SunPortal</string>
+    
+    <!-- Main Activity -->
+    <string name="main_activity_title">SunPortal</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Главная</string>
+    <string name="nav_overview">Обзор</string>
+    <string name="nav_live">Live</string>
+    <string name="nav_battery">Батарея</string>
+    <string name="nav_forecast">Прогноз</string>
+    <string name="nav_charts">Графики</string>
+    <string name="nav_tariffs">Тарифы</string>
+    <string name="nav_tou">TOU</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="nav_about">О приложении</string>
+    
+    <!-- Home Screen -->
+    <string name="home_title">SunPortal</string>
+    <string name="home_overview">Обзор</string>
+    <string name="home_overview_desc">Основные показатели системы</string>
+    <string name="home_live">Live</string>
+    <string name="home_live_desc">Мониторинг в реальном времени</string>
+    <string name="home_battery">Батарея</string>
+    <string name="home_battery_desc">Управление и статус батареи</string>
+    <string name="home_forecast">Прогноз</string>
+    <string name="home_forecast_desc">Прогноз производства энергии</string>
+    <string name="home_charts">Графики</string>
+    <string name="home_charts_desc">Статистика и графики</string>
+    <string name="home_tariffs">Тарифы</string>
+    <string name="home_tariffs_desc">Настройки тарифов</string>
+    <string name="home_tou">TOU</string>
+    <string name="home_tou_desc">Time of Use управление</string>
+    <string name="home_settings">Настройки</string>
+    <string name="home_settings_desc">Внешний вид и настройки</string>
+    <string name="home_about">О приложении</string>
+    <string name="home_about_desc">Версия и информация</string>
+    
+    <!-- Overview Screen -->
+    <string name="overview_title">Обзор системы</string>
+    <string name="overview_weather">🌤️ Погода</string>
+    <string name="overview_energy_flow">⚡ Схема потоков</string>
+    <string name="overview_blackout">🚫 Статус блекаута</string>
+    <string name="overview_main_metrics">📊 Основные показатели</string>
+    <string name="overview_system_status">🔧 Статус системы</string>
+    
+    <!-- Live Screen -->
+    <string name="live_title">Live мониторинг</string>
+    <string name="live_timeline">🕐 Таймлайн суток</string>
+    <string name="live_flow_scheme">⚡ Схема потоков</string>
+    <string name="live_current_metrics">📊 Текущие показатели</string>
+    <string name="live_charts">📈 Графики</string>
+    
+    <!-- Battery Screen -->
+    <string name="battery_title">Управление батареей</string>
+    <string name="battery_status">🔋 Статус батареи</string>
+    <string name="battery_reserve">⏱️ Оценка резерва</string>
+    <string name="battery_charging">⚙️ Настройки зарядки</string>
+    <string name="battery_presets">🎛️ Пресеты</string>
+    <string name="battery_charging_chart">📊 График заряда</string>
+    
+    <!-- Forecast Screen -->
+    <string name="forecast_title">Прогноз производства</string>
+    <string name="forecast_today">🌅 Прогноз на сегодня</string>
+    <string name="forecast_week">📅 Прогноз на неделю</string>
+    <string name="forecast_chart">📈 График прогноза</string>
+    <string name="forecast_stats">📊 Статистика прогноза</string>
+    
+    <!-- Charts Screen -->
+    <string name="charts_title">Статистика и графики</string>
+    <string name="charts_production">📊 Производство энергии</string>
+    <string name="charts_power">⚡ График мощности</string>
+    <string name="charts_efficiency">🎯 Эффективность</string>
+    <string name="charts_period">📈 Статистика за период</string>
+    <string name="charts_export">💾 Экспорт данных</string>
+    
+    <!-- Tariffs Screen -->
+    <string name="tariffs_title">Настройки тарифов</string>
+    <string name="tariffs_current">💰 Текущие тарифы</string>
+    <string name="tariffs_chart">📈 График тарифов</string>
+    <string name="tariffs_settings">⚙️ Настройки тарифов</string>
+    <string name="tariffs_savings">💎 Экономия</string>
+    
+    <!-- TOU Screen -->
+    <string name="tou_title">Time of Use управление</string>
+    <string name="tou_status">⏰ Текущий статус TOU</string>
+    <string name="tou_chart">📊 График TOU</string>
+    <string name="tou_settings">⚙️ Настройки TOU</string>
+    <string name="tou_auto">🤖 Автоматическое управление</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_title">Настройки</string>
+    <string name="settings_appearance">🎨 Внешний вид</string>
+    <string name="settings_system">🔧 Система</string>
+    <string name="settings_notifications">🔔 Уведомления</string>
+    <string name="settings_server">🌐 Сервер</string>
+    <string name="settings_about">ℹ️ О приложении</string>
+    
+    <!-- About Screen -->
+    <string name="about_title">О SunPortal</string>
+    <string name="about_app">📱 SunPortal</string>
+    <string name="about_tech">🔧 Технические характеристики</string>
+    <string name="about_support">🆘 Поддержка</string>
+    <string name="about_license">📄 Лицензия</string>
+    
+    <!-- Connection Screen -->
+    <string name="connection_title">Настройки подключения</string>
+    <string name="connection_server">🌐 Сервер</string>
+    <string name="connection_address">Адрес сервера</string>
+    <string name="connection_timeout">Таймаут (сек)</string>
+    <string name="connection_auto">Автоматическое подключение</string>
+    <string name="connection_save">Сохранить настройки</string>
+    
+    <!-- Appearance Screen -->
+    <string name="appearance_title">Внешний вид</string>
+    <string name="appearance_theme">🎨 Тема</string>
+    <string name="appearance_font">📏 Размер шрифта</string>
+    <string name="appearance_apply">Применить настройки</string>
+    
+    <!-- Common -->
+    <string name="common_loading">Загрузка...</string>
+    <string name="common_error">Ошибка</string>
+    <string name="common_success">Успешно</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_ok">ОК</string>
+    
+    <!-- Status Messages -->
+    <string name="status_online">Онлайн</string>
+    <string name="status_offline">Офлайн</string>
+    <string name="status_connecting">Подключение...</string>
+    <string name="status_error">Ошибка</string>
+    
+    <!-- Units -->
+    <string name="unit_watt">Вт</string>
+    <string name="unit_kilowatt">кВт</string>
+    <string name="unit_kilowatt_hour">кВт·ч</string>
+    <string name="unit_percent">%</string>
+    <string name="unit_volt">В</string>
+    <string name="unit_ampere">А</string>
+    <string name="unit_celsius">°C</string>
+    <string name="unit_euro">€</string>
+</resources>
