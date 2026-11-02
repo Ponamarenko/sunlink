@@ -4,12 +4,14 @@ package com.sunportal.mobile.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
-import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.navigation.NavigationView;
 import com.sunportal.mobile.R;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -17,20 +19,33 @@ import java.lang.String;
 
 public final class ActivityMainBinding implements ViewBinding {
   @NonNull
-  private final CoordinatorLayout rootView;
+  private final DrawerLayout rootView;
 
   @NonNull
-  public final MaterialToolbar toolbar;
+  public final FrameLayout contentFrame;
 
-  private ActivityMainBinding(@NonNull CoordinatorLayout rootView,
-      @NonNull MaterialToolbar toolbar) {
+  @NonNull
+  public final DrawerLayout drawerLayout;
+
+  @NonNull
+  public final NavigationView navView;
+
+  @NonNull
+  public final Toolbar toolbar;
+
+  private ActivityMainBinding(@NonNull DrawerLayout rootView, @NonNull FrameLayout contentFrame,
+      @NonNull DrawerLayout drawerLayout, @NonNull NavigationView navView,
+      @NonNull Toolbar toolbar) {
     this.rootView = rootView;
+    this.contentFrame = contentFrame;
+    this.drawerLayout = drawerLayout;
+    this.navView = navView;
     this.toolbar = toolbar;
   }
 
   @Override
   @NonNull
-  public CoordinatorLayout getRoot() {
+  public DrawerLayout getRoot() {
     return rootView;
   }
 
@@ -55,13 +70,28 @@ public final class ActivityMainBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.content_frame;
+      FrameLayout contentFrame = ViewBindings.findChildViewById(rootView, id);
+      if (contentFrame == null) {
+        break missingId;
+      }
+
+      DrawerLayout drawerLayout = (DrawerLayout) rootView;
+
+      id = R.id.nav_view;
+      NavigationView navView = ViewBindings.findChildViewById(rootView, id);
+      if (navView == null) {
+        break missingId;
+      }
+
       id = R.id.toolbar;
-      MaterialToolbar toolbar = ViewBindings.findChildViewById(rootView, id);
+      Toolbar toolbar = ViewBindings.findChildViewById(rootView, id);
       if (toolbar == null) {
         break missingId;
       }
 
-      return new ActivityMainBinding((CoordinatorLayout) rootView, toolbar);
+      return new ActivityMainBinding((DrawerLayout) rootView, contentFrame, drawerLayout, navView,
+          toolbar);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

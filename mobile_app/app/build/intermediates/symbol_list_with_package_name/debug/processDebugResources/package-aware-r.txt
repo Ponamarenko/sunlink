@@ -3061,6 +3061,7 @@ drawable design_ic_visibility
 drawable design_ic_visibility_off
 drawable design_password_eye
 drawable design_snackbar_background
+drawable ic_appearance
 drawable ic_arrow_back_black_24
 drawable ic_call_answer
 drawable ic_call_answer_low
@@ -3247,6 +3248,7 @@ id animateToStart
 id antiClockwise
 id anticipate
 id api_key
+id apply_button
 id arc
 id asConfigured
 id async
@@ -3294,6 +3296,7 @@ id constraint
 id container
 id content
 id contentPanel
+id content_frame
 id contiguous
 id continuousVelocity
 id coordinator
@@ -3363,6 +3366,7 @@ id fitXY
 id fixed
 id flip
 id floating
+id font_radio_group
 id forever
 id fragment_container_view_tag
 id frost
@@ -3471,6 +3475,7 @@ id mtrl_picker_title_text
 id mtrl_view_tag_bottom_padding
 id multiply
 id nav_about
+id nav_appearance
 id nav_connection
 id nav_controller_view_tag
 id nav_dashboard
@@ -3536,6 +3541,12 @@ id pressed
 id progress_circular
 id progress_horizontal
 id radio
+id radio_day
+id radio_large
+id radio_medium
+id radio_night
+id radio_small
+id radio_system
 id ratio
 id rectangles
 id report_drawn
@@ -3644,6 +3655,7 @@ id textinput_helper_text
 id textinput_placeholder
 id textinput_prefix_text
 id textinput_suffix_text
+id theme_radio_group
 id time
 id title
 id titleDividerNoCustom
@@ -3801,6 +3813,7 @@ layout abc_search_view
 layout abc_select_dialog_material
 layout abc_tooltip
 layout activity_main
+layout activity_main_simple
 layout custom_dialog
 layout design_bottom_navigation_item
 layout design_bottom_sheet_dialog
@@ -3819,6 +3832,7 @@ layout design_text_input_end_icon
 layout design_text_input_start_icon
 layout drawer_layout
 layout fragment_about
+layout fragment_appearance
 layout fragment_connection
 layout ime_base_split_test_activity
 layout ime_secondary_split_test_activity

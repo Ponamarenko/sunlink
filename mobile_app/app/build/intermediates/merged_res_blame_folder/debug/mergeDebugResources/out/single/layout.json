@@ -4,8 +4,16 @@
         "source": "com.sunportal.mobile.app-main-49:/layout/drawer_layout.xml"
     },
     {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-46:/layout/fragment_appearance.xml",
+        "source": "com.sunportal.mobile.app-main-49:/layout/fragment_appearance.xml"
+    },
+    {
         "merged": "com.sunportal.mobile.app-mergeDebugResources-46:/layout/fragment_about.xml",
         "source": "com.sunportal.mobile.app-main-49:/layout/fragment_about.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-46:/layout/activity_main_simple.xml",
+        "source": "com.sunportal.mobile.app-main-49:/layout/activity_main_simple.xml"
     },
     {
         "merged": "com.sunportal.mobile.app-mergeDebugResources-46:/layout/fragment_connection.xml",

@@ -11,6 +11,9 @@ import android.view.MenuItem
 import android.widget.Toast
 import com.sunportal.mobile.ui.AboutFragment
 import com.sunportal.mobile.ui.ConnectionFragment
+import com.sunportal.mobile.ui.AppearanceFragment
+import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
 
 class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
@@ -20,7 +23,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.drawer_layout)
+        setContentView(R.layout.activity_main)
 
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -35,12 +38,25 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
             setHomeAsUpIndicator(R.drawable.ic_menu)
         }
 
+        // Применяем сохраненные настройки при запуске
+        applySavedSettings()
+
         // Загружаем начальный фрагмент
         loadAboutFragment()
     }
 
+    private fun applySavedSettings() {
+        val sharedPreferences = getSharedPreferences("sunportal_prefs", Context.MODE_PRIVATE)
+        val themeMode = sharedPreferences.getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_NO)
+        AppCompatDelegate.setDefaultNightMode(themeMode)
+    }
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.nav_dashboard -> {
+                loadAboutFragment()
+                toolbar.title = "SunPortal"
+            }
             R.id.nav_about -> {
                 loadAboutFragment()
                 toolbar.title = "Про додаток"
@@ -49,9 +65,9 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
                 loadConnectionFragment()
                 toolbar.title = "Підключення"
             }
-            R.id.nav_dashboard -> {
-                // Показываем главный экран
-                toolbar.title = "SunPortal"
+            R.id.nav_appearance -> {
+                loadAppearanceFragment()
+                toolbar.title = "Вигляд"
             }
             R.id.nav_settings -> {
                 Toast.makeText(this, "Налаштування", Toast.LENGTH_SHORT).show()
@@ -77,13 +93,19 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
     private fun loadAboutFragment() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.nav_host_fragment, AboutFragment())
+            .replace(R.id.content_frame, AboutFragment())
             .commit()
     }
 
     private fun loadConnectionFragment() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.nav_host_fragment, ConnectionFragment())
+            .replace(R.id.content_frame, ConnectionFragment())
+            .commit()
+    }
+
+    private fun loadAppearanceFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.content_frame, AppearanceFragment())
             .commit()
     }
 

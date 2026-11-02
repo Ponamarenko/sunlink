@@ -19,6 +19,15 @@
             android:title="Підключення"/>
     </group>
 
+    <item android:title="Вигляд">
+        <menu>
+            <item
+                android:id="@+id/nav_appearance"
+                android:icon="@drawable/ic_appearance"
+                android:title="Вигляд"/>
+        </menu>
+    </item>
+
     <item android:title="Налаштування">
         <menu>
             <item
