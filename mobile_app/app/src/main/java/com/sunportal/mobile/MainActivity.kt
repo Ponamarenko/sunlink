@@ -15,16 +15,28 @@ import com.sunportal.mobile.ui.AppearanceFragment
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 
+/**
+ * MainActivity - главный экран приложения SunPortal
+ * Реализует навигацию через боковое меню и управление фрагментами
+ * 
+ * @author Ponamarenko
+ * @version 1.1.0
+ */
 class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navView: NavigationView
     private lateinit var toolbar: Toolbar
 
+    /**
+     * Инициализация MainActivity
+     * Загружает layout, настраивает навигацию и применяет сохраненные настройки
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Инициализация компонентов UI
         toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
@@ -45,12 +57,20 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
         loadAboutFragment()
     }
 
+    /**
+     * Применяет сохраненные настройки темы и размера шрифта
+     */
     private fun applySavedSettings() {
         val sharedPreferences = getSharedPreferences("sunportal_prefs", Context.MODE_PRIVATE)
         val themeMode = sharedPreferences.getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_NO)
         AppCompatDelegate.setDefaultNightMode(themeMode)
     }
 
+    /**
+     * Обработка выбора пунктов меню навигации
+     * @param item выбранный пункт меню
+     * @return true если обработано успешно
+     */
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_dashboard -> {
@@ -81,6 +101,9 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
         return true
     }
 
+    /**
+     * Обработка нажатия на кнопку меню
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
@@ -91,24 +114,36 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
         }
     }
 
+    /**
+     * Загружает фрагмент "Про додаток"
+     */
     private fun loadAboutFragment() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.content_frame, AboutFragment())
             .commit()
     }
 
+    /**
+     * Загружает фрагмент "Підключення"
+     */
     private fun loadConnectionFragment() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.content_frame, ConnectionFragment())
             .commit()
     }
 
+    /**
+     * Загружает фрагмент "Вигляд"
+     */
     private fun loadAppearanceFragment() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.content_frame, AppearanceFragment())
             .commit()
     }
 
+    /**
+     * Обработка нажатия кнопки "назад"
+     */
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)

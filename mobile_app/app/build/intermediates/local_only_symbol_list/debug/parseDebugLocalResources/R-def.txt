@@ -35,6 +35,7 @@ color svitgrid_text_tertiary
 color svitgrid_warning
 drawable button_outline
 drawable ic_appearance
+drawable ic_apply
 drawable ic_dashboard
 drawable ic_exit
 drawable ic_info
