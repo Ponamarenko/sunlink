@@ -1,0 +1,21 @@
+# User permissions
+user deye_user
+
+# Read permissions for all telemetry data
+topic read deye/telemetry/+
+topic read deye/status/+
+topic read deye/aggregate/+
+
+# Write permissions for control commands
+topic write deye/control/+
+
+# Read permissions for configuration
+topic read deye/config/+
+
+# Read permissions for InfluxDB bridge
+topic read $SYS/broker/#
+topic read bridge/#
+
+# Write permissions for responses
+topic write deye/response/+
+topic write deye/error/+

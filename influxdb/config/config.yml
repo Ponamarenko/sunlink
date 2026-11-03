@@ -1,0 +1,143 @@
+# InfluxDB configuration for SunLink
+
+[meta]
+  dir = "/var/lib/influxdb2/meta"
+  retention-duration = "0s"
+
+[storage]
+  dir = "/var/lib/influxdb2/engine"
+
+[bolt]
+  dir = "/var/lib/influxdb2/bolt"
+
+[http]
+  bind-address = ":8086"
+  auth-enabled = true
+  log-enabled = true
+  https-enabled = false
+  https-certificate = ""
+  https-private-key = ""
+
+[logging]
+  format = "auto"
+  level = "info"
+  timestamp-format = "2006-01-02T15:04:05Z07:00"
+
+[auth]
+  enabled = true
+  session-length = "0s"
+  session-inactivity = "0s"
+
+[task]
+  log-enabled = true
+  tracing-enabled = false
+
+[storage-engine]
+  cache-max-memory-size = 1073741824
+  cache-snapshot-memory-size = 268435456
+  compact-full-write-buffer-size = 1073741824
+  compact-throughput = 50331648
+  compact-throughput-burst = 50331648
+  max-concurrent-compactions = 1
+  max-concurrent-compactions-bytenorm = 1048576
+  max-index-log-file-size = 1048576
+  max-series-per-database = 1000000
+  max-values-per-tag = 100000
+  max-wal-size = 1073741824
+  snapshot-memory-size = 268435456
+  wal-dir = "/var/lib/influxdb2/wal"
+  wal-partition-size = 536870912
+
+[query]
+  max-concurrent-queries = 0
+  query-timeout = "0s"
+  max-select-point = 0
+  max-select-series = 0
+  max-select-buckets = 0
+  http-chunked-encoding = true
+  http-read-timeout = "0s"
+  http-write-timeout = "0s"
+  http-idle-timeout = "0s"
+  http-max-concurrent-requests = 0
+  http-ping-interval = "30s"
+  http-ping-timeout = "5s"
+
+[continuous]
+  enabled = true
+  query-concurrency = 0
+  query-timeout = "0s"
+
+[monitor]
+  store-enabled = true
+  store-interval = "10s"
+
+[subscriber]
+  enabled = true
+  http-timeout = "0s"
+  http-idle-timeout = "0s"
+  http-max-concurrent-requests = 0
+
+[export]
+  enabled = false
+  http-timeout = "0s"
+
+[retention]
+  enabled = true
+  check-interval = "30m"
+
+[shard-precreation]
+  enabled = true
+  check-interval = "10m"
+  advance-period = 30m
+
+[data]
+  trace-enabled = false
+  dir = "/var/lib/influxdb2/data"
+
+[cluster]
+  meta-service-enabled = false
+
+[enterprise]
+  enabled = false
+
+[telemetry]
+  enabled = true
+  interval = "15m"
+
+[hinted-handoff]
+  enabled = true
+  dir = "/var/lib/influxdb2/hh"
+  max-size = 1073741824
+  max-age = "168h"
+  retry-interval = "1s"
+  retry-max-interval = "30s"
+  retry-limit = 0
+  retry-max-jitter = "100ms"
+  purge-interval = "1m"
+
+[tsm1]
+  cache-max-memory-size = 1073741824
+  cache-snapshot-memory-size = 268435456
+  compact-full-write-buffer-size = 1073741824
+  compact-throughput = 50331648
+  compact-throughput-burst = 50331648
+  max-concurrent-compactions = 1
+  max-index-log-file-size = 1048576
+  max-series-per-database = 1000000
+  max-values-per-tag = 100000
+  max-wal-size = 1073741824
+  snapshot-memory-size = 268435456
+  wal-dir = "/var/lib/influxdb2/wal"
+  wal-partition-size = 536870912
+
+[coordination]
+  enabled = true
+  dir = "/var/lib/influxdb2/coordination"
+  timeout = "5s"
+
+[consul]
+  enabled = false
+  host = "localhost"
+  port = 8500
+  key = "influxdb"
+  meta-service-enabled = false

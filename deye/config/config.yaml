@@ -1,0 +1,226 @@
+# Deye Inverter MQTT Bridge Configuration
+# Based on kbialek/deye-inverter-mqtt
+
+# MQTT Configuration
+mqtt:
+  host: "mosquitto"
+  port: 1883
+  username: "deye_user"
+  password: "deye_pass"
+  client_id: "deye_bridge"
+  clean_session: false
+  keepalive: 60
+  qos: 1
+  retain: false
+
+# InfluxDB Configuration (optional)
+influxdb:
+  enabled: true
+  url: "http://influxdb:8086"
+  token: "your-super-secret-token"
+  org: "deye"
+  bucket: "deye_data"
+  measurement_name: "deye_metrics"
+
+# Inverter Configuration
+inverters:
+  # Инвертор 1 - Гараж
+  - id: "deye-01"
+    name: "Дом 1 - Гараж"
+    type: "deye"
+    model: "SUN-12K-SG02LP1-EU-AM3"
+    connection:
+      protocol: "modbus_tcp"
+      host: "192.168.1.100"
+      port: 502
+      slave_id: 1
+      timeout: 10
+      retry_attempts: 3
+      retry_delay: 5
+    polling:
+      interval: 2  # секунды
+      registers:
+        - address: 184  # Battery SOC
+          name: "battery_soc"
+          unit: "%"
+          scale: 1.0
+          type: "uint16"
+        - address: 185  # Battery Voltage
+          name: "battery_voltage"
+          unit: "V"
+          scale: 0.01
+          type: "uint16"
+        - address: 186  # Battery Temperature
+          name: "battery_temp"
+          unit: "°C"
+          scale: 0.1
+          type: "uint16"
+        - address: 190  # Battery Power
+          name: "battery_power"
+          unit: "W"
+          scale: 1.0
+          type: "int16"
+        - address: 191  # Battery Current
+          name: "battery_current"
+          unit: "A"
+          scale: 0.1
+          type: "int16"
+        - address: 186  # PV1 Power
+          name: "pv1_power"
+          unit: "W"
+          scale: 1.0
+          type: "uint16"
+        - address: 187  # PV2 Power
+          name: "pv2_power"
+          unit: "W"
+          scale: 1.0
+          type: "uint16"
+        - address: 188  # PV3 Power
+          name: "pv3_power"
+          unit: "W"
+          scale: 1.0
+          type: "uint16"
+        - address: 150  # Grid Voltage
+          name: "grid_voltage"
+          unit: "V"
+          scale: 0.1
+          type: "uint16"
+        - address: 151  # Grid Frequency
+          name: "grid_frequency"
+          unit: "Hz"
+          scale: 0.01
+          type: "uint16"
+        - address: 166  # Grid Inverter Power
+          name: "grid_inverter_power"
+          unit: "W"
+          scale: 1.0
+          type: "int16"
+        - address: 175  # Total Load Power
+          name: "total_load_power"
+          unit: "W"
+          scale: 1.0
+          type: "uint16"
+        - address: 192  # Inverter Temperature
+          name: "inverter_temp"
+          unit: "°C"
+          scale: 0.1
+          type: "uint16"
+        - address: 60   # Total PV Production
+          name: "total_pv_production"
+          unit: "kWh"
+          scale: 0.1
+          type: "uint32"
+        - address: 63   # Daily PV Production
+          name: "daily_pv_production"
+          unit: "kWh"
+          scale: 0.1
+          type: "uint32"
+        - address: 74   # Daily Buy Energy
+          name: "daily_buy_energy"
+          unit: "kWh"
+          scale: 0.1
+          type: "uint32"
+        - address: 76   # Daily Sell Energy
+          name: "daily_sell_energy"
+          unit: "kWh"
+          scale: 0.1
+          type: "uint32"
+        - address: 78   # Total Buy Energy
+          name: "total_buy_energy"
+          unit: "kWh"
+          scale: 0.1
+          type: "uint32"
+        - address: 80   # Total Sell Energy
+          name: "total_sell_energy"
+          unit: "kWh"
+          scale: 0.1
+          type: "uint32"
+        - address: 84   # Daily Load Energy
+          name: "daily_load_energy"
+          unit: "kWh"
+          scale: 0.1
+          type: "uint32"
+        - address: 85   # Total Load Energy
+          name: "total_load_energy"
+          unit: "kWh"
+          scale: 0.1
+          type: "uint32"
+          
+        # Управляющие регистры (записываемые)
+        - address: 230  # Max Solar Power Limit
+          name: "max_solar_power_limit"
+          unit: "W"
+          scale: 1.0
+          type: "uint16"
+          writable: true
+        - address: 232  # Max Charge Current
+          name: "max_charge_current"
+          unit: "A"
+          scale: 1.0
+          type: "uint16"
+          writable: true
+        - address: 233  # Max Discharge Current
+          name: "max_discharge_current"
+          unit: "A"
+          scale: 1.0
+          type: "uint16"
+          writable: true
+        - address: 248  # TOU Enable
+          name: "tou_enable"
+          unit: ""
+          scale: 1.0
+          type: "uint16"
+          writable: true
+          
+    location:
+      latitude: 55.7558
+      longitude: 37.6173
+      timezone: "Europe/Moscow"
+      
+  # Инвертор 2 - Основной дом
+  - id: "deye-02"
+    name: "Дом 2 - Основной"
+    type: "deye"
+    model: "SUN-8K-SG01P3-EU"
+    connection:
+      protocol: "modbus_tcp"
+      host: "192.168.1.101"
+      port: 502
+      slave_id: 1
+      timeout: 10
+      retry_attempts: 3
+      retry_delay: 5
+    polling:
+      interval: 2
+      registers:
+        # Регистры аналогичны первому инвертору
+        # (можно вынести в общий шаблон)
+    location:
+      latitude: 55.7568
+      longitude: 37.6183
+      timezone: "Europe/Moscow"
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "/app/logs/deye_bridge.log"
+  max_size: "10MB"
+  backup_count: 5
+
+# Safety Configuration
+safety:
+  max_battery_charge_current: 100  # А
+  max_battery_discharge_current: 100  # А
+  max_solar_power_limit: 12000  # Вт
+  emergency_stop: false
+  
+# MQTT Topic Configuration
+topics:
+  telemetry: "deye/telemetry/{inverter_id}"
+  status: "deye/status/{inverter_id}"
+  control: "deye/control/{inverter_id}"
+  response: "deye/response/{inverter_id}"
+  error: "deye/error/{inverter_id}"
+  aggregate: "deye/aggregate/{inverter_id}"
+  config: "deye/config/{inverter_id}"

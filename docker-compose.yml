@@ -1,0 +1,149 @@
+version: '3.8'
+
+# Усиленная политика логов
+logging:
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+networks:
+  sunlink_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+services:
+  # 1. MQTT Broker с усиленной безопасностью
+  mosquitto:
+    image: eclipse-mosquitto:2.0.15
+    container_name: sunlink-mqtt
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - sunlink_net
+    environment:
+      - TZ=Europe/Kiev
+    healthcheck:
+      test: ["CMD", "mosquitto", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 2. InfluxDB с оптимизацией
+  influxdb:
+    image: influxdb:2.7
+    container_name: sunlink-db
+    restart: unless-stopped
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=sunlink_admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=SunLinkSecurePassword2026
+      - DOCKER_INFLUXDB_INIT_ORG=sunlink_org
+      - DOCKER_INFLUXDB_INIT_BUCKET=deye_metrics
+      - DOCKER_INFLUXDB_INIT_RETENTION=30d
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=SunLinkInfluxDBToken2026
+    volumes:
+      - ./influxdb/config:/etc/influxdb2
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - sunlink_net
+    ports:
+      - "8086:8086"
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 3. Caddy с усиленной безопасностью
+  caddy:
+    image: caddy:2.7
+    container_name: sunlink-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./ssl:/etc/caddy/ssl
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./logs:/var/log/caddy
+    depends_on:
+      - fastapi-app
+    networks:
+      - sunlink_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2019/config/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 4. FastAPI с мониторингом
+  fastapi-app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sunlink-backend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - ./logs:/app/logs
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - MQTT_USERNAME=sunlink_user
+      - MQTT_PASSWORD=SunLinkMQTT2026
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=SunLinkInfluxDBToken2026
+      - INFLUXDB_ORG=sunlink_org
+      - INFLUXDB_BUCKET=deye_metrics
+      - JWT_SECRET=SunLinkJWTSecret2026
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRATION=2592000
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    networks:
+      - sunlink_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 5. Prometheus мониторинг
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sunlink-monitoring
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    networks:
+      - sunlink_net
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+  influxdb_data:
+  caddy_data:
+  caddy_config:
+  prometheus_data:

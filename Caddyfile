@@ -1,0 +1,96 @@
+# Основной домен проекта
+sunlink.pp.ua, www.sunlink.pp.ua {
+    
+    # Усиленное логирование
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 5
+            roll_for 720h
+        }
+        format json
+        level INFO
+    }
+    
+    # Максимальная безопасность
+    header {
+        # Защита от атак
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        X-Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss: https:; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        -Server
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    }
+    
+    # Rate limiting для API
+    rate_limit {
+        zone static {
+            key {remote_host}
+            events 100
+            window 1m
+        }
+    }
+    
+    # Маршрутизация запросов
+    reverse_proxy fastapi-app:8000 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-Port {port}
+        
+        # Health check
+        health_uri /api/v1/health
+        health_interval 30s
+        health_timeout 5s
+    }
+    
+    # WebSocket проксирование
+    handle /api/v1/live {
+        reverse_proxy fastapi-app:8000 {
+            header_up Upgrade {>Upgrade}
+            header_up Connection {>Connection}
+        }
+    }
+    
+    # Статические файлы
+    root * /var/www/html
+    file_server
+    
+    # Сжатие
+    encode zstd gzip
+}
+
+# API поддомен с дополнительной защитой
+api.sunlink.pp.ua {
+    # Rate limiting для API
+    rate_limit {
+        zone api {
+            key {remote_host}
+            events 1000
+            window 1h
+        }
+    }
+    
+    # Маршрутизация API запросов
+    reverse_proxy fastapi-app:8000 {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
+    # Логирование API запросов
+    log {
+        output file /var/log/caddy/api_access.log {
+            roll_size 100mb
+            roll_keep 5
+            roll_for 720h
+        }
+        format json
+    }
+}

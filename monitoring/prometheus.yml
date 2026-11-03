@@ -1,0 +1,54 @@
+# Prometheus configuration for SunLink
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # SunLink FastAPI backend
+  - job_name: 'sunlink-backend'
+    static_configs:
+      - targets: ['fastapi-app:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # SunLink MQTT broker
+  - job_name: 'sunlink-mqtt'
+    static_configs:
+      - targets: ['mosquitto:1883']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # SunLink InfluxDB
+  - job_name: 'sunlink-influxdb'
+    static_configs:
+      - targets: ['influxdb:8086']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # SunLink Caddy proxy
+  - job_name: 'sunlink-caddy'
+    static_configs:
+      - targets: ['caddy:2019']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Node exporter (if available)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    scrape_timeout: 10s
