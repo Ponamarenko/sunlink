@@ -20,7 +20,7 @@ import androidx.appcompat.app.AppCompatDelegate
  * Реализует навигацию через боковое меню и управление фрагментами
  * 
  * @author Ponamarenko
- * @version 1.1.0
+ * @version 1.1.1
  */
 class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
@@ -35,6 +35,9 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Применяем тему до setContentView для правильного отображения
+        applyThemeOnStart()
 
         // Инициализация компонентов UI
         toolbar = findViewById(R.id.toolbar)
@@ -58,12 +61,53 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     }
 
     /**
-     * Применяет сохраненные настройки темы и размера шрифта
+     * Применяет тему при запуске приложения
      */
-    private fun applySavedSettings() {
+    private fun applyThemeOnStart() {
         val sharedPreferences = getSharedPreferences("sunportal_prefs", Context.MODE_PRIVATE)
         val themeMode = sharedPreferences.getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_NO)
         AppCompatDelegate.setDefaultNightMode(themeMode)
+    }
+
+    /**
+     * Применяет сохраненные настройки размера шрифта
+     */
+    private fun applySavedSettings() {
+        val sharedPreferences = getSharedPreferences("sunportal_prefs", Context.MODE_PRIVATE)
+        val savedFontSize = sharedPreferences.getString("font_size", "medium") ?: "medium"
+        
+        // Применяем размер шрифта ко всем элементам
+        applyFontSizeToAll(savedFontSize)
+    }
+
+    /**
+     * Применяет размер шрифта ко всем элементам интерфейса
+     */
+    private fun applyFontSizeToAll(size: String) {
+        val fontSize = when (size) {
+            "small" -> 14f
+            "large" -> 22f
+            else -> 18f
+        }
+        
+        // Применяем размер шрифта ко всем TextView в текущей активности
+        val rootView = findViewById<android.view.View>(android.R.id.content)
+        applyFontSizeRecursive(rootView, fontSize)
+    }
+
+    /**
+     * Рекурсивно применяет размер шрифта ко всем элементам
+     */
+    private fun applyFontSizeRecursive(view: android.view.View, size: Float) {
+        if (view is android.widget.TextView) {
+            view.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, size)
+        }
+        
+        if (view is android.view.ViewGroup) {
+            for (i in 0 until view.childCount) {
+                applyFontSizeRecursive(view.getChildAt(i), size)
+            }
+        }
     }
 
     /**

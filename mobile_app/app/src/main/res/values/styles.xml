@@ -1,0 +1,69 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.SunLink" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/svitgrid_primary</item>
+        <item name="colorPrimaryVariant">@color/material_primary_dark</item>
+        <item name="colorOnPrimary">@color/neutral_50</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/svitgrid_accent</item>
+        <item name="colorSecondaryVariant">@color/solar_orange</item>
+        <item name="colorOnSecondary">@color/neutral_50</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimary</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="DashboardCard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardElevation">4dp</item>
+    </style>
+
+    <style name="DashboardTitle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="DashboardValue">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="DashboardLabel">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/svitgrid_text_secondary</item>
+    </style>
+
+    <style name="EventTitle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="EventMessage">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/svitgrid_text_secondary</item>
+    </style>
+
+    <style name="EventTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/svitgrid_text_tertiary</item>
+    </style>
+
+    <style name="EmergencyButton">
+        <item name="android:textColor">@color/neutral_50</item>
+        <item name="android:background">@color/solar_red</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="RefreshButton">
+        <item name="android:textColor">@color/neutral_50</item>
+        <item name="android:background">@color/svitgrid_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+</resources>
