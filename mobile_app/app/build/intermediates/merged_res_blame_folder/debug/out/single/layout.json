@@ -1,0 +1,58 @@
+[
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/activity_main.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/nav_header_main.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/nav_header_main.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/card_battery.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/card_battery.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/fragment_dashboard.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/fragment_dashboard.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/fragment_connection.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/fragment_connection.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/fragment_about.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/fragment_about.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/fragment_appearance.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/fragment_appearance.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/card_power.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/card_power.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/activity_simple_dashboard.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/activity_simple_dashboard.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/item_event.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/item_event.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/card_statistics.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/card_statistics.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/card_grid.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/card_grid.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/activity_main_simple.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/activity_main_simple.xml"
+    },
+    {
+        "merged": "com.sunportal.mobile.app-mergeDebugResources-48:/layout/drawer_layout.xml",
+        "source": "com.sunportal.mobile.app-main-51:/layout/drawer_layout.xml"
+    }
+]

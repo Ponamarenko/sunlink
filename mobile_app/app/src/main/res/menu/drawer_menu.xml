@@ -10,6 +10,26 @@
             android:title="Головний екран"
             android:visible="true"/>
         <item
+            android:id="@+id/nav_overview"
+            android:icon="@drawable/ic_overview"
+            android:title="Обзор"/>
+        <item
+            android:id="@+id/nav_live"
+            android:icon="@drawable/ic_live"
+            android:title="В реальном времени"/>
+        <item
+            android:id="@+id/nav_charts"
+            android:icon="@drawable/ic_charts"
+            android:title="Графики"/>
+        <item
+            android:id="@+id/nav_battery"
+            android:icon="@drawable/ic_battery"
+            android:title="Батарея"/>
+        <item
+            android:id="@+id/nav_forecast"
+            android:icon="@drawable/ic_forecast"
+            android:title="Прогноз"/>
+        <item
             android:id="@+id/nav_about"
             android:icon="@drawable/ic_info"
             android:title="Про додаток"/>
@@ -34,6 +54,10 @@
                 android:id="@+id/nav_settings"
                 android:icon="@drawable/ic_preferences"
                 android:title="Налаштування"/>
+            <item
+                android:id="@+id/nav_appearance"
+                android:icon="@drawable/ic_appearance"
+                android:title="Вигляд"/>
         </menu>
     </item>
 

@@ -7,6 +7,12 @@
     <color name="svitgrid_secondary">#4A6B7F</color>
     <color name="svitgrid_secondary_dark">#3A5B6F</color>
     <color name="svitgrid_secondary_light">#6A8B9F</color>
+    <color name="svitgrid_accent">#FFD700</color>
+    
+    <!-- Material Colors -->
+    <color name="material_primary">#1976D2</color>
+    <color name="material_primary_dark">#1565C0</color>
+    <color name="material_primary_light">#42A5F5</color>
     
     <!-- Background Colors -->
     <color name="svitgrid_background">#FBFDFF</color>

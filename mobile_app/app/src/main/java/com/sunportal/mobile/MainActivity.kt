@@ -16,11 +16,11 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 
 /**
- * MainActivity - главный экран приложения SunPortal
+ * MainActivity - главный экран приложения SunLink
  * Реализует навигацию через боковое меню и управление фрагментами
  * 
  * @author Ponamarenko
- * @version 1.1.1
+ * @version 2.0.0
  */
 class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
 
@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
         applySavedSettings()
 
         // Загружаем начальный фрагмент
-        loadAboutFragment()
+        loadHomeScreen()
     }
 
     /**
@@ -118,8 +118,28 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_dashboard -> {
-                loadAboutFragment()
-                toolbar.title = "SunPortal"
+                loadHomeScreen()
+                toolbar.title = "SunLink"
+            }
+            R.id.nav_overview -> {
+                loadHomeScreen()
+                toolbar.title = "Обзор"
+            }
+            R.id.nav_live -> {
+                Toast.makeText(this, "В реальном времени", Toast.LENGTH_SHORT).show()
+                toolbar.title = "В реальном времени"
+            }
+            R.id.nav_charts -> {
+                Toast.makeText(this, "Графики", Toast.LENGTH_SHORT).show()
+                toolbar.title = "Графики"
+            }
+            R.id.nav_battery -> {
+                Toast.makeText(this, "Батарея", Toast.LENGTH_SHORT).show()
+                toolbar.title = "Батарея"
+            }
+            R.id.nav_forecast -> {
+                Toast.makeText(this, "Прогноз", Toast.LENGTH_SHORT).show()
+                toolbar.title = "Прогноз"
             }
             R.id.nav_about -> {
                 loadAboutFragment()
@@ -135,6 +155,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
             }
             R.id.nav_settings -> {
                 Toast.makeText(this, "Налаштування", Toast.LENGTH_SHORT).show()
+                toolbar.title = "Настройки"
             }
             R.id.nav_logout -> {
                 Toast.makeText(this, "Вихід з додатку", Toast.LENGTH_SHORT).show()
@@ -155,6 +176,40 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    /**
+     * Загружает главный экран SunLink
+     */
+    private fun loadHomeScreen() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.content_frame, AboutFragment())
+            .commit()
+    }
+
+    /**
+     * Навигация к указанному экрану
+     */
+    fun navigateTo(destination: String) {
+        when (destination) {
+            "home" -> loadHomeScreen()
+            "overview" -> loadHomeScreen()
+            "live" -> Toast.makeText(this, "В реальном времени", Toast.LENGTH_SHORT).show()
+            "charts" -> Toast.makeText(this, "Графики", Toast.LENGTH_SHORT).show()
+            "battery" -> Toast.makeText(this, "Батарея", Toast.LENGTH_SHORT).show()
+            "forecast" -> Toast.makeText(this, "Прогноз", Toast.LENGTH_SHORT).show()
+            "settings" -> Toast.makeText(this, "Налаштування", Toast.LENGTH_SHORT).show()
+        }
+        
+        when (destination) {
+            "home" -> toolbar.title = "SunLink"
+            "overview" -> toolbar.title = "Обзор"
+            "live" -> toolbar.title = "В реальном времени"
+            "charts" -> toolbar.title = "Графики"
+            "battery" -> toolbar.title = "Батарея"
+            "forecast" -> toolbar.title = "Прогноз"
+            "settings" -> toolbar.title = "Настройки"
         }
     }
 

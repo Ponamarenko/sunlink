@@ -934,6 +934,9 @@
     <color name="material_personalized_color_text_primary_inverse_disable_only">#FFFFFF</color>
     <color name="material_personalized_color_text_secondary_and_tertiary_inverse">#FFFFFF</color>
     <color name="material_personalized_color_text_secondary_and_tertiary_inverse_disabled">#FFFFFF</color>
+    <color name="material_primary">#1976D2</color>
+    <color name="material_primary_dark">#1565C0</color>
+    <color name="material_primary_light">#42A5F5</color>
     <color name="mtrl_btn_text_color_disabled">#61000000</color>
     <color name="mtrl_btn_transparent_bg_color">#00ffffff</color>
     <color name="mtrl_scrim_color">#52000000</color>
@@ -973,6 +976,7 @@
     <color name="solar_orange">#FF8C00</color>
     <color name="solar_red">#FF4444</color>
     <color name="solar_yellow">#FFD700</color>
+    <color name="svitgrid_accent">#FFD700</color>
     <color name="svitgrid_background">#FBFDFF</color>
     <color name="svitgrid_error">#FF4444</color>
     <color name="svitgrid_info">#0099CC</color>
@@ -1840,6 +1844,7 @@
     <item name="ghost_view" type="id"/>
     <item name="ghost_view_holder" type="id"/>
     <item name="home" type="id"/>
+    <item name="is_pooling_container_tag" type="id"/>
     <item name="item_touch_helper_previous_elevation" type="id"/>
     <item name="line1" type="id"/>
     <item name="line3" type="id"/>
@@ -1862,6 +1867,7 @@
     <item name="navigation_bar_item_large_label_view" type="id"/>
     <item name="navigation_bar_item_small_label_view" type="id"/>
     <item name="parent_matrix" type="id"/>
+    <item name="pooling_container_listener_holder_tag" type="id"/>
     <item name="progress_circular" type="id"/>
     <item name="progress_horizontal" type="id"/>
     <item name="report_drawn" type="id"/>
@@ -5569,6 +5575,45 @@
     <style name="CardView.Light">
         <item name="cardBackgroundColor">@color/cardview_light_background</item>
     </style>
+    <style name="DashboardCard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardElevation">4dp</item>
+    </style>
+    <style name="DashboardLabel">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/svitgrid_text_secondary</item>
+    </style>
+    <style name="DashboardTitle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="DashboardValue">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="EmergencyButton">
+        <item name="android:textColor">@color/neutral_50</item>
+        <item name="android:background">@color/solar_red</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="EventMessage">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/svitgrid_text_secondary</item>
+    </style>
+    <style name="EventTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/svitgrid_text_tertiary</item>
+    </style>
+    <style name="EventTitle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
     <style name="MaterialAlertDialog.Material3" parent="MaterialAlertDialog.MaterialComponents">
     <item name="backgroundTint">@macro/m3_comp_dialog_container_color</item>
     <item name="enforceMaterialTheme">true</item>
@@ -5827,6 +5872,11 @@
         <item name="android:dropDownItemStyle">@style/Widget.AppCompat.DropDownItem.Spinner</item>
     </style>
     <style name="Platform.Widget.AppCompat.Spinner" parent="android:Widget.Holo.Spinner"/>
+    <style name="RefreshButton">
+        <item name="android:textColor">@color/neutral_50</item>
+        <item name="android:background">@color/svitgrid_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
     <style name="RtlOverlay.DialogWindowTitle.AppCompat" parent="Base.DialogWindowTitle.AppCompat">
     </style>
     <style name="RtlOverlay.Widget.AppCompat.ActionBar.TitleItem" parent="android:Widget">
@@ -6560,6 +6610,19 @@
     <item name="windowActionBar">false</item>
     <item name="windowNoTitle">true</item>
   </style>
+    <style name="Theme.SunLink" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        
+        <item name="colorPrimary">@color/svitgrid_primary</item>
+        <item name="colorPrimaryVariant">@color/material_primary_dark</item>
+        <item name="colorOnPrimary">@color/neutral_50</item>
+        
+        <item name="colorSecondary">@color/svitgrid_accent</item>
+        <item name="colorSecondaryVariant">@color/solar_orange</item>
+        <item name="colorOnSecondary">@color/neutral_50</item>
+        
+        <item name="android:statusBarColor" ns1:targetApi="l">?attr/colorPrimary</item>
+        
+    </style>
     <style name="Theme.SunPortal" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         
         <item name="colorPrimary">@color/svitgrid_primary</item>
