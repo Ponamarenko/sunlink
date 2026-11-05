@@ -1,158 +1,178 @@
 [
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_button_outline.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/button_outline.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_activity_main_simple.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/activity_main_simple.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_apply.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_apply.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_nav_header_main.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/nav_header_main.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/menu_drawer_menu.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/menu/drawer_menu.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_menu.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_menu.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_fragment_appearance.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/fragment_appearance.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_load.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_load.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_info.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_info.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_sun.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_sun.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_item_event.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/item_event.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_voltage.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_voltage.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_card_battery.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/card_battery.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/menu_bottom_nav_menu.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/menu/bottom_nav_menu.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_appearance.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_appearance.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_item_event.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/item_event.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_exit.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_exit.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_activity_simple_dashboard.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/activity_simple_dashboard.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_grid.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_grid.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/menu_drawer_menu.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/menu/drawer_menu.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_preferences.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_preferences.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_efficiency.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_efficiency.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_save.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_save.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_status.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_status.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_fragment_about.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/fragment_about.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_apply.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_apply.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_launcher_background.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_card_grid.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/card_grid.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_menu.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_menu.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_test_connection.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_test_connection.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/menu_bottom_nav_menu.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/menu/bottom_nav_menu.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_save.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_save.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_live.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_live.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_info.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_info.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_fragment_connection.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/fragment_connection.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_fragment_connection.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/fragment_connection.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_forecast.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_forecast.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_drawer_layout.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/drawer_layout.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_settings.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_settings.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_forecast.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_forecast.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_card_statistics.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/card_statistics.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_settings.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_settings.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_charts.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_charts.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_power.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_power.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_drawer_layout.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/drawer_layout.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_button_outline.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/button_outline.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_overview.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_overview.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_grid.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_grid.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_activity_main_simple.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/activity_main_simple.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_fragment_about.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/fragment_about.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_card_grid.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/card_grid.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_live.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_live.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_activity_main.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/activity_main.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_charts.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_charts.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_nav_header_main.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/nav_header_main.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_dashboard.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_dashboard.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_sun.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_sun.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_overview.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_overview.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_load.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_load.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_solar.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_solar.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_test_connection.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_test_connection.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_solar_background.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_solar_background.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_battery.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_battery.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_rounded_background.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/rounded_background.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_rounded_background.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/rounded_background.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_card_power.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/card_power.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_solar.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_solar.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_exit.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_exit.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_solar_background.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_solar_background.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_activity_main.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/activity_main.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_activity_simple_dashboard.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/activity_simple_dashboard.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_battery.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_battery.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/drawable_ic_dashboard.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/drawable/ic_dashboard.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_fragment_appearance.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/fragment_appearance.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_card_battery.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/card_battery.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_fragment_dashboard.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/fragment_dashboard.xml"
     },
     {
         "merged": "com.sunportal.mobile.app-merged_res-49:/layout_fragment_dashboard.xml.flat",
         "source": "com.sunportal.mobile.app-main-51:/layout/fragment_dashboard.xml"
     },
     {
-        "merged": "com.sunportal.mobile.app-merged_res-49:/layout_card_power.xml.flat",
-        "source": "com.sunportal.mobile.app-main-51:/layout/card_power.xml"
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/layout_card_statistics.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/layout/card_statistics.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_appearance.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_appearance.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_preferences.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_preferences.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-merged_res-49:/drawable_ic_launcher_background.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunportal.mobile.app-main-51:/drawable/ic_launcher_background.xml"
     }
 ]

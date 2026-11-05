@@ -4,10 +4,13 @@ package com.sunportal.mobile.databinding;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.sunportal.mobile.R;
@@ -20,13 +23,34 @@ public final class FragmentDashboardBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
+  public final CardView cardBattery;
+
+  @NonNull
+  public final ProgressBar cardBatteryLevelBar;
+
+  @NonNull
+  public final TextView cardBatteryLevelValue;
+
+  @NonNull
+  public final CardView cardEfficiency;
+
+  @NonNull
+  public final TextView cardEfficiencyValue;
+
+  @NonNull
+  public final CardView cardPower;
+
+  @NonNull
   public final TextView cardPowerValue;
+
+  @NonNull
+  public final CardView cardStatus;
 
   @NonNull
   public final TextView cardStatusValue;
 
   @NonNull
-  public final TextView cardTempValue;
+  public final CardView cardVoltage;
 
   @NonNull
   public final TextView cardVoltageValue;
@@ -34,15 +58,39 @@ public final class FragmentDashboardBinding implements ViewBinding {
   @NonNull
   public final TextView dashboardTitle;
 
-  private FragmentDashboardBinding(@NonNull LinearLayout rootView, @NonNull TextView cardPowerValue,
-      @NonNull TextView cardStatusValue, @NonNull TextView cardTempValue,
-      @NonNull TextView cardVoltageValue, @NonNull TextView dashboardTitle) {
+  @NonNull
+  public final TextView lastUpdateText;
+
+  @NonNull
+  public final ImageView refreshButton;
+
+  @NonNull
+  public final ImageView statusIndicator;
+
+  private FragmentDashboardBinding(@NonNull LinearLayout rootView, @NonNull CardView cardBattery,
+      @NonNull ProgressBar cardBatteryLevelBar, @NonNull TextView cardBatteryLevelValue,
+      @NonNull CardView cardEfficiency, @NonNull TextView cardEfficiencyValue,
+      @NonNull CardView cardPower, @NonNull TextView cardPowerValue, @NonNull CardView cardStatus,
+      @NonNull TextView cardStatusValue, @NonNull CardView cardVoltage,
+      @NonNull TextView cardVoltageValue, @NonNull TextView dashboardTitle,
+      @NonNull TextView lastUpdateText, @NonNull ImageView refreshButton,
+      @NonNull ImageView statusIndicator) {
     this.rootView = rootView;
+    this.cardBattery = cardBattery;
+    this.cardBatteryLevelBar = cardBatteryLevelBar;
+    this.cardBatteryLevelValue = cardBatteryLevelValue;
+    this.cardEfficiency = cardEfficiency;
+    this.cardEfficiencyValue = cardEfficiencyValue;
+    this.cardPower = cardPower;
     this.cardPowerValue = cardPowerValue;
+    this.cardStatus = cardStatus;
     this.cardStatusValue = cardStatusValue;
-    this.cardTempValue = cardTempValue;
+    this.cardVoltage = cardVoltage;
     this.cardVoltageValue = cardVoltageValue;
     this.dashboardTitle = dashboardTitle;
+    this.lastUpdateText = lastUpdateText;
+    this.refreshButton = refreshButton;
+    this.statusIndicator = statusIndicator;
   }
 
   @Override
@@ -72,9 +120,51 @@ public final class FragmentDashboardBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.card_battery;
+      CardView cardBattery = ViewBindings.findChildViewById(rootView, id);
+      if (cardBattery == null) {
+        break missingId;
+      }
+
+      id = R.id.card_battery_level_bar;
+      ProgressBar cardBatteryLevelBar = ViewBindings.findChildViewById(rootView, id);
+      if (cardBatteryLevelBar == null) {
+        break missingId;
+      }
+
+      id = R.id.card_battery_level_value;
+      TextView cardBatteryLevelValue = ViewBindings.findChildViewById(rootView, id);
+      if (cardBatteryLevelValue == null) {
+        break missingId;
+      }
+
+      id = R.id.card_efficiency;
+      CardView cardEfficiency = ViewBindings.findChildViewById(rootView, id);
+      if (cardEfficiency == null) {
+        break missingId;
+      }
+
+      id = R.id.card_efficiency_value;
+      TextView cardEfficiencyValue = ViewBindings.findChildViewById(rootView, id);
+      if (cardEfficiencyValue == null) {
+        break missingId;
+      }
+
+      id = R.id.card_power;
+      CardView cardPower = ViewBindings.findChildViewById(rootView, id);
+      if (cardPower == null) {
+        break missingId;
+      }
+
       id = R.id.card_power_value;
       TextView cardPowerValue = ViewBindings.findChildViewById(rootView, id);
       if (cardPowerValue == null) {
+        break missingId;
+      }
+
+      id = R.id.card_status;
+      CardView cardStatus = ViewBindings.findChildViewById(rootView, id);
+      if (cardStatus == null) {
         break missingId;
       }
 
@@ -84,9 +174,9 @@ public final class FragmentDashboardBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.card_temp_value;
-      TextView cardTempValue = ViewBindings.findChildViewById(rootView, id);
-      if (cardTempValue == null) {
+      id = R.id.card_voltage;
+      CardView cardVoltage = ViewBindings.findChildViewById(rootView, id);
+      if (cardVoltage == null) {
         break missingId;
       }
 
@@ -102,8 +192,28 @@ public final class FragmentDashboardBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentDashboardBinding((LinearLayout) rootView, cardPowerValue, cardStatusValue,
-          cardTempValue, cardVoltageValue, dashboardTitle);
+      id = R.id.last_update_text;
+      TextView lastUpdateText = ViewBindings.findChildViewById(rootView, id);
+      if (lastUpdateText == null) {
+        break missingId;
+      }
+
+      id = R.id.refresh_button;
+      ImageView refreshButton = ViewBindings.findChildViewById(rootView, id);
+      if (refreshButton == null) {
+        break missingId;
+      }
+
+      id = R.id.status_indicator;
+      ImageView statusIndicator = ViewBindings.findChildViewById(rootView, id);
+      if (statusIndicator == null) {
+        break missingId;
+      }
+
+      return new FragmentDashboardBinding((LinearLayout) rootView, cardBattery, cardBatteryLevelBar,
+          cardBatteryLevelValue, cardEfficiency, cardEfficiencyValue, cardPower, cardPowerValue,
+          cardStatus, cardStatusValue, cardVoltage, cardVoltageValue, dashboardTitle,
+          lastUpdateText, refreshButton, statusIndicator);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

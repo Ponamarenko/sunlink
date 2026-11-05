@@ -5,59 +5,66 @@ import androidx.lifecycle.viewModelScope
 import com.sunportal.mobile.data.InverterData
 import com.sunportal.mobile.data.BatteryData
 import com.sunportal.mobile.data.ForecastData
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.sunportal.mobile.api.MockApiService
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 /**
  * ViewModel для SunLink приложения
+ * Реализует real-time мониторинг и управление системой
  */
 class MainViewModel : ViewModel() {
 
-    private val _inverterData = MutableStateFlow<InverterData?>(null)
-    val inverterData: StateFlow<InverterData?> = _inverterData
+    // === ИНВЕРТОР ===
+    private var _inverterData: InverterData? = null
+    val inverterData: InverterData? get() = _inverterData
 
-    private val _batteryData = MutableStateFlow<BatteryData?>(null)
-    val batteryData: StateFlow<BatteryData?> = _batteryData
+    // === БАТАРЕЯ ===
+    private var _batteryData: BatteryData? = null
+    val batteryData: BatteryData? get() = _batteryData
 
-    private val _forecastData = MutableStateFlow<ForecastData?>(null)
-    val forecastData: StateFlow<ForecastData?> = _forecastData
+    // === ПРОГНОЗ ===
+    private var _forecastData: ForecastData? = null
+    val forecastData: ForecastData? get() = _forecastData
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    // === СИСТЕМНЫЕ СОСТОЯНИЯ ===
+    private var _isLoading = false
+    val isLoading: Boolean get() = _isLoading
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
+    private var _error: String? = null
+    val error: String? get() = _error
+
+    private var _connectionStatus = "connecting"
+    val connectionStatus: String get() = _connectionStatus
+
+    private var _lastUpdate: Long? = 0
+    val lastUpdate: Long? get() = _lastUpdate
+
+    // === НАВИГАЦИЯ ===
+    private var _currentScreen = "dashboard"
+    val currentScreen: String get() = _currentScreen
 
     /**
      * Загрузка данных инвертора
      */
     fun loadInverterData() {
         viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
+            _isLoading = true
+            _error = null
+            _connectionStatus = "loading"
             
             try {
-                // TODO: Реализовать загрузку данных с сервера
-                val data = InverterData(
-                    currentPower = 2500.0,
-                    voltage = 230.0,
-                    current = 10.9,
-                    temperature = 35.0,
-                    status = "Normal",
-                    efficiency = 95.0,
-                    frequency = 50.0,
-                    powerFactor = 0.95,
-                    totalEnergy = 12500.0,
-                    dailyEnergy = 18.5,
-                    reactivePower = 500.0,
-                    apparentPower = 2630.0
-                )
-                _inverterData.value = data
+                // Используем Mock API для тестирования
+                // TODO: Заменить на реальный Retrofit клиент
+                val data = MockApiService.getMockInverterData()
+                _inverterData = data
+                _connectionStatus = "online"
+                _lastUpdate = System.currentTimeMillis()
             } catch (e: Exception) {
-                _error.value = "Ошибка загрузки данных: ${e.message}"
+                _connectionStatus = "error"
+                _error = "Ошибка загрузки данных инвертора: ${e.message}"
             } finally {
-                _isLoading.value = false
+                _isLoading = false
             }
         }
     }
@@ -67,31 +74,19 @@ class MainViewModel : ViewModel() {
      */
     fun loadBatteryData() {
         viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
+            _isLoading = true
+            _error = null
             
             try {
-                // TODO: Реализовать загрузку данных с сервера
-                val data = BatteryData(
-                    status = "Normal",
-                    level = 85,
-                    temperature = 28.0,
-                    voltage = 48.5,
-                    current = 12.5,
-                    health = 95,
-                    cycles = 250,
-                    voltageMax = 54.2,
-                    voltageMin = 42.1,
-                    currentMax = 25.0,
-                    currentMin = -5.0,
-                    power = 600.0,
-                    energy = 12.5
-                )
-                _batteryData.value = data
+                // Используем Mock API для тестирования
+                // TODO: Заменить на реальный Retrofit клиент
+                val data = MockApiService.getMockBatteryData()
+                _batteryData = data
+                _lastUpdate = System.currentTimeMillis()
             } catch (e: Exception) {
-                _error.value = "Ошибка загрузки данных: ${e.message}"
+                _error = "Ошибка загрузки данных батареи: ${e.message}"
             } finally {
-                _isLoading.value = false
+                _isLoading = false
             }
         }
     }
@@ -101,57 +96,169 @@ class MainViewModel : ViewModel() {
      */
     fun loadForecastData() {
         viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
+            _isLoading = true
+            _error = null
             
             try {
-                // TODO: Реализовать загрузку данных с сервера
-                val data = ForecastData(
-                    todayMaxPower = 3.2,
-                    todayEnergy = 22.5,
-                    tomorrowMaxPower = 2.8,
-                    tomorrowEnergy = 19.2,
-                    weeklyTotal = 145.0,
-                    monthlyTotal = 580.0,
-                    cloudiness = 20,
-                    windSpeed = 3.5,
-                    temperature = 22.0,
-                    humidity = 65,
-                    uvIndex = 6,
-                    sunrise = "06:15",
-                    sunset = "18:30",
-                    weeklyEnergy = mapOf(
-                        "Пн" to 22.5,
-                        "Вт" to 20.1,
-                        "Ср" to 18.7,
-                        "Чт" to 19.8,
-                        "Пт" to 21.3,
-                        "Сб" to 23.1,
-                        "Вс" to 19.5
-                    )
-                )
-                _forecastData.value = data
+                // Используем Mock API для тестирования
+                // TODO: Заменить на реальный Retrofit клиент
+                val data = MockApiService.getMockForecastData()
+                _forecastData = data
+                _lastUpdate = System.currentTimeMillis()
             } catch (e: Exception) {
-                _error.value = "Ошибка загрузки данных: ${e.message}"
+                _error = "Ошибка загрузки данных прогноза: ${e.message}"
             } finally {
-                _isLoading.value = false
+                _isLoading = false
             }
         }
+    }
+
+    /**
+     * Полная загрузка всех данных
+     */
+    fun loadAllData() {
+        viewModelScope.launch {
+            loadInverterData()
+            loadBatteryData()
+            loadForecastData()
+        }
+    }
+
+    /**
+     * Запуск real-time обновления
+     */
+    fun startRealTimeUpdates(interval: Long = 5000L) {
+        viewModelScope.launch {
+            while (true) {
+                try {
+                    loadAllData()
+                    delay(interval)
+                } catch (e: Exception) {
+                    _error = "Ошибка real-time обновления: ${e.message}"
+                    delay(interval * 2) // Увеличиваем интервал при ошибке
+                }
+            }
+        }
+    }
+
+    /**
+     * Остановка real-time обновления
+     */
+    fun stopRealTimeUpdates() {
+        // TODO: Реализовать остановку корутин
     }
 
     /**
      * Очистка ошибок
      */
     fun clearError() {
-        _error.value = null
+        _error = null
     }
 
     /**
      * Обновление данных
      */
     fun refreshData() {
-        loadInverterData()
-        loadBatteryData()
-        loadForecastData()
+        loadAllData()
     }
+
+    /**
+     * Навигация между экранами
+     */
+    fun navigateTo(screen: String) {
+        _currentScreen = screen
+    }
+
+    /**
+     * Перезапуск инвертора
+     */
+    fun restartInverter(): Boolean {
+        return try {
+            viewModelScope.launch {
+                _isLoading = true
+                _error = null
+                
+                try {
+                    // TODO: Реализовать реальный API вызов
+                    delay(2000) // Имитация перезапуска
+                    _connectionStatus = "restarting"
+                    delay(3000) // Имитация перезапуска
+                    _connectionStatus = "online"
+                    _lastUpdate = System.currentTimeMillis()
+                } catch (e: Exception) {
+                    _error = "Ошибка перезапуска: ${e.message}"
+                    _connectionStatus = "error"
+                } finally {
+                    _isLoading = false
+                }
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Проверка статуса соединения
+     */
+    fun checkConnectionStatus() {
+        viewModelScope.launch {
+            _connectionStatus = "checking"
+            try {
+                // TODO: Реализовать проверку соединения
+                delay(1000)
+                _connectionStatus = "online"
+            } catch (e: Exception) {
+                _connectionStatus = "offline"
+                _error = "Нет соединения с сервером"
+            }
+        }
+    }
+
+    /**
+     * Форматированное время последнего обновления
+     */
+    fun getLastUpdateTimeFormatted(): String {
+        val lastUpdate = _lastUpdate
+        if (lastUpdate == null || lastUpdate == 0L) return "Никогда"
+        
+        val diff = System.currentTimeMillis() - lastUpdate
+        val seconds = diff / 1000
+        val minutes = seconds / 60
+        val hours = minutes / 60
+        
+        return when {
+            hours > 0 -> "${hours}ч ${minutes % 60}м назад"
+            minutes > 0 -> "${minutes}м ${seconds % 60}с назад"
+            else -> "${seconds}с назад"
+        }
+    }
+
+    /**
+     * Статус системы
+     */
+    val systemStatus: String
+        get() = when (_connectionStatus) {
+            "online" -> "Онлайн"
+            "offline" -> "Офлайн"
+            "connecting" -> "Подключение..."
+            "loading" -> "Загрузка..."
+            "restarting" -> "Перезапуск..."
+            "error" -> "Ошибка"
+            else -> "Неизвестно"
+        }
+
+    /**
+     * Цвет статуса системы
+     */
+    val systemStatusColor: Int
+        get() = when (_connectionStatus) {
+            "online" -> android.R.color.holo_green_dark
+            "offline" -> android.R.color.holo_red_dark
+            "connecting" -> android.R.color.holo_orange_dark
+            "loading" -> android.R.color.holo_orange_dark
+            "restarting" -> android.R.color.holo_orange_dark
+            "error" -> android.R.color.holo_red_dark
+            else -> android.R.color.darker_gray
+        }
 }

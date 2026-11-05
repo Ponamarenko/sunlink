@@ -12,6 +12,7 @@ import android.widget.Toast
 import com.sunportal.mobile.ui.AboutFragment
 import com.sunportal.mobile.ui.ConnectionFragment
 import com.sunportal.mobile.ui.AppearanceFragment
+import com.sunportal.mobile.ui.dashboard.DashboardFragment
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 
@@ -184,7 +185,7 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
      */
     private fun loadHomeScreen() {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.content_frame, AboutFragment())
+            .replace(R.id.content_frame, DashboardFragment())
             .commit()
     }
 
@@ -192,15 +193,20 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
      * Навигация к указанному экрану
      */
     fun navigateTo(destination: String) {
-        when (destination) {
-            "home" -> loadHomeScreen()
-            "overview" -> loadHomeScreen()
-            "live" -> Toast.makeText(this, "В реальном времени", Toast.LENGTH_SHORT).show()
-            "charts" -> Toast.makeText(this, "Графики", Toast.LENGTH_SHORT).show()
-            "battery" -> Toast.makeText(this, "Батарея", Toast.LENGTH_SHORT).show()
-            "forecast" -> Toast.makeText(this, "Прогноз", Toast.LENGTH_SHORT).show()
-            "settings" -> Toast.makeText(this, "Налаштування", Toast.LENGTH_SHORT).show()
+        val fragment = when (destination) {
+            "home" -> DashboardFragment()
+            "overview" -> DashboardFragment()
+            "live" -> DashboardFragment() // TODO: Создать LiveFragment
+            "charts" -> DashboardFragment() // TODO: Создать ChartsFragment
+            "battery" -> DashboardFragment() // TODO: Создать BatteryFragment
+            "forecast" -> DashboardFragment() // TODO: Создать ForecastFragment
+            "settings" -> DashboardFragment() // TODO: Создать SettingsFragment
+            else -> DashboardFragment()
         }
+        
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.content_frame, fragment)
+            .commit()
         
         when (destination) {
             "home" -> toolbar.title = "SunLink"
