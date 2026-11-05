@@ -5,12 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ScrollView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
+import com.google.android.material.textfield.TextInputEditText;
 import com.sunportal.mobile.R;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -18,46 +20,46 @@ import java.lang.String;
 
 public final class FragmentConnectionBinding implements ViewBinding {
   @NonNull
-  private final ScrollView rootView;
+  private final LinearLayout rootView;
 
   @NonNull
-  public final EditText apiKey;
+  public final Button backButton;
 
   @NonNull
-  public final EditText password;
+  public final TextInputEditText port;
 
   @NonNull
   public final Button saveButton;
 
   @NonNull
-  public final EditText serverAddress;
+  public final TextInputEditText serverUrl;
 
   @NonNull
-  public final EditText serverPort;
+  public final Button testButton;
 
   @NonNull
-  public final Button testConnectionButton;
+  public final TextView testText;
 
   @NonNull
-  public final EditText username;
+  public final Toolbar toolbar;
 
-  private FragmentConnectionBinding(@NonNull ScrollView rootView, @NonNull EditText apiKey,
-      @NonNull EditText password, @NonNull Button saveButton, @NonNull EditText serverAddress,
-      @NonNull EditText serverPort, @NonNull Button testConnectionButton,
-      @NonNull EditText username) {
+  private FragmentConnectionBinding(@NonNull LinearLayout rootView, @NonNull Button backButton,
+      @NonNull TextInputEditText port, @NonNull Button saveButton,
+      @NonNull TextInputEditText serverUrl, @NonNull Button testButton, @NonNull TextView testText,
+      @NonNull Toolbar toolbar) {
     this.rootView = rootView;
-    this.apiKey = apiKey;
-    this.password = password;
+    this.backButton = backButton;
+    this.port = port;
     this.saveButton = saveButton;
-    this.serverAddress = serverAddress;
-    this.serverPort = serverPort;
-    this.testConnectionButton = testConnectionButton;
-    this.username = username;
+    this.serverUrl = serverUrl;
+    this.testButton = testButton;
+    this.testText = testText;
+    this.toolbar = toolbar;
   }
 
   @Override
   @NonNull
-  public ScrollView getRoot() {
+  public LinearLayout getRoot() {
     return rootView;
   }
 
@@ -82,15 +84,15 @@ public final class FragmentConnectionBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
-      id = R.id.api_key;
-      EditText apiKey = ViewBindings.findChildViewById(rootView, id);
-      if (apiKey == null) {
+      id = R.id.back_button;
+      Button backButton = ViewBindings.findChildViewById(rootView, id);
+      if (backButton == null) {
         break missingId;
       }
 
-      id = R.id.password;
-      EditText password = ViewBindings.findChildViewById(rootView, id);
-      if (password == null) {
+      id = R.id.port;
+      TextInputEditText port = ViewBindings.findChildViewById(rootView, id);
+      if (port == null) {
         break missingId;
       }
 
@@ -100,32 +102,32 @@ public final class FragmentConnectionBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.server_address;
-      EditText serverAddress = ViewBindings.findChildViewById(rootView, id);
-      if (serverAddress == null) {
+      id = R.id.server_url;
+      TextInputEditText serverUrl = ViewBindings.findChildViewById(rootView, id);
+      if (serverUrl == null) {
         break missingId;
       }
 
-      id = R.id.server_port;
-      EditText serverPort = ViewBindings.findChildViewById(rootView, id);
-      if (serverPort == null) {
+      id = R.id.test_button;
+      Button testButton = ViewBindings.findChildViewById(rootView, id);
+      if (testButton == null) {
         break missingId;
       }
 
-      id = R.id.test_connection_button;
-      Button testConnectionButton = ViewBindings.findChildViewById(rootView, id);
-      if (testConnectionButton == null) {
+      id = R.id.test_text;
+      TextView testText = ViewBindings.findChildViewById(rootView, id);
+      if (testText == null) {
         break missingId;
       }
 
-      id = R.id.username;
-      EditText username = ViewBindings.findChildViewById(rootView, id);
-      if (username == null) {
+      id = R.id.toolbar;
+      Toolbar toolbar = ViewBindings.findChildViewById(rootView, id);
+      if (toolbar == null) {
         break missingId;
       }
 
-      return new FragmentConnectionBinding((ScrollView) rootView, apiKey, password, saveButton,
-          serverAddress, serverPort, testConnectionButton, username);
+      return new FragmentConnectionBinding((LinearLayout) rootView, backButton, port, saveButton,
+          serverUrl, testButton, testText, toolbar);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

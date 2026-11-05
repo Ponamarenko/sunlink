@@ -5,239 +5,158 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import android.widget.ProgressBar
-import android.widget.ImageView
-import android.widget.LinearLayout
 import androidx.cardview.widget.CardView
-import androidx.lifecycle.ViewModelProvider
-import com.sunportal.mobile.R
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import com.sunportal.mobile.databinding.FragmentDashboardBinding
 import com.sunportal.mobile.viewmodel.MainViewModel
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
+import com.sunportal.mobile.R
 
 /**
- * Фрагмент главного дашборда SunLink
- * Реализует real-time мониторинг системы
+ * DashboardFragment - главный экран приложения
+ * Упрощенная реализация для Android 15+
  */
 class DashboardFragment : Fragment() {
 
-    private lateinit var viewModel: MainViewModel
-    private lateinit var powerCard: CardView
-    private lateinit var voltageCard: CardView
-    private lateinit var batteryCard: CardView
-    private lateinit var statusCard: CardView
-    private lateinit var efficiencyCard: CardView
-    
-    private lateinit var powerValue: TextView
-    private lateinit var voltageValue: TextView
-    private lateinit var batteryLevelValue: TextView
-    private lateinit var batteryLevelBar: ProgressBar
-    private lateinit var statusValue: TextView
-    private lateinit var efficiencyValue: TextView
-    
-    private lateinit var lastUpdateText: TextView
-    private lateinit var statusIndicator: ImageView
-    private lateinit var refreshButton: ImageView
+    private var _binding: FragmentDashboardBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_dashboard, container, false)
+    ): View {
+        _binding = FragmentDashboardBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        initViewModel()
-        initViews(view)
-        setupDataObservers()
-        loadData()
-        startRealTimeUpdates()
+        setupObservers()
+        setupClickListeners()
+        refreshData()
     }
 
-    private fun initViewModel() {
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-    }
-
-    private fun initViews(view: View) {
-        // Заголовок
-        val title = view.findViewById<TextView>(R.id.dashboard_title)
-        title.text = "SunLink Dashboard"
-        
-        // Карточки
-        powerCard = view.findViewById(R.id.card_power)
-        voltageCard = view.findViewById(R.id.card_voltage)
-        batteryCard = view.findViewById(R.id.card_battery)
-        statusCard = view.findViewById(R.id.card_status)
-        efficiencyCard = view.findViewById(R.id.card_efficiency)
-        
-        // Значения
-        powerValue = view.findViewById(R.id.card_power_value)
-        voltageValue = view.findViewById(R.id.card_voltage_value)
-        batteryLevelValue = view.findViewById(R.id.card_battery_level_value)
-        batteryLevelBar = view.findViewById(R.id.card_battery_level_bar)
-        statusValue = view.findViewById(R.id.card_status_value)
-        efficiencyValue = view.findViewById(R.id.card_efficiency_value)
-        
-        // Статус и обновление
-        lastUpdateText = view.findViewById(R.id.last_update_text)
-        statusIndicator = view.findViewById(R.id.status_indicator)
-        refreshButton = view.findViewById(R.id.refresh_button)
-        
-        // Обработчики
-        refreshButton.setOnClickListener {
-            refreshData()
-        }
-        
-        // Обработчики карточек
-        powerCard.setOnClickListener {
-            navigateTo("live")
-        }
-        
-        voltageCard.setOnClickListener {
-            navigateTo("charts")
-        }
-        
-        batteryCard.setOnClickListener {
-            navigateTo("battery")
-        }
-        
-        statusCard.setOnClickListener {
-            navigateTo("overview")
-        }
-        
-        efficiencyCard.setOnClickListener {
-            navigateTo("forecast")
-        }
-    }
-
-    private fun setupDataObservers() {
-        // Временно отключаем observers для избежания проблем с совместимостью
-        // TODO: Реализовать правильную работу с LiveData в будущем
-    }
-
-    private fun updateInverterData(data: com.sunportal.mobile.data.InverterData?) {
-        data?.let {
-            powerValue.text = "${it.currentPower.toInt()} Вт"
-            voltageValue.text = "${it.voltage.toInt()} В"
-            
-            // Обновление цвета статуса
-            when (it.status) {
-                "Normal" -> {
-                    statusValue.text = "Нормально"
-                    statusValue.setTextColor(resources.getColor(android.R.color.holo_green_dark))
-                }
-                "Warning" -> {
-                    statusValue.text = "Предупреждение"
-                    statusValue.setTextColor(resources.getColor(android.R.color.holo_orange_dark))
-                }
-                "Error" -> {
-                    statusValue.text = "Ошибка"
-                    statusValue.setTextColor(resources.getColor(android.R.color.holo_red_dark, null))
-                }
-                else -> {
-                    statusValue.text = "Неизвестно"
-                    statusValue.setTextColor(resources.getColor(android.R.color.darker_gray, null))
-                }
+    private fun setupObservers() {
+        viewModel.inverterData.observe(viewLifecycleOwner, Observer { data ->
+            data?.let {
+                updateInverterData(it)
             }
-            
-            efficiencyValue.text = "${it.efficiency.toInt()}%"
-        }
+        })
+
+        viewModel.batteryData.observe(viewLifecycleOwner, Observer { data ->
+            data?.let {
+                updateBatteryData(it)
+            }
+        })
+
+        viewModel.connectionStatus.observe(viewLifecycleOwner, Observer { status ->
+            updateConnectionStatus(status)
+        })
+
+        viewModel.isLoading.observe(viewLifecycleOwner, Observer { loading ->
+            binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        })
     }
 
-    private fun updateBatteryData(data: com.sunportal.mobile.data.BatteryData?) {
-        data?.let {
-            batteryLevelValue.text = "${it.level}%"
-            batteryLevelBar.progress = it.level
-            
-            // Обновление цвета батареи
-            when (it.status) {
-                "Normal" -> {
-                    batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_green_dark)
-                }
-                "Warning" -> {
-                    batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_orange_dark)
-                }
-                "Error" -> {
-                    batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_red_dark)
-                }
-                else -> {
-                    batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.darker_gray)
-                }
+    private fun updateInverterData(data: com.sunportal.mobile.data.InverterData) {
+        binding.powerValue.text = "${data.currentPower.toInt()} Вт"
+        binding.voltageValue.text = "${data.voltage.toInt()} В"
+        binding.efficiencyValue.text = "${data.efficiency.toInt()}%"
+        
+        // Обновление статуса
+        when (data.status) {
+            "Normal" -> {
+                binding.statusValue.text = "Нормально"
+                binding.statusValue.setTextColor(resources.getColor(android.R.color.holo_green_dark))
             }
+            "Warning" -> {
+                binding.statusValue.text = "Предупреждение"
+                binding.statusValue.setTextColor(resources.getColor(android.R.color.holo_orange_dark))
+            }
+            "Error" -> {
+                binding.statusValue.text = "Ошибка"
+                binding.statusValue.setTextColor(resources.getColor(android.R.color.holo_red_dark))
+            }
+            else -> {
+                binding.statusValue.text = "Неизвестно"
+                binding.statusValue.setTextColor(resources.getColor(android.R.color.darker_gray))
+            }
+        }
+        
+        binding.lastUpdateText.text = "Обновлено: ${System.currentTimeMillis() / 1000}s назад"
+    }
+
+    private fun updateBatteryData(data: com.sunportal.mobile.data.BatteryData) {
+        binding.batteryLevelValue.text = "${data.level}%"
+        binding.batteryLevelBar.progress = data.level
+        
+        // Обновление цвета батареи
+        when (data.status) {
+            "Normal" -> binding.batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_green_dark)
+            "Warning" -> binding.batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_orange_dark)
+            "Error" -> binding.batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_red_dark)
+            else -> binding.batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.darker_gray)
         }
     }
 
     private fun updateConnectionStatus(status: String) {
         when (status) {
             "online" -> {
-                statusIndicator.setImageResource(android.R.drawable.ic_dialog_info)
-                lastUpdateText.text = viewModel.getLastUpdateTimeFormatted()
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_info)
+                binding.statusText.text = "Онлайн"
             }
             "offline" -> {
-                statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
-                lastUpdateText.text = "Нет соединения"
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Офлайн"
             }
             "connecting" -> {
-                statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
-                lastUpdateText.text = "Подключение..."
-            }
-            "loading" -> {
-                statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
-                lastUpdateText.text = "Загрузка данных..."
-            }
-            "restarting" -> {
-                statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
-                lastUpdateText.text = "Перезапуск..."
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Подключение..."
             }
             "error" -> {
-                statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
-                lastUpdateText.text = "Ошибка соединения"
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Ошибка"
             }
         }
     }
 
-    private fun showError(error: String?) {
-        error?.let {
-            // Показать ошибку через Toast или Snackbar
-            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
+    private fun setupClickListeners() {
+        binding.refreshButton.setOnClickListener {
+            refreshData()
         }
-    }
 
-    private fun updateLastUpdateTime() {
-        lastUpdateText.text = viewModel.getLastUpdateTimeFormatted()
-    }
+        // Карточки для навигации
+        binding.powerCard.setOnClickListener {
+            Toast.makeText(requireContext(), "Мощность", Toast.LENGTH_SHORT).show()
+        }
 
-    private fun loadData() {
-        viewModel.refreshData()
+        binding.voltageCard.setOnClickListener {
+            Toast.makeText(requireContext(), "Напряжение", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.batteryCard.setOnClickListener {
+            Toast.makeText(requireContext(), "Батарея", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.statusCard.setOnClickListener {
+            Toast.makeText(requireContext(), "Статус", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.efficiencyCard.setOnClickListener {
+            Toast.makeText(requireContext(), "Эффективность", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun refreshData() {
         viewModel.refreshData()
     }
 
-    private fun startRealTimeUpdates() {
-        lifecycleScope.launch {
-            while (true) {
-                delay(5000) // Обновление каждые 5 секунд
-                viewModel.refreshData()
-            }
-        }
-    }
-
-    private fun navigateTo(screen: String) {
-        activity?.let {
-            (it as? com.sunportal.mobile.MainActivity)?.navigateTo(screen)
-        }
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        // Остановка real-time обновлений
-        // TODO: Реализовать остановку корутин
+        _binding = null
     }
 }

@@ -1,327 +1,286 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="?attr/colorSurface">
+    android:background="?attr/colorBackground"
+    android:fillViewport="true">
 
-    <!-- Заголовок с статусом -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="24dp">
-        
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Заголовок -->
         <TextView
             android:id="@+id/dashboard_title"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_marginBottom="24dp"
             android:text="SunLink Dashboard"
+            android:textColor="?attr/colorOnBackground"
             android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorPrimary"/>
-        
-        <ImageView
-            android:id="@+id/status_indicator"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="8dp"
-            android:src="@android:drawable/ic_dialog_info"/>
-        
-        <TextView
-            android:id="@+id/last_update_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Никогда"
-            android:textSize="12sp"
-            android:textColor="?attr/colorSecondary"/>
-        
-        <ImageView
-            android:id="@+id/refresh_button"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginStart="8dp"
-            android:src="@android:drawable/ic_menu_rotate"
-            android:clickable="true"
-            android:focusable="true"/>
-    </LinearLayout>
+            android:textStyle="bold" />
 
-    <!-- Карточки дашборда -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
+        <!-- Статус соединения -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/rounded_background"
+            android:orientation="horizontal"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/status_indicator"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="8dp"
+                android:src="@android:drawable/ic_dialog_info" />
+
+            <TextView
+                android:id="@+id/status_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Статус"
+                android:textColor="?attr/colorOnBackground"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/last_update_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Обновлено"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <!-- Карточки данных -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal"
+            android:weightSum="2">
 
             <!-- Карточка мощности -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_power"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="?attr/colorPrimaryContainer">
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:text="Мощность"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="14sp" />
 
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_power"
-                            android:tint="?attr/colorOnPrimaryContainer"/>
+                    <TextView
+                        android:id="@+id/card_power_value"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="0 Вт"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="Текущая мощность"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnPrimaryContainer"/>
-
-                        <TextView
-                            android:id="@+id/card_power_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0 Вт"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnPrimaryContainer"/>
-                    </LinearLayout>
                 </LinearLayout>
+
             </androidx.cardview.widget.CardView>
 
             <!-- Карточка напряжения -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_voltage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="?attr/colorSecondaryContainer">
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:text="Напряжение"
+                        android:textColor="?attr/colorOnBackground"
+                        android:textSize="14sp" />
 
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_voltage"
-                            android:tint="?attr/colorOnSecondaryContainer"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="Напряжение"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSecondaryContainer"/>
-
-                        <TextView
-                            android:id="@+id/card_voltage_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0 В"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSecondaryContainer"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Карточка батареи -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_battery"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="?attr/colorTertiaryContainer">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/card_voltage_value"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:layout_marginTop="4dp"
+                        android:text="0 В"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_battery"
-                            android:tint="?attr/colorOnTertiaryContainer"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="Уровень заряда"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnTertiaryContainer"/>
-
-                        <TextView
-                            android:id="@+id/card_battery_level_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0%"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnTertiaryContainer"/>
-                    </LinearLayout>
-
-                    <ProgressBar
-                        android:id="@+id/card_battery_level_bar"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="8dp"
-                        android:layout_marginTop="8dp"
-                        android:progress="0"
-                        android:progressTint="?attr/colorOnTertiaryContainer"/>
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
 
-            <!-- Карточка статуса -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="?attr/colorErrorContainer">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_status"
-                            android:tint="?attr/colorOnErrorContainer"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="Статус системы"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnErrorContainer"/>
-
-                        <TextView
-                            android:id="@+id/card_status_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Неизвестно"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnErrorContainer"/>
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <!-- Карточка эффективности -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/card_efficiency"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_efficiency"
-                            android:tint="?attr/colorOnSurfaceVariant"/>
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="Эффективность"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant"/>
-
-                        <TextView
-                            android:id="@+id/card_efficiency_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0%"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant"/>
-                    </LinearLayout>
-                </LinearLayout>
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
-    </ScrollView>
 
-</LinearLayout>
+        <!-- Карточка батареи -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_battery"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Батарея"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/card_battery_level_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="0%"
+                    android:textColor="?attr.colorPrimary"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/card_battery_level_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="8dp"
+                    android:progress="0"
+                    android:progressTint="?attr/colorPrimary" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Карточка статуса -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_status"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Статус"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/card_status_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Неизвестно"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Карточка эффективности -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_efficiency"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Эффективность"
+                    android:textColor="?attr/colorOnBackground"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/card_efficiency_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="0%"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Кнопка обновления -->
+        <ImageView
+            android:id="@+id/refresh_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/rounded_background"
+            android:padding="12dp"
+            android:src="@android:drawable/ic_menu_rotate" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

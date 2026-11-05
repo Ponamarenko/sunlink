@@ -5,13 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.RadioButton;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
-import android.widget.ScrollView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
+import com.google.android.material.radiobutton.MaterialRadioButton;
 import com.sunportal.mobile.R;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -19,55 +20,60 @@ import java.lang.String;
 
 public final class FragmentAppearanceBinding implements ViewBinding {
   @NonNull
-  private final ScrollView rootView;
+  private final LinearLayout rootView;
 
   @NonNull
-  public final Button applyButton;
+  public final Button backButton;
 
   @NonNull
-  public final RadioGroup fontRadioGroup;
+  public final RadioGroup fontSizeGroup;
 
   @NonNull
-  public final RadioButton radioDay;
+  public final MaterialRadioButton fontSizeLarge;
 
   @NonNull
-  public final RadioButton radioLarge;
+  public final MaterialRadioButton fontSizeMedium;
 
   @NonNull
-  public final RadioButton radioMedium;
+  public final MaterialRadioButton fontSizeSmall;
 
   @NonNull
-  public final RadioButton radioNight;
+  public final Button saveButton;
 
   @NonNull
-  public final RadioButton radioSmall;
+  public final MaterialRadioButton themeDark;
 
   @NonNull
-  public final RadioButton radioSystem;
+  public final RadioGroup themeGroup;
 
   @NonNull
-  public final RadioGroup themeRadioGroup;
+  public final MaterialRadioButton themeLight;
 
-  private FragmentAppearanceBinding(@NonNull ScrollView rootView, @NonNull Button applyButton,
-      @NonNull RadioGroup fontRadioGroup, @NonNull RadioButton radioDay,
-      @NonNull RadioButton radioLarge, @NonNull RadioButton radioMedium,
-      @NonNull RadioButton radioNight, @NonNull RadioButton radioSmall,
-      @NonNull RadioButton radioSystem, @NonNull RadioGroup themeRadioGroup) {
+  @NonNull
+  public final Toolbar toolbar;
+
+  private FragmentAppearanceBinding(@NonNull LinearLayout rootView, @NonNull Button backButton,
+      @NonNull RadioGroup fontSizeGroup, @NonNull MaterialRadioButton fontSizeLarge,
+      @NonNull MaterialRadioButton fontSizeMedium, @NonNull MaterialRadioButton fontSizeSmall,
+      @NonNull Button saveButton, @NonNull MaterialRadioButton themeDark,
+      @NonNull RadioGroup themeGroup, @NonNull MaterialRadioButton themeLight,
+      @NonNull Toolbar toolbar) {
     this.rootView = rootView;
-    this.applyButton = applyButton;
-    this.fontRadioGroup = fontRadioGroup;
-    this.radioDay = radioDay;
-    this.radioLarge = radioLarge;
-    this.radioMedium = radioMedium;
-    this.radioNight = radioNight;
-    this.radioSmall = radioSmall;
-    this.radioSystem = radioSystem;
-    this.themeRadioGroup = themeRadioGroup;
+    this.backButton = backButton;
+    this.fontSizeGroup = fontSizeGroup;
+    this.fontSizeLarge = fontSizeLarge;
+    this.fontSizeMedium = fontSizeMedium;
+    this.fontSizeSmall = fontSizeSmall;
+    this.saveButton = saveButton;
+    this.themeDark = themeDark;
+    this.themeGroup = themeGroup;
+    this.themeLight = themeLight;
+    this.toolbar = toolbar;
   }
 
   @Override
   @NonNull
-  public ScrollView getRoot() {
+  public LinearLayout getRoot() {
     return rootView;
   }
 
@@ -92,62 +98,69 @@ public final class FragmentAppearanceBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
-      id = R.id.apply_button;
-      Button applyButton = ViewBindings.findChildViewById(rootView, id);
-      if (applyButton == null) {
+      id = R.id.back_button;
+      Button backButton = ViewBindings.findChildViewById(rootView, id);
+      if (backButton == null) {
         break missingId;
       }
 
-      id = R.id.font_radio_group;
-      RadioGroup fontRadioGroup = ViewBindings.findChildViewById(rootView, id);
-      if (fontRadioGroup == null) {
+      id = R.id.font_size_group;
+      RadioGroup fontSizeGroup = ViewBindings.findChildViewById(rootView, id);
+      if (fontSizeGroup == null) {
         break missingId;
       }
 
-      id = R.id.radio_day;
-      RadioButton radioDay = ViewBindings.findChildViewById(rootView, id);
-      if (radioDay == null) {
+      id = R.id.font_size_large;
+      MaterialRadioButton fontSizeLarge = ViewBindings.findChildViewById(rootView, id);
+      if (fontSizeLarge == null) {
         break missingId;
       }
 
-      id = R.id.radio_large;
-      RadioButton radioLarge = ViewBindings.findChildViewById(rootView, id);
-      if (radioLarge == null) {
+      id = R.id.font_size_medium;
+      MaterialRadioButton fontSizeMedium = ViewBindings.findChildViewById(rootView, id);
+      if (fontSizeMedium == null) {
         break missingId;
       }
 
-      id = R.id.radio_medium;
-      RadioButton radioMedium = ViewBindings.findChildViewById(rootView, id);
-      if (radioMedium == null) {
+      id = R.id.font_size_small;
+      MaterialRadioButton fontSizeSmall = ViewBindings.findChildViewById(rootView, id);
+      if (fontSizeSmall == null) {
         break missingId;
       }
 
-      id = R.id.radio_night;
-      RadioButton radioNight = ViewBindings.findChildViewById(rootView, id);
-      if (radioNight == null) {
+      id = R.id.save_button;
+      Button saveButton = ViewBindings.findChildViewById(rootView, id);
+      if (saveButton == null) {
         break missingId;
       }
 
-      id = R.id.radio_small;
-      RadioButton radioSmall = ViewBindings.findChildViewById(rootView, id);
-      if (radioSmall == null) {
+      id = R.id.theme_dark;
+      MaterialRadioButton themeDark = ViewBindings.findChildViewById(rootView, id);
+      if (themeDark == null) {
         break missingId;
       }
 
-      id = R.id.radio_system;
-      RadioButton radioSystem = ViewBindings.findChildViewById(rootView, id);
-      if (radioSystem == null) {
+      id = R.id.theme_group;
+      RadioGroup themeGroup = ViewBindings.findChildViewById(rootView, id);
+      if (themeGroup == null) {
         break missingId;
       }
 
-      id = R.id.theme_radio_group;
-      RadioGroup themeRadioGroup = ViewBindings.findChildViewById(rootView, id);
-      if (themeRadioGroup == null) {
+      id = R.id.theme_light;
+      MaterialRadioButton themeLight = ViewBindings.findChildViewById(rootView, id);
+      if (themeLight == null) {
         break missingId;
       }
 
-      return new FragmentAppearanceBinding((ScrollView) rootView, applyButton, fontRadioGroup,
-          radioDay, radioLarge, radioMedium, radioNight, radioSmall, radioSystem, themeRadioGroup);
+      id = R.id.toolbar;
+      Toolbar toolbar = ViewBindings.findChildViewById(rootView, id);
+      if (toolbar == null) {
+        break missingId;
+      }
+
+      return new FragmentAppearanceBinding((LinearLayout) rootView, backButton, fontSizeGroup,
+          fontSizeLarge, fontSizeMedium, fontSizeSmall, saveButton, themeDark, themeGroup,
+          themeLight, toolbar);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

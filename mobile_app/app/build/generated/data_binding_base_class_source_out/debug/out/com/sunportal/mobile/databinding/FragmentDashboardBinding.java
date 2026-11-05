@@ -5,12 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.cardview.widget.CardView;
+import androidx.core.widget.NestedScrollView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.sunportal.mobile.R;
@@ -20,7 +20,7 @@ import java.lang.String;
 
 public final class FragmentDashboardBinding implements ViewBinding {
   @NonNull
-  private final LinearLayout rootView;
+  private final NestedScrollView rootView;
 
   @NonNull
   public final CardView cardBattery;
@@ -62,19 +62,27 @@ public final class FragmentDashboardBinding implements ViewBinding {
   public final TextView lastUpdateText;
 
   @NonNull
+  public final ProgressBar progressBar;
+
+  @NonNull
   public final ImageView refreshButton;
 
   @NonNull
   public final ImageView statusIndicator;
 
-  private FragmentDashboardBinding(@NonNull LinearLayout rootView, @NonNull CardView cardBattery,
-      @NonNull ProgressBar cardBatteryLevelBar, @NonNull TextView cardBatteryLevelValue,
-      @NonNull CardView cardEfficiency, @NonNull TextView cardEfficiencyValue,
-      @NonNull CardView cardPower, @NonNull TextView cardPowerValue, @NonNull CardView cardStatus,
+  @NonNull
+  public final TextView statusText;
+
+  private FragmentDashboardBinding(@NonNull NestedScrollView rootView,
+      @NonNull CardView cardBattery, @NonNull ProgressBar cardBatteryLevelBar,
+      @NonNull TextView cardBatteryLevelValue, @NonNull CardView cardEfficiency,
+      @NonNull TextView cardEfficiencyValue, @NonNull CardView cardPower,
+      @NonNull TextView cardPowerValue, @NonNull CardView cardStatus,
       @NonNull TextView cardStatusValue, @NonNull CardView cardVoltage,
       @NonNull TextView cardVoltageValue, @NonNull TextView dashboardTitle,
-      @NonNull TextView lastUpdateText, @NonNull ImageView refreshButton,
-      @NonNull ImageView statusIndicator) {
+      @NonNull TextView lastUpdateText, @NonNull ProgressBar progressBar,
+      @NonNull ImageView refreshButton, @NonNull ImageView statusIndicator,
+      @NonNull TextView statusText) {
     this.rootView = rootView;
     this.cardBattery = cardBattery;
     this.cardBatteryLevelBar = cardBatteryLevelBar;
@@ -89,13 +97,15 @@ public final class FragmentDashboardBinding implements ViewBinding {
     this.cardVoltageValue = cardVoltageValue;
     this.dashboardTitle = dashboardTitle;
     this.lastUpdateText = lastUpdateText;
+    this.progressBar = progressBar;
     this.refreshButton = refreshButton;
     this.statusIndicator = statusIndicator;
+    this.statusText = statusText;
   }
 
   @Override
   @NonNull
-  public LinearLayout getRoot() {
+  public NestedScrollView getRoot() {
     return rootView;
   }
 
@@ -198,6 +208,12 @@ public final class FragmentDashboardBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.progress_bar;
+      ProgressBar progressBar = ViewBindings.findChildViewById(rootView, id);
+      if (progressBar == null) {
+        break missingId;
+      }
+
       id = R.id.refresh_button;
       ImageView refreshButton = ViewBindings.findChildViewById(rootView, id);
       if (refreshButton == null) {
@@ -210,10 +226,16 @@ public final class FragmentDashboardBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentDashboardBinding((LinearLayout) rootView, cardBattery, cardBatteryLevelBar,
-          cardBatteryLevelValue, cardEfficiency, cardEfficiencyValue, cardPower, cardPowerValue,
-          cardStatus, cardStatusValue, cardVoltage, cardVoltageValue, dashboardTitle,
-          lastUpdateText, refreshButton, statusIndicator);
+      id = R.id.status_text;
+      TextView statusText = ViewBindings.findChildViewById(rootView, id);
+      if (statusText == null) {
+        break missingId;
+      }
+
+      return new FragmentDashboardBinding((NestedScrollView) rootView, cardBattery,
+          cardBatteryLevelBar, cardBatteryLevelValue, cardEfficiency, cardEfficiencyValue,
+          cardPower, cardPowerValue, cardStatus, cardStatusValue, cardVoltage, cardVoltageValue,
+          dashboardTitle, lastUpdateText, progressBar, refreshButton, statusIndicator, statusText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

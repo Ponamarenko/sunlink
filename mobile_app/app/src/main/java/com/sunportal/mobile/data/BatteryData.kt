@@ -1,10 +1,10 @@
 package com.sunportal.mobile.data
 
 /**
- * Данные батареи для SunLink
+ * BatteryData - данные батареи
  */
 data class BatteryData(
-    val status: String = "Unknown",
+    val status: String = "Normal",
     val level: Int = 0,
     val temperature: Double = 0.0,
     val voltage: Double = 0.0,

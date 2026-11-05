@@ -1,4 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SunPortal</string>
+    <string name="app_name">SunLink</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">SunLink</string>
+    <string name="nav_header_subtitle">Solar Monitoring System</string>
+    <string name="nav_header_desc">Navigation header</string>
+    
+    <!-- Dashboard -->
+    <string name="dashboard_title">SunLink Dashboard</string>
+    <string name="power_label">Мощность</string>
+    <string name="voltage_label">Напряжение</string>
+    <string name="battery_label">Батарея</string>
+    <string name="status_label">Статус</string>
+    <string name="efficiency_label">Эффективность</string>
+    
+    <!-- Connection -->
+    <string name="connection_title">Підключення</string>
+    <string name="server_url_label">URL сервера</string>
+    <string name="port_label">Порт</string>
+    <string name="test_connection">Тестувати з\'єднання</string>
+    <string name="connection_success">З\'єднання встановлено</string>
+    <string name="connection_error">Помилка з\'єднання</string>
+    
+    <!-- Appearance -->
+    <string name="appearance_title">Вигляд</string>
+    <string name="theme_light">Світла тема</string>
+    <string name="theme_dark">Темна тема</string>
+    <string name="font_size_small">Маленький</string>
+    <string name="font_size_medium">Середній</string>
+    <string name="font_size_large">Великий</string>
+    
+    <!-- About -->
+    <string name="about_title">Про додаток</string>
+    <string name="version">Версия 1.2.0</string>
+    <string name="description">SunLink - современное приложение для мониторинга солнечных систем</string>
 </resources>

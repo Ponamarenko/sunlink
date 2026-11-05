@@ -1,53 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Svitgrid Color Scheme -->
-    <color name="svitgrid_primary">#00668A</color>
-    <color name="svitgrid_primary_dark">#004D6A</color>
-    <color name="svitgrid_primary_light">#1A8BB8</color>
-    <color name="svitgrid_secondary">#4A6B7F</color>
-    <color name="svitgrid_secondary_dark">#3A5B6F</color>
-    <color name="svitgrid_secondary_light">#6A8B9F</color>
-    <color name="svitgrid_accent">#FFD700</color>
+    <!-- Material Design 3 Colors -->
+    <color name="md_theme_light_primary">#FF6B35</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#FFDBCF</color>
+    <color name="md_theme_light_onPrimaryContainer">#3F0900</color>
     
-    <!-- Material Colors -->
-    <color name="material_primary">#1976D2</color>
-    <color name="material_primary_dark">#1565C0</color>
-    <color name="material_primary_light">#42A5F5</color>
+    <color name="md_theme_light_secondary">#FF6B35</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#FFDBCF</color>
+    <color name="md_theme_light_onSecondaryContainer">#3F0900</color>
     
-    <!-- Background Colors -->
-    <color name="svitgrid_background">#FBFDFF</color>
-    <color name="svitgrid_surface">#FFFFFF</color>
-    <color name="svitgrid_surface_variant">#F5F8FA</color>
-    <color name="svitgrid_surface_inverse">#191C1D</color>
+    <color name="md_theme_light_tertiary">#FF6B35</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#FFDBCF</color>
+    <color name="md_theme_light_onTertiaryContainer">#3F0900</color>
     
-    <!-- Text Colors -->
-    <color name="svitgrid_text_primary">#191C1D</color>
-    <color name="svitgrid_text_secondary">#4A6B7F</color>
-    <color name="svitgrid_text_tertiary">#7A8B9F</color>
-    <color name="svitgrid_text_inverse">#FFFFFF</color>
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
     
-    <!-- Status Colors -->
-    <color name="svitgrid_success">#00C851</color>
-    <color name="svitgrid_warning">#FF9800</color>
-    <color name="svitgrid_error">#FF4444</color>
-    <color name="svitgrid_info">#0099CC</color>
+    <color name="md_theme_light_background">#FFF8F6</color>
+    <color name="md_theme_light_onBackground">#1C1B1A</color>
+    <color name="md_theme_light_surface">#FFF8F6</color>
+    <color name="md_theme_light_onSurface">#1C1B1A</color>
+    <color name="md_theme_light_surfaceVariant">#F4DDD4</color>
+    <color name="md_theme_light_onSurfaceVariant">#52443C</color>
+    <color name="md_theme_light_outline">#857367</color>
+    <color name="md_theme_light_inverseSurface">#322F2E</color>
+    <color name="md_theme_light_inverseOnSurface">#FBEEE6</color>
+    <color name="md_theme_light_inversePrimary">#FFB5A0</color>
     
-    <!-- Solar Colors -->
-    <color name="solar_yellow">#FFD700</color>
-    <color name="solar_orange">#FF8C00</color>
-    <color name="solar_red">#FF4444</color>
-    <color name="solar_green">#00C851</color>
-    <color name="solar_blue">#0099CC</color>
+    <color name="md_theme_light_shadow">#000000</color>
+    <color name="md_theme_light_surfaceTint">#FF6B35</color>
+    <color name="md_theme_light_outlineVariant">#D7C2B8</color>
     
-    <!-- Neutral Colors -->
-    <color name="neutral_50">#FFFFFF</color>
-    <color name="neutral_100">#F8FAFC</color>
-    <color name="neutral_200">#E2E8F0</color>
-    <color name="neutral_300">#CBD5E1</color>
-    <color name="neutral_400">#94A3B8</color>
-    <color name="neutral_500">#64748B</color>
-    <color name="neutral_600">#475569</color>
-    <color name="neutral_700">#334155</color>
-    <color name="neutral_800">#1E293B</color>
-    <color name="neutral_900">#0F172A</color>
+    <color name="md_theme_light_scrim">#000000</color>
+    
+    <!-- Dark theme colors -->
+    <color name="md_theme_dark_primary">#FFB5A0</color>
+    <color name="md_theme_dark_onPrimary">#8C2D00</color>
+    <color name="md_theme_dark_primaryContainer">#C23800</color>
+    <color name="md_theme_dark_onPrimaryContainer">#FFDBCF</color>
+    
+    <color name="md_theme_dark_secondary">#FFB5A0</color>
+    <color name="md_theme_dark_onSecondary">#8C2D00</color>
+    <color name="md_theme_dark_secondaryContainer">#C23800</color>
+    <color name="md_theme_dark_onSecondaryContainer">#FFDBCF</color>
+    
+    <color name="md_theme_dark_tertiary">#FFB5A0</color>
+    <color name="md_theme_dark_onTertiary">#8C2D00</color>
+    <color name="md_theme_dark_tertiaryContainer">#C23800</color>
+    <color name="md_theme_dark_onTertiaryContainer">#FFDBCF</color>
+    
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+    
+    <color name="md_theme_dark_background">#1C1B1A</color>
+    <color name="md_theme_dark_onBackground">#E6E1DE</color>
+    <color name="md_theme_dark_surface">#1C1B1A</color>
+    <color name="md_theme_dark_onSurface">#E6E1DE</color>
+    <color name="md_theme_dark_surfaceVariant">#52443C</color>
+    <color name="md_theme_dark_onSurfaceVariant">#D7C2B8</color>
+    <color name="md_theme_dark_outline">#A08D84</color>
+    <color name="md_theme_dark_inverseSurface">#E6E1DE</color>
+    <color name="md_theme_dark_inverseOnSurface">#322F2E</color>
+    <color name="md_theme_dark_inversePrimary">#C23800</color>
+    
+    <color name="md_theme_dark_shadow">#000000</color>
+    <color name="md_theme_dark_surfaceTint">#FFB5A0</color>
+    <color name="md_theme_dark_outlineVariant">#52443C</color>
+    
+    <color name="md_theme_dark_scrim">#000000</color>
+    
+    <!-- Additional colors -->
+    <color name="sunlink_orange">#FF6B35</color>
+    <color name="sunlink_orange_light">#FF8C69</color>
+    <color name="sunlink_orange_dark">#CC5528</color>
+    
+    <color name="status_online">#4CAF50</color>
+    <color name="status_warning">#FF9800</color>
+    <color name="status_error">#F44336</color>
+    <color name="status_unknown">#9E9E9E</color>
+    
+    <color name="battery_normal">#4CAF50</color>
+    <color name="battery_warning">#FF9800</color>
+    <color name="battery_error">#F44336</color>
 </resources>

@@ -5,29 +5,44 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import com.sunportal.mobile.databinding.FragmentAboutBinding
 import com.sunportal.mobile.R
 
+/**
+ * AboutFragment - экран "О приложении"
+ */
 class AboutFragment : Fragment() {
 
+    private var _binding: FragmentAboutBinding? = null
+    private val binding get() = _binding!!
+
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_about, container, false)
+    ): View {
+        _binding = FragmentAboutBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         
-        val textView = view.findViewById<TextView>(R.id.about_text)
-        textView.text = "SunPortal v1.0.6\n\n" +
-                       "SunPortal - система моніторингу сонячної енергетики\n\n" +
-                       "🌞 Моніторинг сонячної енергії\n" +
-                       "🔋 Управління акумулятором\n" +
-                       "⚡ Параметри мережі\n" +
-                       "📊 Енергетична статистика\n" +
-                       "📱 Мобільний контроль\n" +
-                       "🎯 Оптимізація витрат\n\n" +
-                       "© 2026 SunPortal\n" +
-                       "Розроблено в Україні 🇺🇦"
+        setupUI()
+    }
+
+    private fun setupUI() {
+        binding.versionText.text = "Версия 1.2.0"
+        binding.descriptionText.text = "SunLink - современное приложение для мониторинга солнечных систем"
+        binding.copyrightText.text = "© 2026 Ponamarenko"
         
-        return view
+        binding.backButton.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

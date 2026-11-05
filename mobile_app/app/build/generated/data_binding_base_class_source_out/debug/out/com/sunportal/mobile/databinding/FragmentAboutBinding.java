@@ -8,6 +8,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.sunportal.mobile.R;
@@ -20,11 +21,29 @@ public final class FragmentAboutBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
-  public final TextView aboutText;
+  public final TextView copyrightText;
 
-  private FragmentAboutBinding(@NonNull LinearLayout rootView, @NonNull TextView aboutText) {
+  @NonNull
+  public final TextView descriptionText;
+
+  @NonNull
+  public final TextView featuresText;
+
+  @NonNull
+  public final Toolbar toolbar;
+
+  @NonNull
+  public final TextView versionText;
+
+  private FragmentAboutBinding(@NonNull LinearLayout rootView, @NonNull TextView copyrightText,
+      @NonNull TextView descriptionText, @NonNull TextView featuresText, @NonNull Toolbar toolbar,
+      @NonNull TextView versionText) {
     this.rootView = rootView;
-    this.aboutText = aboutText;
+    this.copyrightText = copyrightText;
+    this.descriptionText = descriptionText;
+    this.featuresText = featuresText;
+    this.toolbar = toolbar;
+    this.versionText = versionText;
   }
 
   @Override
@@ -54,13 +73,38 @@ public final class FragmentAboutBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
-      id = R.id.about_text;
-      TextView aboutText = ViewBindings.findChildViewById(rootView, id);
-      if (aboutText == null) {
+      id = R.id.copyright_text;
+      TextView copyrightText = ViewBindings.findChildViewById(rootView, id);
+      if (copyrightText == null) {
         break missingId;
       }
 
-      return new FragmentAboutBinding((LinearLayout) rootView, aboutText);
+      id = R.id.description_text;
+      TextView descriptionText = ViewBindings.findChildViewById(rootView, id);
+      if (descriptionText == null) {
+        break missingId;
+      }
+
+      id = R.id.features_text;
+      TextView featuresText = ViewBindings.findChildViewById(rootView, id);
+      if (featuresText == null) {
+        break missingId;
+      }
+
+      id = R.id.toolbar;
+      Toolbar toolbar = ViewBindings.findChildViewById(rootView, id);
+      if (toolbar == null) {
+        break missingId;
+      }
+
+      id = R.id.version_text;
+      TextView versionText = ViewBindings.findChildViewById(rootView, id);
+      if (versionText == null) {
+        break missingId;
+      }
+
+      return new FragmentAboutBinding((LinearLayout) rootView, copyrightText, descriptionText,
+          featuresText, toolbar, versionText);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

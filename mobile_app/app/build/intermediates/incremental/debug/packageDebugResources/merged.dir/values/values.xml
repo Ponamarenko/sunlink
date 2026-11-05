@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="http://schemas.android.com/tools">
+    <color name="battery_error">#F44336</color>
+    <color name="battery_normal">#4CAF50</color>
+    <color name="battery_warning">#FF9800</color>
+    <color name="md_theme_dark_background">#1C1B1A</color>
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_inverseOnSurface">#322F2E</color>
+    <color name="md_theme_dark_inversePrimary">#C23800</color>
+    <color name="md_theme_dark_inverseSurface">#E6E1DE</color>
+    <color name="md_theme_dark_onBackground">#E6E1DE</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD6</color>
+    <color name="md_theme_dark_onPrimary">#8C2D00</color>
+    <color name="md_theme_dark_onPrimaryContainer">#FFDBCF</color>
+    <color name="md_theme_dark_onSecondary">#8C2D00</color>
+    <color name="md_theme_dark_onSecondaryContainer">#FFDBCF</color>
+    <color name="md_theme_dark_onSurface">#E6E1DE</color>
+    <color name="md_theme_dark_onSurfaceVariant">#D7C2B8</color>
+    <color name="md_theme_dark_onTertiary">#8C2D00</color>
+    <color name="md_theme_dark_onTertiaryContainer">#FFDBCF</color>
+    <color name="md_theme_dark_outline">#A08D84</color>
+    <color name="md_theme_dark_outlineVariant">#52443C</color>
+    <color name="md_theme_dark_primary">#FFB5A0</color>
+    <color name="md_theme_dark_primaryContainer">#C23800</color>
+    <color name="md_theme_dark_scrim">#000000</color>
+    <color name="md_theme_dark_secondary">#FFB5A0</color>
+    <color name="md_theme_dark_secondaryContainer">#C23800</color>
+    <color name="md_theme_dark_shadow">#000000</color>
+    <color name="md_theme_dark_surface">#1C1B1A</color>
+    <color name="md_theme_dark_surfaceTint">#FFB5A0</color>
+    <color name="md_theme_dark_surfaceVariant">#52443C</color>
+    <color name="md_theme_dark_tertiary">#FFB5A0</color>
+    <color name="md_theme_dark_tertiaryContainer">#C23800</color>
+    <color name="md_theme_light_background">#FFF8F6</color>
+    <color name="md_theme_light_error">#BA1A1A</color>
+    <color name="md_theme_light_errorContainer">#FFDAD6</color>
+    <color name="md_theme_light_inverseOnSurface">#FBEEE6</color>
+    <color name="md_theme_light_inversePrimary">#FFB5A0</color>
+    <color name="md_theme_light_inverseSurface">#322F2E</color>
+    <color name="md_theme_light_onBackground">#1C1B1A</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_onPrimaryContainer">#3F0900</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_onSecondaryContainer">#3F0900</color>
+    <color name="md_theme_light_onSurface">#1C1B1A</color>
+    <color name="md_theme_light_onSurfaceVariant">#52443C</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_onTertiaryContainer">#3F0900</color>
+    <color name="md_theme_light_outline">#857367</color>
+    <color name="md_theme_light_outlineVariant">#D7C2B8</color>
+    <color name="md_theme_light_primary">#FF6B35</color>
+    <color name="md_theme_light_primaryContainer">#FFDBCF</color>
+    <color name="md_theme_light_scrim">#000000</color>
+    <color name="md_theme_light_secondary">#FF6B35</color>
+    <color name="md_theme_light_secondaryContainer">#FFDBCF</color>
+    <color name="md_theme_light_shadow">#000000</color>
+    <color name="md_theme_light_surface">#FFF8F6</color>
+    <color name="md_theme_light_surfaceTint">#FF6B35</color>
+    <color name="md_theme_light_surfaceVariant">#F4DDD4</color>
+    <color name="md_theme_light_tertiary">#FF6B35</color>
+    <color name="md_theme_light_tertiaryContainer">#FFDBCF</color>
+    <color name="status_error">#F44336</color>
+    <color name="status_online">#4CAF50</color>
+    <color name="status_unknown">#9E9E9E</color>
+    <color name="status_warning">#FF9800</color>
+    <color name="sunlink_orange">#FF6B35</color>
+    <color name="sunlink_orange_dark">#CC5528</color>
+    <color name="sunlink_orange_light">#FF8C69</color>
+    <string name="about_title">Про додаток</string>
+    <string name="app_name">SunLink</string>
+    <string name="appearance_title">Вигляд</string>
+    <string name="battery_label">Батарея</string>
+    <string name="connection_error">Помилка з\'єднання</string>
+    <string name="connection_success">З\'єднання встановлено</string>
+    <string name="connection_title">Підключення</string>
+    <string name="dashboard_title">SunLink Dashboard</string>
+    <string name="description">SunLink - современное приложение для мониторинга солнечных систем</string>
+    <string name="efficiency_label">Эффективность</string>
+    <string name="font_size_large">Великий</string>
+    <string name="font_size_medium">Середній</string>
+    <string name="font_size_small">Маленький</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="nav_header_subtitle">Solar Monitoring System</string>
+    <string name="nav_header_title">SunLink</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="port_label">Порт</string>
+    <string name="power_label">Мощность</string>
+    <string name="server_url_label">URL сервера</string>
+    <string name="status_label">Статус</string>
+    <string name="test_connection">Тестувати з\'єднання</string>
+    <string name="theme_dark">Темна тема</string>
+    <string name="theme_light">Світла тема</string>
+    <string name="version">Версия 1.2.0</string>
+    <string name="voltage_label">Напряжение</string>
+    <style name="DashboardCard">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">8dp</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardElevation">4dp</item>
+    </style>
+    <style name="DashboardLabel">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/svitgrid_text_secondary</item>
+    </style>
+    <style name="DashboardTitle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="DashboardValue">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="EmergencyButton">
+        <item name="android:textColor">@color/neutral_50</item>
+        <item name="android:background">@color/solar_red</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="EventMessage">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/svitgrid_text_secondary</item>
+    </style>
+    <style name="EventTime">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/svitgrid_text_tertiary</item>
+    </style>
+    <style name="EventTitle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/svitgrid_text_primary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="RefreshButton">
+        <item name="android:textColor">@color/neutral_50</item>
+        <item name="android:background">@color/svitgrid_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="Theme.SunLink" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        
+        <item name="colorPrimary">@color/svitgrid_primary</item>
+        <item name="colorPrimaryVariant">@color/material_primary_dark</item>
+        <item name="colorOnPrimary">@color/neutral_50</item>
+        
+        <item name="colorSecondary">@color/svitgrid_accent</item>
+        <item name="colorSecondaryVariant">@color/solar_orange</item>
+        <item name="colorOnSecondary">@color/neutral_50</item>
+        
+        <item name="android:statusBarColor" ns1:targetApi="l">?attr/colorPrimary</item>
+        
+    </style>
+    <style name="Theme.SunPortal" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        <item name="colorPrimary">@color/md_theme_light_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+        
+        
+        <item name="colorSecondary">@color/md_theme_light_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_light_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
+        
+        
+        <item name="colorTertiary">@color/md_theme_light_tertiary</item>
+        <item name="colorOnTertiary">@color/md_theme_light_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_light_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_light_onTertiaryContainer</item>
+        
+        
+        <item name="colorError">@color/md_theme_light_error</item>
+        <item name="colorOnError">@color/md_theme_light_onError</item>
+        <item name="colorErrorContainer">@color/md_theme_light_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_light_onErrorContainer</item>
+        
+        
+        <item name="android:colorBackground">@color/md_theme_light_background</item>
+        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        
+        
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        
+        
+        <item name="colorOutline">@color/md_theme_light_outline</item>
+        <item name="colorOutlineVariant">@color/md_theme_light_outlineVariant</item>
+        
+        
+        <item name="android:statusBarColor" ns1:targetApi="l">?attr/colorPrimary</item>
+        
+        
+    </style>
+    <style name="Theme.SunPortal.Dark" parent="Theme.Material3.Dark.NoActionBar">
+        
+        <item name="colorPrimary">@color/md_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_dark_onPrimaryContainer</item>
+        
+        
+        <item name="colorSecondary">@color/md_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_dark_onSecondaryContainer</item>
+        
+        
+        <item name="colorTertiary">@color/md_theme_dark_tertiary</item>
+        <item name="colorOnTertiary">@color/md_theme_dark_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_dark_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_dark_onTertiaryContainer</item>
+        
+        
+        <item name="colorError">@color/md_theme_dark_error</item>
+        <item name="colorOnError">@color/md_theme_dark_onError</item>
+        <item name="colorErrorContainer">@color/md_theme_dark_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_dark_onErrorContainer</item>
+        
+        
+        <item name="android:colorBackground">@color/md_theme_dark_background</item>
+        <item name="colorOnBackground">@color/md_theme_dark_onBackground</item>
+        
+        
+        <item name="colorSurface">@color/md_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
+        
+        
+        <item name="colorOutline">@color/md_theme_dark_outline</item>
+        <item name="colorOutlineVariant">@color/md_theme_dark_outlineVariant</item>
+        
+        
+        <item name="android:statusBarColor" ns1:targetApi="l">?attr/colorPrimary</item>
+    </style>
+</resources>
