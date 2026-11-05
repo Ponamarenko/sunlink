@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Скрипт для створення GitHub Release для SunPortal Mobile App v1.0.6
+# Скрипт для створення GitHub Release для SunLink Mobile App v1.1.0
 
 set -e
 
 # Налаштування
 REPO_URL="https://github.com/Ponamarenko/SunLink.git"
-TAG_NAME="v1.0.7"
-RELEASE_TITLE="SunLink Mobile App v1.0.7"
+TAG_NAME="v1.1.1"
+RELEASE_TITLE="SunLink Mobile App v1.1.1"
 RELEASE_NOTES_FILE="RELEASE_NOTES.md"
 
 # Перевірка наявності необхідних файлів
@@ -18,6 +18,17 @@ if [ ! -f "sunlink-mobile-v1.0.6.apk" ]; then
     exit 1
 fi
 
+# Видалення старого тега, якщо існує
+if git tag -l "v1.1.1" | grep -q "v1.1.1"; then
+    echo "⚠️ Тег v1.1.1 вже існує, видаляємо..."
+    git tag -d "v1.1.1"
+    git push origin :refs/tags/"v1.1.1" 2>/dev/null || true
+fi
+
+# Створення тега
+echo "🏷️ Створення Git тега..."
+git tag -a "$TAG_NAME" -m "$RELEASE_TITLE"
+
 if [ ! -f "$RELEASE_NOTES_FILE" ]; then
     echo "❌ Файл нотаток релізу не знайдено!"
     exit 1
@@ -25,44 +36,44 @@ fi
 
 # Створення директорії для релізу
 echo "📁 Створення директорії для релізу..."
-mkdir -p release-v1.0.6
+mkdir -p release-v1.1.0
 
 # Копіювання файлів
 echo "📋 Копіювання файлів для релізу..."
-cp sunlink-mobile-v1.0.6.apk release-v1.0.6/
-cp README.md release-v1.0.6/
-cp RELEASE_NOTES.md release-v1.0.6/
-cp INSTALLATION.md release-v1.0.6/
-cp ARCHITECTURE.md release-v1.0.6/
-cp API.md release-v1.0.6/
-cp CONTRIBUTING.md release-v1.0.6/
-cp CODE_OF_CONDUCT.md release-v1.0.6/
-cp SECURITY.md release-v1.0.6/
-cp CHANGELOG.md release-v1.0.6/
-cp LICENSE release-v1.0.6/
+cp sunlink-mobile-v1.0.6.apk release-v1.1.0/
+cp README.md release-v1.1.0/
+cp RELEASE_NOTES.md release-v1.1.0/
+cp INSTALLATION.md release-v1.1.0/
+cp ARCHITECTURE.md release-v1.1.0/
+cp API.md release-v1.1.0/
+cp CONTRIBUTING.md release-v1.1.0/
+cp CODE_OF_CONDUCT.md release-v1.1.0/
+cp SECURITY.md release-v1.1.0/
+cp CHANGELOG.md release-v1.1.0/
+cp LICENSE release-v1.1.0/
 
 # Копіювання документації
 echo "📚 Копіювання документації..."
-mkdir -p release-v1.0.6/docs
-cp docs/DEVELOPMENT.md release-v1.0.6/docs/
-cp docs/TESTING.md release-v1.0.6/docs/
-cp docs/DEPLOYMENT.md release-v1.0.6/docs/
+mkdir -p release-v1.1.0/docs
+cp docs/DEVELOPMENT.md release-v1.1.0/docs/
+cp docs/TESTING.md release-v1.1.0/docs/
+cp docs/DEPLOYMENT.md release-v1.1.0/docs/
 
 # Створення ZIP архіву
 echo "📦 Створення ZIP архіву..."
-cd release-v1.0.6
-zip -r ../sunportal-mobile-v1.0.6.zip .
+cd release-v1.1.0
+zip -r ../sunlink-mobile-v1.1.0.zip .
 cd ..
 
 # Перевірка створених файлів
 echo "✅ Створено наступні файли:"
 echo "  - sunlink-mobile-v1.0.6.apk"
-echo "  - sunportal-mobile-v1.0.6.zip"
-echo "  - release-v1.0.6/ (директорія з усіма файлами)"
+echo "  - sunlink-mobile-v1.1.0.zip"
+echo "  - release-v1.1.0/ (директорія з усіма файлами)"
 
 # Створення Git тега
 echo "🏷️ Створення Git тега..."
-git tag -a "$TAG_NAME" -m "SunPortal Mobile App v1.0.6 - Complete release with Material Design 3"
+git tag -a "$TAG_NAME" -m "SunLink Mobile App v1.1.1 - Updated navigation structure and removed dashboard dependencies"
 
 # Відправка тега на GitHub
 echo "📤 Відправка тега на GitHub..."
@@ -78,7 +89,7 @@ echo "3. Натисніть 'Create a new release'"
 echo "4. Виберіть тег: $TAG_NAME"
 echo "5. Заповніть назву: $RELEASE_TITLE"
 echo "6. Вставте вміст файлу: $RELEASE_NOTES_FILE"
-echo "7. Завантажте всі файли з директорії release-v1.0.6/"
+echo "7. Завантажте всі файли з директорії release-v1.1.0/"
 echo "8. Натисніть 'Publish release'"
 
 echo ""
