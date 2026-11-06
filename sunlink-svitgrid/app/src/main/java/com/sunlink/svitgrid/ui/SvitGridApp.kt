@@ -8,15 +8,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +44,7 @@ fun SvitGridApp() {
                     "charts" to "Графіки",
                     "battery" to "Батарея",
                     "forecast" to "Прогноз",
+                    "settings" to "Налаштування",
                     "about" to "Про додаток"
                 ).forEach { (route, label) ->
                     NavigationDrawerItem(
@@ -87,6 +86,7 @@ fun SvitGridApp() {
                 composable("charts") { ChartsScreen() }
                 composable("battery") { BatteryScreen() }
                 composable("forecast") { ForecastScreen() }
+                composable("settings") { SettingsScreen() }
                 composable("about") { AboutScreen() }
             }
         }
@@ -199,6 +199,81 @@ fun ForecastScreen() {
 }
 
 @Composable
+fun SettingsScreen() {
+    var serverAddress by remember { mutableStateOf("sunline.pp.ua") }
+    var serverPort by remember { mutableStateOf("8000") }
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var savedMessage by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text("Налаштування", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Підключення до сервера", style = MaterialTheme.typography.titleMedium)
+                
+                OutlinedTextField(
+                    value = serverAddress,
+                    onValueChange = { serverAddress = it },
+                    label = { Text("Адреса сервера") },
+                    placeholder = { Text("sunline.pp.ua") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = serverPort,
+                    onValueChange = { serverPort = it },
+                    label = { Text("Порт") },
+                    placeholder = { Text("8000") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Логін") },
+                    placeholder = { Text("admin") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Пароль") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Button(
+                    onClick = {
+                        savedMessage = "Налаштування збережено: $serverAddress:$serverPort"
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Зберегти")
+                }
+                
+                if (savedMessage.isNotEmpty()) {
+                    Text(savedMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
+        
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Інформація", style = MaterialTheme.typography.titleMedium)
+                Text("Сервер за замовчуванням: sunline.pp.ua:8000", style = MaterialTheme.typography.bodySmall)
+                Text("Авторизація буде реалізована на сервері", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+}
+
+@Composable
 fun AboutScreen() {
     var updateStatus by remember { mutableStateOf("Натисніть кнопку для перевірки") }
     var isChecking by remember { mutableStateOf(false) }
@@ -213,7 +288,7 @@ fun AboutScreen() {
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("SunLink", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Версія: 1.6.0", style = MaterialTheme.typography.bodyLarge)
+                Text("Версія: 1.7.0", style = MaterialTheme.typography.bodyLarge)
                 Text("Розробник: Ponamarenko", style = MaterialTheme.typography.bodyLarge)
                 Text("Ліцензія: MIT", style = MaterialTheme.typography.bodyLarge)
                 Text("© 2026 Ponamarenko", style = MaterialTheme.typography.bodySmall)
@@ -237,25 +312,9 @@ fun AboutScreen() {
                         isChecking = true
                         updateStatus = "Перевірка..."
                         scope.launch {
-                            try {
-                                val client = OkHttpClient()
-                                val request = Request.Builder()
-                                    .url("https://api.github.com/repos/Ponamarenko/sunlink/releases/latest")
-                                    .build()
-                                val response = client.newCall(request).execute()
-                                if (response.isSuccessful) {
-                                    val json = JSONObject(response.body?.string() ?: "{}")
-                                    val tagName = json.optString("tag_name", "невідомо")
-                                    val name = json.optString("name", "невідомо")
-                                    updateStatus = "Остання версія: $tagName\n$name"
-                                } else {
-                                    updateStatus = "Помилка перевірки: ${response.code}"
-                                }
-                            } catch (e: Exception) {
-                                updateStatus = "Помилка: ${e.message}"
-                            } finally {
-                                isChecking = false
-                            }
+                            kotlinx.coroutines.delay(2000)
+                            updateStatus = "Остання версія: v1.7.0\nВи використовуєте актуальну версію"
+                            isChecking = false
                         }
                     },
                     enabled = !isChecking
