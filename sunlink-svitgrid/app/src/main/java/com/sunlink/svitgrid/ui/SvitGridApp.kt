@@ -5,7 +5,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -14,6 +13,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,56 +39,26 @@ fun SvitGridApp() {
                 )
                 Divider()
                 Spacer(Modifier.height(8.dp))
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                    label = { Text("Головна") },
-                    selected = navController.currentBackStackEntry?.destination?.route == "dashboard",
-                    onClick = {
-                        navController.navigate("dashboard") { popUpTo("dashboard") { inclusive = true } }
-                        scope.launch { drawerState.close() }
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
-                    label = { Text("Live моніторинг") },
-                    selected = navController.currentBackStackEntry?.destination?.route == "live",
-                    onClick = {
-                        navController.navigate("live")
-                        scope.launch { drawerState.close() }
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
-                    label = { Text("Графіки") },
-                    selected = navController.currentBackStackEntry?.destination?.route == "charts",
-                    onClick = {
-                        navController.navigate("charts")
-                        scope.launch { drawerState.close() }
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
-                    label = { Text("Батарея") },
-                    selected = navController.currentBackStackEntry?.destination?.route == "battery",
-                    onClick = {
-                        navController.navigate("battery")
-                        scope.launch { drawerState.close() }
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
-                    label = { Text("Прогноз") },
-                    selected = navController.currentBackStackEntry?.destination?.route == "forecast",
-                    onClick = {
-                        navController.navigate("forecast")
-                        scope.launch { drawerState.close() }
-                    },
-                    modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                )
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                listOf(
+                    "dashboard" to "Головна",
+                    "live" to "Live моніторинг",
+                    "charts" to "Графіки",
+                    "battery" to "Батарея",
+                    "forecast" to "Прогноз",
+                    "about" to "Про додаток"
+                ).forEach { (route, label) ->
+                    NavigationDrawerItem(
+                        icon = { Icon(Icons.Default.Star, contentDescription = null) },
+                        label = { Text(label) },
+                        selected = currentRoute == route,
+                        onClick = {
+                            navController.navigate(route) { popUpTo("dashboard") { saveState = true } }
+                            scope.launch { drawerState.close() }
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                }
             }
         }
     ) {
@@ -114,6 +87,7 @@ fun SvitGridApp() {
                 composable("charts") { ChartsScreen() }
                 composable("battery") { BatteryScreen() }
                 composable("forecast") { ForecastScreen() }
+                composable("about") { AboutScreen() }
             }
         }
     }
@@ -122,52 +96,24 @@ fun SvitGridApp() {
 @Composable
 fun DashboardScreen() {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "Головна панель",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        Text("Головна панель", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Потужність", style = MaterialTheme.typography.titleMedium)
                 Text("2,500 Вт", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
             }
         }
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Напруга", style = MaterialTheme.typography.titleMedium)
                 Text("230 В", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
             }
         }
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
+            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Батарея", style = MaterialTheme.typography.titleMedium)
                 Text("75%", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
             }
@@ -177,22 +123,9 @@ fun DashboardScreen() {
 
 @Composable
 fun LiveScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "Моніторинг в реальному часі",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("Моніторинг в реальному часі", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Поточна потужність: 2,500 Вт", style = MaterialTheme.typography.bodyLarge)
                 Text("Напруга: 230 В", style = MaterialTheme.typography.bodyLarge)
@@ -206,31 +139,15 @@ fun LiveScreen() {
 
 @Composable
 fun ChartsScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "Графіки та аналітика",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("Графіки та аналітика", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Графік потужності", style = MaterialTheme.typography.titleMedium)
                 Text("За останні 24 години", style = MaterialTheme.typography.bodyLarge)
             }
         }
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Графік ефективності", style = MaterialTheme.typography.titleMedium)
                 Text("Ефективність системи з часом", style = MaterialTheme.typography.bodyLarge)
@@ -241,34 +158,15 @@ fun ChartsScreen() {
 
 @Composable
 fun BatteryScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "Управління батареєю",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("Управління батареєю", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
+            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("Рівень заряду", style = MaterialTheme.typography.titleMedium)
                 Text("75%", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
             }
         }
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Температура: 25°C", style = MaterialTheme.typography.bodyLarge)
                 Text("Напруга: 52.5 В", style = MaterialTheme.typography.bodyLarge)
@@ -281,36 +179,93 @@ fun BatteryScreen() {
 
 @Composable
 fun ForecastScreen() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "Погода та прогноз",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-        ) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text("Погода та прогноз", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Погода: Сонячно, 25°C", style = MaterialTheme.typography.bodyLarge)
                 Text("Вологість: 60%", style = MaterialTheme.typography.bodyLarge)
                 Text("Вітер: 5 м/с", style = MaterialTheme.typography.bodyLarge)
             }
         }
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Прогноз енергії", style = MaterialTheme.typography.titleMedium)
                 Text("Завтра: 15.2 кВт·год", style = MaterialTheme.typography.bodyLarge)
                 Text("Тиждень: 98.5 кВт·год", style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+    }
+}
+
+@Composable
+fun AboutScreen() {
+    var updateStatus by remember { mutableStateOf("Натисніть кнопку для перевірки") }
+    var isChecking by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text("Про додаток", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("SunLink", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Версія: 1.6.0", style = MaterialTheme.typography.bodyLarge)
+                Text("Розробник: Ponamarenko", style = MaterialTheme.typography.bodyLarge)
+                Text("Ліцензія: MIT", style = MaterialTheme.typography.bodyLarge)
+                Text("© 2026 Ponamarenko", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Опис", style = MaterialTheme.typography.titleMedium)
+                Text("SunLink — сучасний додаток для моніторингу сонячних систем. Підтримує різні типи підключення: RS485, ESP32, Solarman WiFi, Ethernet.", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Оновлення", style = MaterialTheme.typography.titleMedium)
+                Text(updateStatus, style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        isChecking = true
+                        updateStatus = "Перевірка..."
+                        scope.launch {
+                            try {
+                                val client = OkHttpClient()
+                                val request = Request.Builder()
+                                    .url("https://api.github.com/repos/Ponamarenko/sunlink/releases/latest")
+                                    .build()
+                                val response = client.newCall(request).execute()
+                                if (response.isSuccessful) {
+                                    val json = JSONObject(response.body?.string() ?: "{}")
+                                    val tagName = json.optString("tag_name", "невідомо")
+                                    val name = json.optString("name", "невідомо")
+                                    updateStatus = "Остання версія: $tagName\n$name"
+                                } else {
+                                    updateStatus = "Помилка перевірки: ${response.code}"
+                                }
+                            } catch (e: Exception) {
+                                updateStatus = "Помилка: ${e.message}"
+                            } finally {
+                                isChecking = false
+                            }
+                        }
+                    },
+                    enabled = !isChecking
+                ) {
+                    if (isChecking) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text(if (isChecking) "Перевірка..." else "Перевірити оновлення")
+                }
             }
         }
     }
