@@ -28,6 +28,10 @@
         "source": "app.sunportal.app-main-74:/drawable/ic_about.xml"
     },
     {
+        "merged": "app.sunportal.app-debug-72:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "app.sunportal.app-main-74:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
         "merged": "app.sunportal.app-debug-72:/menu_nav_menu_main.xml.flat",
         "source": "app.sunportal.app-main-74:/menu/nav_menu_main.xml"
     },
@@ -44,8 +48,16 @@
         "source": "app.sunportal.app-main-74:/layout/activity_main.xml"
     },
     {
+        "merged": "app.sunportal.app-debug-72:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "app.sunportal.app-main-74:/drawable/ic_launcher_foreground.xml"
+    },
+    {
         "merged": "app.sunportal.app-debug-72:/drawable_ic_tariffs.xml.flat",
         "source": "app.sunportal.app-main-74:/drawable/ic_tariffs.xml"
+    },
+    {
+        "merged": "app.sunportal.app-debug-72:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "app.sunportal.app-main-74:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
         "merged": "app.sunportal.app-debug-72:/drawable_ic_overview.xml.flat",

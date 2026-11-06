@@ -9,6 +9,22 @@
             android:icon="@drawable/ic_dashboard"
             android:title="Головний екран" />
         <item
+            android:id="@+id/nav_live"
+            android:icon="@drawable/ic_live"
+            android:title="Real-time" />
+        <item
+            android:id="@+id/nav_charts"
+            android:icon="@drawable/ic_charts"
+            android:title="Графики" />
+        <item
+            android:id="@+id/nav_battery"
+            android:icon="@drawable/ic_battery"
+            android:title="Батарея" />
+        <item
+            android:id="@+id/nav_forecast"
+            android:icon="@drawable/ic_forecast"
+            android:title="Прогноз" />
+        <item
             android:id="@+id/nav_about"
             android:icon="@drawable/ic_about"
             android:title="Про додаток" />

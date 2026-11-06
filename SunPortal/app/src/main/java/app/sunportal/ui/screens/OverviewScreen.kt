@@ -14,7 +14,7 @@ import app.sunportal.ui.theme.ColorPalette
 import app.sunportal.ui.theme.CardGradientStart
 import app.sunportal.ui.theme.CardGradientEnd
 import app.sunportal.ui.theme.Shapes
-import app.sunportal.ui.theme Typography
+import app.sunportal.ui.theme.Typography
 
 /**
  * Экран обзора SunPortal приложения

@@ -1,6 +1,7 @@
 package app.sunportal.di
 
 import android.content.Context
+import android.app.NotificationManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -21,6 +22,18 @@ object SunPortalHiltModule {
     // DataStore preferences
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sunportal_settings")
     
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context: Context): Context {
+        return context
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationManager(@ApplicationContext context: Context): NotificationManager {
+        return context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    }
+
     @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {

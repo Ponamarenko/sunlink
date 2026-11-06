@@ -4,7 +4,7 @@
             "outputFile": "app.sunportal.app-mergeDebugResources-70:/values-v28/values-v28.xml",
             "map": [
                 {
-                    "source": "/root/.gradle/caches/8.9/transforms/5a8cae460cf2f4f0e8efd5277a2aa8d1/transformed/material-1.11.0/res/values-v28/values-v28.xml",
+                    "source": "/root/.gradle/caches/8.9/transforms/3ae00728205e86e09eb36945774edc67/transformed/material-1.11.0/res/values-v28/values-v28.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "source": "/root/.gradle/caches/8.9/transforms/03e50c9514c062ad9ea3b582c821ea0b/transformed/appcompat-1.6.1/res/values-v28/values-v28.xml",
+                    "source": "/root/.gradle/caches/8.9/transforms/e2468b64d37f62c5a3ddb4e7e34c7df2/transformed/appcompat-1.6.1/res/values-v28/values-v28.xml",
                     "from": {
                         "startLines": "2,3,4,8",
                         "startColumns": "4,4,4,4",

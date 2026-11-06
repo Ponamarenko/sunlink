@@ -126,7 +126,7 @@
                     android:layout_height="wrap_content"
                     android:text="Норма"
                     android:textSize="20sp"
-                    android:textColor="@color/solar_blue"
+                    android:textColor="@color/md_theme_light_primary"
                     android:textStyle="bold"/>
 
             </LinearLayout>

@@ -3,6 +3,7 @@
     <color name="battery_error">#F44336</color>
     <color name="battery_normal">#4CAF50</color>
     <color name="battery_warning">#FF9800</color>
+    <color name="material_primary_dark">#CC5528</color>
     <color name="md_theme_dark_background">#1C1B1A</color>
     <color name="md_theme_dark_error">#FFB4AB</color>
     <color name="md_theme_dark_errorContainer">#93000A</color>
@@ -63,6 +64,12 @@
     <color name="md_theme_light_surfaceVariant">#F4DDD4</color>
     <color name="md_theme_light_tertiary">#FF6B35</color>
     <color name="md_theme_light_tertiaryContainer">#FFDBCF</color>
+    <color name="neutral_50">#FFFFFF</color>
+    <color name="solar_blue">#2196F3</color>
+    <color name="solar_green">#4CAF50</color>
+    <color name="solar_orange">#FF6B35</color>
+    <color name="solar_red">#F44336</color>
+    <color name="solar_yellow">#FFEB3B</color>
     <color name="status_error">#F44336</color>
     <color name="status_online">#4CAF50</color>
     <color name="status_unknown">#9E9E9E</color>
@@ -70,6 +77,14 @@
     <color name="sunlink_orange">#FF6B35</color>
     <color name="sunlink_orange_dark">#CC5528</color>
     <color name="sunlink_orange_light">#FF8C69</color>
+    <color name="svitgrid_accent">#FF8C69</color>
+    <color name="svitgrid_background">#FFF8F6</color>
+    <color name="svitgrid_primary">#FF6B35</color>
+    <color name="svitgrid_secondary">#F4DDD4</color>
+    <color name="svitgrid_surface">#FFF8F6</color>
+    <color name="svitgrid_text_primary">#1C1B1A</color>
+    <color name="svitgrid_text_secondary">#52443C</color>
+    <color name="svitgrid_text_tertiary">#857367</color>
     <string name="about_title">Про додаток</string>
     <string name="app_name">SunLink</string>
     <string name="appearance_title">Вигляд</string>

@@ -47,34 +47,34 @@ class MainViewModel : ViewModel() {
             try {
                 // Генерация mock данных
                 val inverterData = InverterData(
-                    currentPower = (2000..4000).random().toDouble(),
-                    voltage = (220..240).random().toDouble(),
-                    current = (8..15).random().toDouble(),
-                    temperature = (30..45).random().toDouble(),
+                    currentPower = kotlin.random.Random.nextInt(2000, 4000).toDouble(),
+                    voltage = kotlin.random.Random.nextInt(220, 240).toDouble(),
+                    current = kotlin.random.Random.nextInt(8, 15).toDouble(),
+                    temperature = kotlin.random.Random.nextInt(30, 45).toDouble(),
                     status = listOf("Normal", "Warning", "Error").random(),
-                    efficiency = (85..98).random().toDouble(),
-                    frequency = 49.5 + kotlin.math.random() * 1.0,
-                    powerFactor = 0.85 + kotlin.math.random() * 0.13,
-                    totalEnergy = (10000..20000).random().toDouble(),
-                    dailyEnergy = (15..25).random().toDouble(),
-                    reactivePower = (200..800).random().toDouble(),
-                    apparentPower = (2500..3500).random().toDouble()
+                    efficiency = kotlin.random.Random.nextInt(85, 98).toDouble(),
+                    frequency = 49.5 + kotlin.random.Random.nextDouble() * 1.0,
+                    powerFactor = 0.85 + kotlin.random.Random.nextDouble() * 0.13,
+                    totalEnergy = kotlin.random.Random.nextInt(10000, 20000).toDouble(),
+                    dailyEnergy = kotlin.random.Random.nextInt(15, 25).toDouble(),
+                    reactivePower = kotlin.random.Random.nextInt(200, 800).toDouble(),
+                    apparentPower = kotlin.random.Random.nextInt(2500, 3500).toDouble()
                 )
 
                 val batteryData = BatteryData(
                     status = listOf("Normal", "Warning", "Error").random(),
-                    level = (60..95).random(),
-                    temperature = (20..35).random().toDouble(),
-                    voltage = (45..55).random().toDouble(),
-                    current = (-10..20).random().toDouble(),
-                    health = (80..100).random(),
-                    cycles = (100..500).random(),
+                    level = kotlin.random.Random.nextInt(60, 95),
+                    temperature = kotlin.random.Random.nextInt(20, 35).toDouble(),
+                    voltage = kotlin.random.Random.nextInt(45, 55).toDouble(),
+                    current = kotlin.random.Random.nextInt(-10, 20).toDouble(),
+                    health = kotlin.random.Random.nextInt(80, 100),
+                    cycles = kotlin.random.Random.nextInt(100, 500),
                     voltageMax = 54.0,
                     voltageMin = 42.0,
                     currentMax = 25.0,
                     currentMin = -10.0,
-                    power = (-500..1000).random().toDouble(),
-                    energy = (5..20).random().toDouble()
+                    power = kotlin.random.Random.nextInt(-500, 1000).toDouble(),
+                    energy = kotlin.random.Random.nextInt(5, 20).toDouble()
                 )
 
                 _inverterData.value = inverterData

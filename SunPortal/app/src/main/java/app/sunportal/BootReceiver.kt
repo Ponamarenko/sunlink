@@ -9,7 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 /**
  * Boot receiver для автоматического запуска приложения
  */
-@AndroidEntryPoint
+//@AndroidEntryPoint
 class BootReceiver : BroadcastReceiver() {
     
     override fun onReceive(context: Context, intent: Intent) {

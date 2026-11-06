@@ -5,8 +5,10 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import com.sunportal.mobile.databinding.FragmentAboutBinding
 import com.sunportal.mobile.R
+import android.widget.Toast
 
 /**
  * AboutFragment - экран "О приложении"
@@ -32,11 +34,17 @@ class AboutFragment : Fragment() {
     }
 
     private fun setupUI() {
-        binding.versionText.text = "Версия 1.2.0"
-        binding.descriptionText.text = "SunLink - современное приложение для мониторинга солнечных систем"
-        binding.copyrightText.text = "© 2026 Ponamarenko"
+        // Находим элементы в layout
+        val versionText = binding.root.findViewById<TextView>(R.id.version_text)
+        val descriptionText = binding.root.findViewById<TextView>(R.id.description_text)
+        val copyrightText = binding.root.findViewById<TextView>(R.id.copyright_text)
+        val backButton = binding.root.findViewById<View>(R.id.back_button)
         
-        binding.backButton.setOnClickListener {
+        versionText?.text = "Версия 1.2.0"
+        descriptionText?.text = "SunLink - современное приложение для мониторинга солнечных систем"
+        copyrightText?.text = "© 2026 Ponamarenko"
+        
+        backButton?.setOnClickListener {
             requireActivity().onBackPressed()
         }
     }

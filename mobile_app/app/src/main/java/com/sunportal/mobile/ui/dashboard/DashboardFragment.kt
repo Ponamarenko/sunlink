@@ -1,11 +1,13 @@
 package com.sunportal.mobile.ui.dashboard
 
 import android.os.Bundle
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.cardview.widget.CardView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.sunportal.mobile.databinding.FragmentDashboardBinding
@@ -63,43 +65,54 @@ class DashboardFragment : Fragment() {
     }
 
     private fun updateInverterData(data: com.sunportal.mobile.data.InverterData) {
-        binding.powerValue.text = "${data.currentPower.toInt()} Вт"
-        binding.voltageValue.text = "${data.voltage.toInt()} В"
-        binding.efficiencyValue.text = "${data.efficiency.toInt()}%"
+        // Находим элементы в layout
+        val powerValue = binding.root.findViewById<TextView>(R.id.card_power_value)
+        val voltageValue = binding.root.findViewById<TextView>(R.id.card_voltage_value)
+        val efficiencyValue = binding.root.findViewById<TextView>(R.id.card_efficiency_value)
+        val statusValue = binding.root.findViewById<TextView>(R.id.card_status_value)
+        val lastUpdateText = binding.root.findViewById<TextView>(R.id.last_update_text)
+        
+        powerValue?.text = "${data.currentPower.toInt()} Вт"
+        voltageValue?.text = "${data.voltage.toInt()} В"
+        efficiencyValue?.text = "${data.efficiency.toInt()}%"
         
         // Обновление статуса
         when (data.status) {
             "Normal" -> {
-                binding.statusValue.text = "Нормально"
-                binding.statusValue.setTextColor(resources.getColor(android.R.color.holo_green_dark))
+                statusValue?.text = "Нормально"
+                statusValue?.setTextColor(resources.getColor(android.R.color.holo_green_dark))
             }
             "Warning" -> {
-                binding.statusValue.text = "Предупреждение"
-                binding.statusValue.setTextColor(resources.getColor(android.R.color.holo_orange_dark))
+                statusValue?.text = "Предупреждение"
+                statusValue?.setTextColor(resources.getColor(android.R.color.holo_orange_dark))
             }
             "Error" -> {
-                binding.statusValue.text = "Ошибка"
-                binding.statusValue.setTextColor(resources.getColor(android.R.color.holo_red_dark))
+                statusValue?.text = "Ошибка"
+                statusValue?.setTextColor(resources.getColor(android.R.color.holo_red_dark))
             }
             else -> {
-                binding.statusValue.text = "Неизвестно"
-                binding.statusValue.setTextColor(resources.getColor(android.R.color.darker_gray))
+                statusValue?.text = "Неизвестно"
+                statusValue?.setTextColor(resources.getColor(android.R.color.darker_gray))
             }
         }
         
-        binding.lastUpdateText.text = "Обновлено: ${System.currentTimeMillis() / 1000}s назад"
+        lastUpdateText?.text = "Обновлено: ${System.currentTimeMillis() / 1000}s назад"
     }
 
     private fun updateBatteryData(data: com.sunportal.mobile.data.BatteryData) {
-        binding.batteryLevelValue.text = "${data.level}%"
-        binding.batteryLevelBar.progress = data.level
+        // Находим элементы в layout
+        val batteryLevelValue = binding.root.findViewById<TextView>(R.id.card_battery_level_value)
+        val batteryLevelBar = binding.root.findViewById<ProgressBar>(R.id.card_battery_level_bar)
+        
+        batteryLevelValue?.text = "${data.level}%"
+        batteryLevelBar?.progress = data.level
         
         // Обновление цвета батареи
         when (data.status) {
-            "Normal" -> binding.batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_green_dark)
-            "Warning" -> binding.batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_orange_dark)
-            "Error" -> binding.batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.holo_red_dark)
-            else -> binding.batteryLevelBar.progressTintList = resources.getColorStateList(android.R.color.darker_gray)
+            "Normal" -> batteryLevelBar?.progressTintList = resources.getColorStateList(android.R.color.holo_green_dark)
+            "Warning" -> batteryLevelBar?.progressTintList = resources.getColorStateList(android.R.color.holo_orange_dark)
+            "Error" -> batteryLevelBar?.progressTintList = resources.getColorStateList(android.R.color.holo_red_dark)
+            else -> batteryLevelBar?.progressTintList = resources.getColorStateList(android.R.color.darker_gray)
         }
     }
 
@@ -125,29 +138,37 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.refreshButton.setOnClickListener {
+        // Находим элементы в layout
+        val refreshButton = binding.root.findViewById<View>(R.id.refresh_button)
+        val cardPower = binding.root.findViewById<View>(R.id.card_power)
+        val cardVoltage = binding.root.findViewById<View>(R.id.card_voltage)
+        val cardBattery = binding.root.findViewById<View>(R.id.card_battery)
+        val cardStatus = binding.root.findViewById<View>(R.id.card_status)
+        val cardEfficiency = binding.root.findViewById<View>(R.id.card_efficiency)
+
+        refreshButton?.setOnClickListener {
             refreshData()
         }
 
         // Карточки для навигации
-        binding.powerCard.setOnClickListener {
-            Toast.makeText(requireContext(), "Мощность", Toast.LENGTH_SHORT).show()
+        cardPower?.setOnClickListener {
+            android.widget.Toast.makeText(requireContext(), "Мощность", android.widget.Toast.LENGTH_SHORT).show()
         }
 
-        binding.voltageCard.setOnClickListener {
-            Toast.makeText(requireContext(), "Напряжение", Toast.LENGTH_SHORT).show()
+        cardVoltage?.setOnClickListener {
+            android.widget.Toast.makeText(requireContext(), "Напряжение", android.widget.Toast.LENGTH_SHORT).show()
         }
 
-        binding.batteryCard.setOnClickListener {
-            Toast.makeText(requireContext(), "Батарея", Toast.LENGTH_SHORT).show()
+        cardBattery?.setOnClickListener {
+            android.widget.Toast.makeText(requireContext(), "Батарея", android.widget.Toast.LENGTH_SHORT).show()
         }
 
-        binding.statusCard.setOnClickListener {
-            Toast.makeText(requireContext(), "Статус", Toast.LENGTH_SHORT).show()
+        cardStatus?.setOnClickListener {
+            android.widget.Toast.makeText(requireContext(), "Статус", android.widget.Toast.LENGTH_SHORT).show()
         }
 
-        binding.efficiencyCard.setOnClickListener {
-            Toast.makeText(requireContext(), "Эффективность", Toast.LENGTH_SHORT).show()
+        cardEfficiency?.setOnClickListener {
+            android.widget.Toast.makeText(requireContext(), "Эффективность", android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 

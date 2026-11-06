@@ -13,8 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import app.sunportal.ui.theme.Shapes
-import app.sunportal.ui.theme Typography
+import app.sunportal.ui.theme.Typography
 
 /**
  * Фрагмент настроек внешнего вида

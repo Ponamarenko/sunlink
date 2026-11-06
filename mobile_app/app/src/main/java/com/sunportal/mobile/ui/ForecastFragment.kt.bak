@@ -1,0 +1,417 @@
+package com.sunportal.mobile.ui
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import com.sunportal.mobile.databinding.FragmentForecastBinding
+import com.sunportal.mobile.viewmodel.MainViewModel
+import com.sunportal.mobile.R
+import android.widget.Toast
+import java.util.*
+
+/**
+ * ForecastFragment - экран прогноза
+ * Прогноз производства энергии, погоды и оптимизации системы
+ */
+class ForecastFragment : Fragment() {
+
+    private var _binding: FragmentForecastBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: MainViewModel by viewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentForecastBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        setupObservers()
+        setupClickListeners()
+        generateForecastData()
+    }
+
+    private fun setupObservers() {
+        viewModel.inverterData.observe(viewLifecycleOwner, Observer { data ->
+            data?.let {
+                updateForecastData(it)
+            }
+        })
+
+        viewModel.batteryData.observe(viewLifecycleOwner, Observer { data ->
+            data?.let {
+                updateBatteryForecast(it)
+            }
+        })
+
+        viewModel.connectionStatus.observe(viewLifecycleOwner, Observer { status ->
+            updateConnectionStatus(status)
+        })
+
+        viewModel.isLoading.observe(viewLifecycleOwner, Observer { loading ->
+            binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        })
+    }
+
+    private fun updateForecastData(data: com.sunportal.mobile.data.InverterData) {
+        // Находим элементы в layout
+        val currentPowerValue = binding.root.findViewById<TextView>(R.id.current_power_value)
+        val efficiencyValue = binding.root.findViewById<TextView>(R.id.efficiency_value)
+        val totalEnergyValue = binding.root.findViewById<TextView>(R.id.total_energy_value)
+        val dailyEnergyValue = binding.root.findViewById<TextView>(R.id.daily_energy_value)
+        val weeklyEnergyForecast = binding.root.findViewById<TextView>(R.id.weekly_energy_forecast)
+        val monthlyEnergyForecast = binding.root.findViewById<TextView>(R.id.monthly_energy_forecast)
+        val yearlyEnergyForecast = binding.root.findViewById<TextView>(R.id.yearly_energy_forecast)
+        val energyOptimization = binding.root.findViewById<TextView>(R.id.energy_optimization)
+        val weatherForecast = binding.root.findViewById<TextView>(R.id.weather_forecast)
+        val weatherImpact = binding.root.findViewById<TextView>(R.id.weather_impact)
+        val weatherRecommendations = binding.root.findViewById<TextView>(R.id.weather_recommendations)
+        val inverterOptimization = binding.root.findViewById<TextView>(R.id.inverter_optimization)
+        val batteryOptimization = binding.root.findViewById<TextView>(R.id.battery_optimization)
+        val systemOptimization = binding.root.findViewById<TextView>(R.id.system_optimization)
+        val energySavings = binding.root.findViewById<TextView>(R.id.energy_savings)
+        
+        // Обновление текущих данных для прогноза
+        currentPowerValue?.text = "${data.currentPower.toInt()} Вт"
+        efficiencyValue?.text = "${data.efficiency.toInt()}%"
+        totalEnergyValue?.text = "${data.totalEnergy.toInt()} кВт·ч"
+        dailyEnergyValue?.text = "${data.dailyEnergy.toInt()} кВт·ч"
+        
+        // Обновление прогноза производства энергии
+        updateEnergyProductionForecast(data, weeklyEnergyForecast, monthlyEnergyForecast, yearlyEnergyForecast, energyOptimization)
+        
+        // Обновление погодного прогноза
+        updateWeatherForecast(weatherForecast, weatherImpact, weatherRecommendations)
+        
+        // Обновление оптимизации системы
+        updateSystemOptimization(data, inverterOptimization, batteryOptimization, systemOptimization, energySavings)
+    }
+
+    private fun updateBatteryForecast(data: com.sunportal.mobile.data.BatteryData) {
+        // Находим элементы в layout
+        val batteryLevelValue = binding.root.findViewById<TextView>(R.id.battery_level_value)
+        val batteryPowerValue = binding.root.findViewById<TextView>(R.id.battery_power_value)
+        val batteryEnergyValue = binding.root.findViewById<TextView>(R.id.battery_energy_value)
+        val batteryCharge24h = binding.root.findViewById<TextView>(R.id.battery_charge_24h)
+        val batteryCharge7d = binding.root.findViewById<TextView>(R.id.battery_charge_7d)
+        val fullChargeTime = binding.root.findViewById<TextView>(R.id.full_charge_time)
+        val batteryDischarge24h = binding.root.findViewById<TextView>(R.id.battery_discharge_24h)
+        val batteryDischarge7d = binding.root.findViewById<TextView>(R.id.battery_discharge_7d)
+        val fullDischargeTime = binding.root.findViewById<TextView>(R.id.full_discharge_time)
+        
+        batteryLevelValue?.text = "${data.level}%"
+        batteryPowerValue?.text = "${data.power.toInt()} Вт"
+        batteryEnergyValue?.text = "${data.energy.toInt()} кВт·ч"
+        
+        // Обновление прогноза батареи
+        updateBatteryChargeForecast(data, batteryCharge24h, batteryCharge7d, fullChargeTime)
+        
+        // Обновление прогноза разрядки
+        updateBatteryDischargeForecast(data, batteryDischarge24h, batteryDischarge7d, fullDischargeTime)
+    }
+
+    private fun updateConnectionStatus(status: String) {
+        when (status) {
+            "online" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_info)
+                binding.statusText.text = "Онлайн"
+            }
+            "offline" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Офлайн"
+            }
+            "connecting" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Подключение..."
+            }
+            "error" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Ошибка"
+            }
+        }
+    }
+
+    private fun setupClickListeners() {
+        binding.refreshButton.setOnClickListener {
+            refreshData()
+        }
+
+        // Кнопки периодов прогноза
+        binding.dailyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Дневной прогноз", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.weeklyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Недельный прогноз", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.monthlyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Месячный прогноз", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.yearlyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Годовой прогноз", Toast.LENGTH_SHORT).show()
+        }
+
+        // Кнопки оптимизации
+        binding.optimizeNowButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Оптимизировать сейчас", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.scheduleOptimizationButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Запланировать оптимизацию", Toast.LENGTH_SHORT).show()
+        }
+
+        // Кнопки экспорта прогноза
+        binding.exportForecastButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Экспорт прогноза", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.exportReportButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Экспорт отчета", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun refreshData() {
+        viewModel.refreshData()
+    }
+
+    private fun generateForecastData() {
+        // Генерация начальных данных прогноза
+        val inverterData = com.sunportal.mobile.data.InverterData(currentPower = 2500.0, efficiency = 92.0)
+        val batteryData = com.sunportal.mobile.data.BatteryData(level = 75, power = 500.0)
+        
+        updateEnergyProductionForecast(inverterData)
+        updateWeatherForecast()
+        updateSystemOptimization(inverterData)
+        updateBatteryChargeForecast(batteryData)
+        updateBatteryDischargeForecast(batteryData)
+    }
+
+    private fun updateEnergyProductionForecast(data: com.sunportal.mobile.data.InverterData, weeklyEnergyForecast: TextView?, monthlyEnergyForecast: TextView?, yearlyEnergyForecast: TextView?, energyOptimization: TextView?) {
+        // Прогноз производства энергии на следующие 7 дней
+        val weeklyForecast = generateWeeklyEnergyForecast(data.currentPower)
+        weeklyEnergyForecast?.text = "Прогноз на неделю: ${weeklyForecast.joinToString(", ")} кВт·ч"
+        
+        // Прогноз производства энергии на следующие 30 дней
+        val monthlyForecast = generateMonthlyEnergyForecast(data.currentPower)
+        monthlyEnergyForecast?.text = "Прогноз на месяц: ${monthlyForecast.joinToString(", ")} кВт·ч"
+        
+        // Прогноз производства энергии на следующий год
+        val yearlyForecast = generateYearlyEnergyForecast(data.totalEnergy)
+        yearlyEnergyForecast?.text = "Прогноз на год: ${yearlyForecast} кВт·ч"
+        
+        // Оптимизация производства энергии
+        val optimization = generateEnergyOptimization(data.currentPower, data.efficiency)
+        energyOptimization?.text = "Оптимизация: $optimization"
+    }
+
+    private fun updateWeatherForecast(weatherForecast: TextView?, weatherImpact: TextView?, weatherRecommendations: TextView?) {
+        // Прогноз погоды на следующие 7 дней
+        val weatherForecastData = generateWeatherForecast()
+        weatherForecast?.text = "Погода: ${weatherForecastData.joinToString(", ")}"
+        
+        // Влияние погоды на производство энергии
+        val weatherImpactData = generateWeatherImpact()
+        weatherImpact?.text = "Влияние погоды: $weatherImpactData"
+        
+        // Рекомендации по погоде
+        val weatherRecommendationsData = generateWeatherRecommendations()
+        weatherRecommendations?.text = "Рекомендации: $weatherRecommendationsData"
+    }
+
+    private fun updateSystemOptimization(data: com.sunportal.mobile.data.InverterData, inverterOptimization: TextView?, batteryOptimization: TextView?, systemOptimization: TextView?, energySavings: TextView?) {
+        // Оптимизация работы инвертора
+        val inverterOptimizationData = generateInverterOptimization(data.currentPower, data.efficiency)
+        inverterOptimization?.text = "Оптимизация инвертора: $inverterOptimizationData"
+        
+        // Оптимизация батареи
+        val batteryOptimizationData = generateBatteryOptimization(data.currentPower)
+        batteryOptimization?.text = "Оптимизация батареи: $batteryOptimizationData"
+        
+        // Оптимизация системы в целом
+        val systemOptimizationData = generateSystemOptimization(data.currentPower, data.efficiency)
+        systemOptimization?.text = "Оптимизация системы: $systemOptimizationData"
+        
+        // Экономия энергии
+        val energySavingsData = generateEnergySavings(data.currentPower, data.efficiency)
+        energySavings?.text = "Экономия энергии: $energySavingsData"
+    }
+
+    private fun updateBatteryChargeForecast(data: com.sunportal.mobile.data.BatteryData, batteryCharge24h: TextView?, batteryCharge7d: TextView?, fullChargeTime: TextView?) {
+        // Прогноз зарядки батареи на следующие 24 часа
+        val charge24h = generateBatteryCharge24h(data.level, data.power)
+        batteryCharge24h?.text = "Зарядка за 24ч: $charge24h%"
+        
+        // Прогноз зарядки батареи на следующие 7 дней
+        val charge7d = generateBatteryCharge7d(data.level, data.power)
+        batteryCharge7d?.text = "Зарядка за 7дн: $charge7d%"
+        
+        // Время полной зарядки
+        val fullChargeTimeData = generateFullChargeTime(data.level, data.power)
+        fullChargeTime?.text = "Полная зарядка: $fullChargeTimeData"
+    }
+
+    private fun updateBatteryDischargeForecast(data: com.sunportal.mobile.data.BatteryData, batteryDischarge24h: TextView?, batteryDischarge7d: TextView?, fullDischargeTime: TextView?) {
+        // Прогноз разрядки батареи на следующие 24 часа
+        val discharge24h = generateBatteryDischarge24h(data.level, data.power)
+        batteryDischarge24h?.text = "Разрядка за 24ч: $discharge24h%"
+        
+        // Прогноз разрядки батареи на следующие 7 дней
+        val discharge7d = generateBatteryDischarge7d(data.level, data.power)
+        batteryDischarge7d?.text = "Разрядка за 7дн: $discharge7d%"
+        
+        // Время полной разрядки
+        val fullDischargeTimeData = generateFullDischargeTime(data.level, data.power)
+        fullDischargeTime?.text = "Полная разрядка: $fullDischargeTimeData"
+    }
+
+    private fun generateWeeklyEnergyForecast(currentPower: Double): List<Double> {
+        val forecast = mutableListOf<Double>()
+        for (i in 0..6) {
+            // Симуляция недельного прогноза производства энергии
+            val dayEnergy = currentPower * 24 * (0.8 + 0.4 * Math.random()) / 1000
+            forecast.add(dayEnergy)
+        }
+        return forecast
+    }
+
+    private fun generateMonthlyEnergyForecast(currentPower: Double): List<Double> {
+        val forecast = mutableListOf<Double>()
+        for (i in 0..29) {
+            // Симуляция месячного прогноза производства энергии
+            val dayEnergy = currentPower * 24 * (0.7 + 0.6 * Math.random()) / 1000
+            forecast.add(dayEnergy)
+        }
+        return forecast
+    }
+
+    private fun generateYearlyEnergyForecast(totalEnergy: Double): Double {
+        // Симуляция годового прогноза производства энергии
+        return totalEnergy * 365 * (0.9 + 0.2 * Math.random())
+    }
+
+    private fun generateEnergyOptimization(currentPower: Double, efficiency: Double): String {
+        // Генерация рекомендаций по оптимизации производства энергии
+        val potential = (currentPower * efficiency / 100) * 0.1
+        return "Потенциал экономии: ${String.format("%.1f", potential)} Вт"
+    }
+
+    private fun generateWeatherForecast(): List<String> {
+        val weatherTypes = listOf("Ясно", "Облачно", "Дождь", "Снег", "Туман")
+        
+        return List(7) { weatherTypes.random() }
+    }
+
+    private fun generateWeatherImpact(): String {
+        // Генерация влияния погоды на производство энергии
+        val impact = listOf("Позитивное", "Нейтральное", "Негативное").random()
+        return "Влияние: $impact"
+    }
+
+    private fun generateWeatherRecommendations(): String {
+        // Генерация рекомендаций по погоде
+        val recommendations = listOf("Увеличить мощность", "Сохранить текущие настройки", "Уменьшить мощность").random()
+        return recommendations
+    }
+
+    private fun generateInverterOptimization(currentPower: Double, efficiency: Double): String {
+        // Генерация оптимизации инвертора
+        val optimization = listOf("Увеличить частоту", "Оптимизировать КПД", "Снизить температуру").random()
+        return "$optimизация (+${String.format("%.1f", efficiency * 0.05)}%)"
+    }
+
+    private fun generateBatteryOptimization(currentPower: Double): String {
+        // Генерация оптимизации батареи
+        val optimization = listOf("Оптимизировать заряд", "Оптимизировать разряд", "Балансировать").random()
+        return "$optimизация"
+    }
+
+    private fun generateSystemOptimization(currentPower: Double, efficiency: Double): String {
+        // Генерация оптимизации системы
+        val optimization = listOf("Оптимизировать работу", "Балансировать нагрузку", "Автоматическая настройка").random()
+        return "$optimизация (+${String.format("%.1f", efficiency * 0.03)}%)"
+    }
+
+    private fun generateEnergySavings(currentPower: Double, efficiency: Double): String {
+        // Генерация экономии энергии
+        val savings = currentPower * efficiency / 100 * 24 * 30 / 1000 // кВт·ч в месяц
+        return "${String.format("%.1f", savings)} кВт·ч/мес"
+    }
+
+    private fun generateBatteryCharge24h(currentLevel: Int, currentPower: Double): Int {
+        // Прогноз зарядки за 24 часа
+        val chargeRate = currentPower / 1000 // кВт
+        val charge24h = (chargeRate * 24 * 100).toInt() // %
+        return (currentLevel + charge24h).coerceIn(0, 100)
+    }
+
+    private fun generateBatteryCharge7d(currentLevel: Int, currentPower: Double): Int {
+        // Прогноз зарядки за 7 дней
+        val chargeRate = currentPower / 1000 // кВт
+        val charge7d = (chargeRate * 24 * 7 * 100).toInt() // %
+        return (currentLevel + charge7d).coerceIn(0, 100)
+    }
+
+    private fun generateFullChargeTime(currentLevel: Int, currentPower: Double): String {
+        // Время полной зарядки
+        val remainingCapacity = 100 - currentLevel
+        val hoursToFull = if (currentPower > 0) {
+            remainingCapacity / (currentPower / 1000)
+        } else {
+            "N/A"
+        }
+        
+        return if (hoursToFull is Double) {
+            String.format("%.1f ч", hoursToFull)
+        } else {
+            hoursToFull.toString()
+        }
+    }
+
+    private fun generateBatteryDischarge24h(currentLevel: Int, currentPower: Double): Int {
+        // Прогноз разрядки за 24 часа
+        val dischargeRate = Math.abs(currentPower) / 1000 // кВт
+        val discharge24h = (dischargeRate * 24 * 100).toInt() // %
+        return (currentLevel - discharge24h).coerceIn(0, 100)
+    }
+
+    private fun generateBatteryDischarge7d(currentLevel: Int, currentPower: Double): Int {
+        // Прогноз разрядки за 7 дней
+        val dischargeRate = Math.abs(currentPower) / 1000 // кВт
+        val discharge7d = (dischargeRate * 24 * 7 * 100).toInt() // %
+        return (currentLevel - discharge7d).coerceIn(0, 100)
+    }
+
+    private fun generateFullDischargeTime(currentLevel: Int, currentPower: Double): String {
+        // Время полной разрядки
+        val remainingCapacity = currentLevel
+        val hoursToEmpty = if (currentPower < 0) {
+            remainingCapacity / (Math.abs(currentPower) / 1000)
+        } else {
+            "N/A"
+        }
+        
+        return if (hoursToEmpty is Double) {
+            String.format("%.1f ч", hoursToEmpty)
+        } else {
+            hoursToEmpty.toString()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

@@ -1,11 +1,13 @@
 package app.sunportal.data.model
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 /**
  * Модель информации об обновлении
  */
 data class UpdateInfo(
+    
     @SerializedName("version") val version: String,
     @SerializedName("version_code") val versionCode: Int,
     @SerializedName("download_url") val downloadUrl: String,
@@ -14,7 +16,7 @@ data class UpdateInfo(
     @SerializedName("min_sdk") val minSdk: Int,
     @SerializedName("size") val size: Long,
     @SerializedName("force_update") val forceUpdate: Boolean = false
-) {
+) : Serializable {
     // Конструктор без параметров для Gson
     constructor() : this(
         version = "1.0.32",

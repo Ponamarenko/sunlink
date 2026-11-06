@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sunlink.svitgrid"
     android:versionCode="1"
-    android:versionName="1.0.0" >
+    android:versionName="2.0.0" >
 
     <uses-sdk
         android:minSdkVersion="26"
@@ -21,7 +21,8 @@
         android:debuggable="true"
         android:extractNativeLibs="false"
         android:label="SunLink"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar" >
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:usesCleartextTraffic="true" >
         <activity
             android:name="com.sunlink.svitgrid.MainActivity"
             android:exported="true"
@@ -32,6 +33,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="androidx.activity.ComponentActivity"
+            android:exported="true" />
         <activity
             android:name="androidx.compose.ui.tooling.PreviewActivity"
             android:exported="true" />
@@ -57,10 +61,6 @@
         <uses-library
             android:name="androidx.window.sidecar"
             android:required="false" />
-
-        <activity
-            android:name="androidx.activity.ComponentActivity"
-            android:exported="true" />
 
         <receiver
             android:name="androidx.profileinstaller.ProfileInstallReceiver"

@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import app.sunportal.ui.theme.Shapes
-import app.sunportal.ui.theme Typography
+import app.sunportal.ui.theme.Typography
 
 /**
  * Экран управления Time of Use (TOU)

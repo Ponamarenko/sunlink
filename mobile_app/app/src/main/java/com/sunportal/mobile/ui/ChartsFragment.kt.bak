@@ -1,0 +1,275 @@
+package com.sunportal.mobile.ui
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import com.sunportal.mobile.databinding.FragmentChartsBinding
+import com.sunportal.mobile.viewmodel.MainViewModel
+import com.sunportal.mobile.R
+import android.widget.Toast
+import java.util.*
+
+/**
+ * ChartsFragment - экран графиков
+ * Показывает графики производства энергии, мощности и других параметров
+ */
+class ChartsFragment : Fragment() {
+
+    private var _binding: FragmentChartsBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: MainViewModel by viewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentChartsBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        setupObservers()
+        setupClickListeners()
+        generateChartData()
+    }
+
+    private fun setupObservers() {
+        viewModel.inverterData.observe(viewLifecycleOwner, Observer { data ->
+            data?.let {
+                updateChartData(it)
+            }
+        })
+
+        viewModel.batteryData.observe(viewLifecycleOwner, Observer { data ->
+            data?.let {
+                updateBatteryChart(it)
+            }
+        })
+
+        viewModel.connectionStatus.observe(viewLifecycleOwner, Observer { status ->
+            updateConnectionStatus(status)
+        })
+
+        viewModel.isLoading.observe(viewLifecycleOwner, Observer { loading ->
+            binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        })
+    }
+
+    private fun updateChartData(data: com.sunportal.mobile.data.InverterData) {
+        // Находим элементы в layout
+        val currentPowerValue = binding.root.findViewById<TextView>(R.id.current_power_value)
+        val efficiencyValue = binding.root.findViewById<TextView>(R.id.efficiency_value)
+        val totalEnergyValue = binding.root.findViewById<TextView>(R.id.total_energy_value)
+        val dailyEnergyValue = binding.root.findViewById<TextView>(R.id.daily_energy_value)
+        val powerChart = binding.root.findViewById<TextView>(R.id.power_chart)
+        val efficiencyChart = binding.root.findViewById<TextView>(R.id.efficiency_chart)
+        val energyChart = binding.root.findViewById<TextView>(R.id.energy_chart)
+        
+        // Обновление текущих значений
+        currentPowerValue?.text = "${data.currentPower.toInt()} Вт"
+        efficiencyValue?.text = "${data.efficiency.toInt()}%"
+        totalEnergyValue?.text = "${data.totalEnergy.toInt()} кВт·ч"
+        dailyEnergyValue?.text = "${data.dailyEnergy.toInt()} кВт·ч"
+        
+        // Обновление графика мощности
+        updatePowerChart(data.currentPower, powerChart)
+        
+        // Обновление графика эффективности
+        updateEfficiencyChart(data.efficiency, efficiencyChart)
+        
+        // Обновление графика энергии
+        updateEnergyChart(data.totalEnergy, energyChart)
+    }
+
+    private fun updateBatteryChart(data: com.sunportal.mobile.data.BatteryData) {
+        // Находим элементы в layout
+        val batteryLevelValue = binding.root.findViewById<TextView>(R.id.battery_level_value)
+        val batteryPowerValue = binding.root.findViewById<TextView>(R.id.battery_power_value)
+        val batteryEnergyValue = binding.root.findViewById<TextView>(R.id.battery_energy_value)
+        val batteryLevelChart = binding.root.findViewById<TextView>(R.id.battery_level_chart)
+        val batteryPowerChart = binding.root.findViewById<TextView>(R.id.battery_power_chart)
+        
+        batteryLevelValue?.text = "${data.level}%"
+        batteryPowerValue?.text = "${data.power.toInt()} Вт"
+        batteryEnergyValue?.text = "${data.energy.toInt()} кВт·ч"
+        
+        // Обновление графика батареи
+        updateBatteryLevelChart(data.level, batteryLevelChart)
+        
+        // Обновление графика мощности батареи
+        updateBatteryPowerChart(data.power, batteryPowerChart)
+    }
+
+    private fun updateConnectionStatus(status: String) {
+        when (status) {
+            "online" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_info)
+                binding.statusText.text = "Онлайн"
+            }
+            "offline" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Офлайн"
+            }
+            "connecting" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Подключение..."
+            }
+            "error" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Ошибка"
+            }
+        }
+    }
+
+    private fun setupClickListeners() {
+        binding.refreshButton.setOnClickListener {
+            refreshData()
+        }
+
+        // Кнопки периодов
+        binding.dailyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Дневной график", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.weeklyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Недельный график", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.monthlyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Месячный график", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.yearlyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Годовой график", Toast.LENGTH_SHORT).show()
+        }
+
+        // Кнопки типов графиков
+        binding.powerButton.setOnClickListener {
+            Toast.makeText(requireContext(), "График мощности", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.efficiencyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "График эффективности", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.energyButton.setOnClickListener {
+            Toast.makeText(requireContext(), "График энергии", Toast.LENGTH_SHORT).show()
+        }
+
+        // Кнопки экспорта
+        binding.exportChartButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Экспорт графика", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.exportDataButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Экспорт данных", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun refreshData() {
+        viewModel.refreshData()
+    }
+
+    private fun generateChartData() {
+        // Генерация начальных данных для графиков
+        val inverterData = com.sunportal.mobile.data.InverterData(currentPower = 2500.0, efficiency = 92.0)
+        val batteryData = com.sunportal.mobile.data.BatteryData(level = 75, power = 500.0)
+        
+        updateChartData(inverterData)
+        updateBatteryChart(batteryData)
+    }
+
+    private fun updatePowerChart(currentPower: Double, powerChart: TextView?) {
+        // Генерация данных для графика мощности за последние 24 часа
+        val powerData = generatePowerData(currentPower)
+        powerChart?.text = "График мощности: ${powerData.joinToString(", ")} Вт"
+    }
+
+    private fun updateEfficiencyChart(efficiency: Double, efficiencyChart: TextView?) {
+        // Генерация данных для графика эффективности за последние 24 часа
+        val efficiencyData = generateEfficiencyData(efficiency)
+        efficiencyChart?.text = "График эффективности: ${efficiencyData.joinToString(", ")}%"
+    }
+
+    private fun updateEnergyChart(totalEnergy: Double, energyChart: TextView?) {
+        // Генерация данных для графика энергии за последние 7 дней
+        val energyData = generateEnergyData(totalEnergy)
+        energyChart?.text = "График энергии: ${energyData.joinToString(", ")} кВт·ч"
+    }
+
+    private fun updateBatteryLevelChart(level: Int, batteryLevelChart: TextView?) {
+        // Генерация данных для графика уровня батареи за последние 24 часа
+        val batteryData = generateBatteryLevelData(level)
+        batteryLevelChart?.text = "График батареи: ${batteryData.joinToString(", ")}%"
+    }
+
+    private fun updateBatteryPowerChart(power: Double, batteryPowerChart: TextView?) {
+        // Генерация данных для графика мощности батареи за последние 24 часа
+        val batteryPowerData = generateBatteryPowerData(power)
+        batteryPowerChart?.text = "График мощности батареи: ${batteryPowerData.joinToString(", ")} Вт"
+    }
+
+    private fun generatePowerData(currentPower: Double): List<Double> {
+        val powerData = mutableListOf<Double>()
+        for (i in 0..23) {
+            // Симуляция данных мощности за 24 часа
+            val hourPower = currentPower * (0.8 + 0.4 * Math.random())
+            powerData.add(hourPower)
+        }
+        return powerData
+    }
+
+    private fun generateEfficiencyData(efficiency: Double): List<Double> {
+        val efficiencyData = mutableListOf<Double>()
+        for (i in 0..23) {
+            // Симуляция данных эффективности за 24 часа
+            val hourEfficiency = efficiency * (0.9 + 0.1 * Math.random())
+            efficiencyData.add(hourEfficiency)
+        }
+        return efficiencyData
+    }
+
+    private fun generateEnergyData(totalEnergy: Double): List<Double> {
+        val energyData = mutableListOf<Double>()
+        for (i in 0..6) {
+            // Симуляция данных энергии за 7 дней
+            val dayEnergy = totalEnergy / 365 * (0.8 + 0.4 * Math.random())
+            energyData.add(dayEnergy)
+        }
+        return energyData
+    }
+
+    private fun generateBatteryLevelData(level: Int): List<Int> {
+        val batteryData = mutableListOf<Int>()
+        for (i in 0..23) {
+            // Симуляция данных уровня батареи за 24 часа
+            val hourLevel = level + (kotlin.random.Random.nextInt(-10, 10))
+            batteryData.add(hourLevel.coerceIn(0, 100))
+        }
+        return batteryData
+    }
+
+    private fun generateBatteryPowerData(power: Double): List<Double> {
+        val batteryPowerData = mutableListOf<Double>()
+        for (i in 0..23) {
+            // Симуляция данных мощности батареи за 24 часа
+            val hourPower = power * (0.7 + 0.6 * Math.random())
+            batteryPowerData.add(hourPower)
+        }
+        return batteryPowerData
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

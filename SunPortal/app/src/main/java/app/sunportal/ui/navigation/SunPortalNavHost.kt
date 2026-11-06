@@ -92,11 +92,9 @@ fun SunPortalNavHost(
             )
         }
         
-        composable(Screen.Update.route) {
-            UpdateScreen(
-                onNavigate = { navController.navigate(it) }
-            )
-        }
+        // composable(Screen.Update.route) {
+        //     UpdateScreen()
+        // }
     }
 }
 

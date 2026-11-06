@@ -54,7 +54,7 @@ class SettingsRepository @Inject constructor(
     
     // Адрес сервера
     val serverAddress: Flow<String> = dataStore.data.map { preferences ->
-        preferences[SERVER_ADDRESS_KEY] ?: "192.168.1.100:8800"
+        preferences[SERVER_ADDRESS_KEY] ?: "k4a.pp.ua:8000"
     }
     
     suspend fun setServerAddress(address: String) {
@@ -133,15 +133,15 @@ class SettingsRepository @Inject constructor(
     suspend fun getAllSettings(): Map<String, Any> {
         val preferences = dataStore.data.first()
         return mapOf(
-            "theme" to preferences[THEME_KEY] ?: "system",
-            "font_size" to preferences[FONT_SIZE_KEY] ?: "medium",
-            "server_address" to preferences[SERVER_ADDRESS_KEY] ?: "192.168.1.100:8800",
-            "server_timeout" to preferences[SERVER_TIMEOUT_KEY] ?: 30,
-            "auto_connect" to preferences[AUTO_CONNECT_KEY] ?: true,
-            "notifications_enabled" to preferences[NOTIFICATIONS_ENABLED_KEY] ?: true,
-            "auto_start" to preferences[AUTO_START_KEY] ?: true,
-            "background_mode" to preferences[BACKGROUND_MODE_KEY] ?: true,
-            "caching_enabled" to preferences[CACHING_ENABLED_KEY] ?: true
+            "theme" to (preferences[THEME_KEY] ?: "system") as Any,
+            "font_size" to (preferences[FONT_SIZE_KEY] ?: "medium") as Any,
+            "server_address" to (preferences[SERVER_ADDRESS_KEY] ?: "k4a.pp.ua:8000") as Any,
+            "server_timeout" to (preferences[SERVER_TIMEOUT_KEY] ?: 30) as Any,
+            "auto_connect" to (preferences[AUTO_CONNECT_KEY] ?: true) as Any,
+            "notifications_enabled" to (preferences[NOTIFICATIONS_ENABLED_KEY] ?: true) as Any,
+            "auto_start" to (preferences[AUTO_START_KEY] ?: true) as Any,
+            "background_mode" to (preferences[BACKGROUND_MODE_KEY] ?: true) as Any,
+            "caching_enabled" to (preferences[CACHING_ENABLED_KEY] ?: true) as Any
         )
     }
 }

@@ -6,6 +6,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import app.sunportal.R
 import app.sunportal.viewmodel.MainViewModel
@@ -19,8 +20,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class DataCollectionService : Service() {
     
-    @Inject
-    lateinit var mainViewModel: MainViewModel
     
     private val serviceJob = SupervisorJob()
     private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
@@ -42,10 +41,8 @@ class DataCollectionService : Service() {
             while (isActive) {
                 try {
                     // Загружаем данные инвертора
-                    mainViewModel.loadInverterData()
                     
                     // Загружаем погодные данные
-                    mainViewModel.loadWeatherData()
                     
                     // Ждем 30 секунд перед следующим обновлением
                     delay(30000)
@@ -81,11 +78,12 @@ class DataCollectionService : Service() {
         }
     }
     
-    private fun createNotification(): NotificationCompat.Builder {
+    private fun createNotification(): android.app.Notification {
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle("SunPortal")
             .setContentText("Сбор данных в фоновом режиме")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
     }
 }

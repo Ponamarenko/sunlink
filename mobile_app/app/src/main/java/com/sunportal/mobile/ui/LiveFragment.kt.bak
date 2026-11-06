@@ -1,0 +1,217 @@
+package com.sunportal.mobile.ui
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import com.sunportal.mobile.databinding.FragmentLiveBinding
+import com.sunportal.mobile.viewmodel.MainViewModel
+import com.sunportal.mobile.R
+import android.widget.TextView
+import android.widget.Toast
+import java.util.*
+
+/**
+ * LiveFragment - экран реального времени
+ * Показывает live данные с инвертора и батареи
+ */
+class LiveFragment : Fragment() {
+
+    private var _binding: FragmentLiveBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: MainViewModel by viewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentLiveBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        setupObservers()
+        setupClickListeners()
+        refreshData()
+    }
+
+    private fun setupObservers() {
+        viewModel.inverterData.observe(viewLifecycleOwner, Observer { data ->
+            data?.let {
+                updateInverterData(it)
+            }
+        })
+
+        viewModel.batteryData.observe(viewLifecycleOwner, Observer { data ->
+            data?.let {
+                updateBatteryData(it)
+            }
+        })
+
+        viewModel.connectionStatus.observe(viewLifecycleOwner, Observer { status ->
+            updateConnectionStatus(status)
+        })
+
+        viewModel.isLoading.observe(viewLifecycleOwner, Observer { loading ->
+            binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        })
+    }
+
+    private fun updateInverterData(data: com.sunportal.mobile.data.InverterData) {
+        // Находим элементы в layout
+        val currentPowerValue = binding.root.findViewById<TextView>(R.id.current_power_value)
+        val voltageValue = binding.root.findViewById<TextView>(R.id.voltage_value)
+        val currentValue = binding.root.findViewById<TextView>(R.id.current_value)
+        val temperatureValue = binding.root.findViewById<TextView>(R.id.temperature_value)
+        val statusValue = binding.root.findViewById<TextView>(R.id.status_value)
+        val efficiencyValue = binding.root.findViewById<TextView>(R.id.efficiency_value)
+        val frequencyValue = binding.root.findViewById<TextView>(R.id.frequency_value)
+        val powerFactorValue = binding.root.findViewById<TextView>(R.id.power_factor_value)
+        val totalEnergyValue = binding.root.findViewById<TextView>(R.id.total_energy_value)
+        val dailyEnergyValue = binding.root.findViewById<TextView>(R.id.daily_energy_value)
+        
+        currentPowerValue?.text = "${data.currentPower.toInt()} Вт"
+        voltageValue?.text = "${data.voltage.toInt()} В"
+        currentValue?.text = "${data.current.toInt()} А"
+        temperatureValue?.text = "${data.temperature.toInt()}°C"
+        efficiencyValue?.text = "${data.efficiency.toInt()}%"
+        frequencyValue?.text = "${String.format("%.1f", data.frequency)} Гц"
+        powerFactorValue?.text = "${String.format("%.2f", data.powerFactor)}"
+        totalEnergyValue?.text = "${data.totalEnergy.toInt()} кВт·ч"
+        dailyEnergyValue?.text = "${data.dailyEnergy.toInt()} кВт·ч"
+        
+        // Обновление статуса
+        when (data.status) {
+            "Normal" -> {
+                statusValue?.text = "Нормально"
+                statusValue?.setTextColor(resources.getColor(android.R.color.holo_green_dark))
+            }
+            "Warning" -> {
+                statusValue?.text = "Предупреждение"
+                statusValue?.setTextColor(resources.getColor(android.R.color.holo_orange_dark))
+            }
+            "Error" -> {
+                statusValue?.text = "Ошибка"
+                statusValue?.setTextColor(resources.getColor(android.R.color.holo_red_dark))
+            }
+            else -> {
+                statusValue?.text = "Неизвестно"
+                statusValue?.setTextColor(resources.getColor(android.R.color.darker_gray))
+            }
+        }
+    }
+
+    private fun updateBatteryData(data: com.sunportal.mobile.data.BatteryData) {
+        // Находим элементы в layout
+        val batteryLevelValue = binding.root.findViewById<TextView>(R.id.battery_level_value)
+        val batteryPowerValue = binding.root.findViewById<TextView>(R.id.battery_power_value)
+        val batteryEnergyValue = binding.root.findViewById<TextView>(R.id.battery_energy_value)
+        val batteryTemperatureValue = binding.root.findViewById<TextView>(R.id.battery_temperature_value)
+        val batteryVoltageValue = binding.root.findViewById<TextView>(R.id.battery_voltage_value)
+        val batteryCurrentValue = binding.root.findViewById<TextView>(R.id.battery_current_value)
+        val batteryHealthValue = binding.root.findViewById<TextView>(R.id.battery_health_value)
+        val batteryCyclesValue = binding.root.findViewById<TextView>(R.id.battery_cycles_value)
+        val batteryStatusValue = binding.root.findViewById<TextView>(R.id.battery_status_value)
+        val batteryProgressBar = binding.root.findViewById<android.widget.ProgressBar>(R.id.battery_progress_bar)
+        
+        batteryLevelValue?.text = "${data.level}%"
+        batteryPowerValue?.text = "${data.power.toInt()} Вт"
+        batteryEnergyValue?.text = "${data.energy.toInt()} кВт·ч"
+        batteryTemperatureValue?.text = "${data.temperature.toInt()}°C"
+        batteryVoltageValue?.text = "${data.voltage.toInt()} В"
+        batteryCurrentValue?.text = "${data.current.toInt()} А"
+        batteryHealthValue?.text = "${data.health}%"
+        batteryCyclesValue?.text = "${data.cycles}"
+        
+        batteryProgressBar?.progress = data.level
+        
+        // Обновление статуса батареи
+        when (data.status) {
+            "Normal" -> {
+                batteryStatusValue?.text = "Нормально"
+                batteryStatusValue?.setTextColor(resources.getColor(android.R.color.holo_green_dark))
+                batteryProgressBar?.progressTintList = resources.getColorStateList(android.R.color.holo_green_dark)
+            }
+            "Warning" -> {
+                batteryStatusValue?.text = "Предупреждение"
+                batteryStatusValue?.setTextColor(resources.getColor(android.R.color.holo_orange_dark))
+                batteryProgressBar?.progressTintList = resources.getColorStateList(android.R.color.holo_orange_dark)
+            }
+            "Error" -> {
+                batteryStatusValue?.text = "Ошибка"
+                batteryStatusValue?.setTextColor(resources.getColor(android.R.color.holo_red_dark))
+                batteryProgressBar?.progressTintList = resources.getColorStateList(android.R.color.holo_red_dark)
+            }
+            else -> {
+                batteryStatusValue?.text = "Неизвестно"
+                batteryStatusValue?.setTextColor(resources.getColor(android.R.color.darker_gray))
+                batteryProgressBar?.progressTintList = resources.getColorStateList(android.R.color.darker_gray)
+            }
+        }
+    }
+
+    private fun updateConnectionStatus(status: String) {
+        when (status) {
+            "online" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_info)
+                binding.statusText.text = "Онлайн"
+            }
+            "offline" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Офлайн"
+            }
+            "connecting" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Подключение..."
+            }
+            "error" -> {
+                binding.statusIndicator.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.statusText.text = "Ошибка"
+            }
+        }
+    }
+
+    private fun setupClickListeners() {
+        binding.refreshButton.setOnClickListener {
+            refreshData()
+        }
+
+        // Кнопки управления
+        binding.startButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Запуск", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.stopButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Остановка", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.resetButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Сброс", Toast.LENGTH_SHORT).show()
+        }
+
+        // Кнопки экспорта
+        binding.exportDataButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Экспорт данных", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.exportReportButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Экспорт отчета", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun refreshData() {
+        viewModel.refreshData()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

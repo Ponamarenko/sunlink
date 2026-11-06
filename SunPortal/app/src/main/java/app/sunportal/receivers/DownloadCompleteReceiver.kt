@@ -19,7 +19,7 @@ import javax.inject.Inject
 /**
  * BroadcastReceiver для обработки завершения скачивания
  */
-@AndroidEntryPoint
+//@AndroidEntryPoint
 class DownloadCompleteReceiver : BroadcastReceiver() {
     
     @Inject

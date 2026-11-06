@@ -4,7 +4,41 @@
             "outputFile": "app.sunportal.app-mergeDebugResources-70:/values-en-rGB/values-en-rGB.xml",
             "map": [
                 {
-                    "source": "/root/.gradle/caches/8.9/transforms/5a8cae460cf2f4f0e8efd5277a2aa8d1/transformed/material-1.11.0/res/values-en-rGB/values-en-rGB.xml",
+                    "source": "/root/.gradle/caches/8.9/transforms/b26ba20dc32aee992a6be6bc178f5d81/transformed/jetified-ui-release/res/values-en-rGB/values-en-rGB.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,197,279,373,472,559,641,730,819,903,968,1032,1110,1192,1265,1342,1408",
+                        "endColumns": "91,81,93,98,86,81,88,88,83,64,63,77,81,72,76,65,120",
+                        "endOffsets": "192,274,368,467,554,636,725,814,898,963,1027,1105,1187,1260,1337,1403,1524"
+                    },
+                    "to": {
+                        "startLines": "48,49,50,51,52,56,57,170,171,172,173,175,176,178,180,181,182",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "4397,4489,4571,4665,4764,5073,5155,15576,15665,15749,15814,15956,16034,16199,16373,16450,16516",
+                        "endColumns": "91,81,93,98,86,81,88,88,83,64,63,77,81,72,76,65,120",
+                        "endOffsets": "4484,4566,4660,4759,4846,5150,5239,15660,15744,15809,15873,16029,16111,16267,16445,16511,16632"
+                    }
+                },
+                {
+                    "source": "/root/.gradle/caches/8.9/transforms/4c7054ea589452ec2b5ad1ef9cc7c637/transformed/jetified-foundation-release/res/values-en-rGB/values-en-rGB.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,141",
+                        "endColumns": "85,84",
+                        "endOffsets": "136,221"
+                    },
+                    "to": {
+                        "startLines": "183,184",
+                        "startColumns": "4,4",
+                        "startOffsets": "16637,16723",
+                        "endColumns": "85,84",
+                        "endOffsets": "16718,16803"
+                    }
+                },
+                {
+                    "source": "/root/.gradle/caches/8.9/transforms/3ae00728205e86e09eb36945774edc67/transformed/material-1.11.0/res/values-en-rGB/values-en-rGB.xml",
                     "from": {
                         "startLines": "2,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -23,7 +57,7 @@
                     }
                 },
                 {
-                    "source": "/root/.gradle/caches/8.9/transforms/03e50c9514c062ad9ea3b582c821ea0b/transformed/appcompat-1.6.1/res/values-en-rGB/values-en-rGB.xml",
+                    "source": "/root/.gradle/caches/8.9/transforms/e2468b64d37f62c5a3ddb4e7e34c7df2/transformed/appcompat-1.6.1/res/values-en-rGB/values-en-rGB.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -40,58 +74,7 @@
                     }
                 },
                 {
-                    "source": "/root/.gradle/caches/8.9/transforms/780b9cda40a439ccc5b20b97d728d9f4/transformed/jetified-ui-release/res/values-en-rGB/values-en-rGB.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,197,279,373,472,559,641,730,819,903,968,1032,1110,1192,1265,1342,1408",
-                        "endColumns": "91,81,93,98,86,81,88,88,83,64,63,77,81,72,76,65,120",
-                        "endOffsets": "192,274,368,467,554,636,725,814,898,963,1027,1105,1187,1260,1337,1403,1524"
-                    },
-                    "to": {
-                        "startLines": "48,49,50,51,52,56,57,170,171,172,173,175,176,178,180,181,182",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "4397,4489,4571,4665,4764,5073,5155,15576,15665,15749,15814,15956,16034,16199,16373,16450,16516",
-                        "endColumns": "91,81,93,98,86,81,88,88,83,64,63,77,81,72,76,65,120",
-                        "endOffsets": "4484,4566,4660,4759,4846,5150,5239,15660,15744,15809,15873,16029,16111,16267,16445,16511,16632"
-                    }
-                },
-                {
-                    "source": "/root/.gradle/caches/8.9/transforms/5d17d90909e2d7a03d0b7eed2d02a51f/transformed/jetified-foundation-release/res/values-en-rGB/values-en-rGB.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,141",
-                        "endColumns": "85,84",
-                        "endOffsets": "136,221"
-                    },
-                    "to": {
-                        "startLines": "183,184",
-                        "startColumns": "4,4",
-                        "startOffsets": "16637,16723",
-                        "endColumns": "85,84",
-                        "endOffsets": "16718,16803"
-                    }
-                },
-                {
-                    "source": "/root/.gradle/caches/8.9/transforms/eb299d39525eff0018c68b49e6543ffd/transformed/core-1.12.0/res/values-en-rGB/values-en-rGB.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,151,253,352,451,555,658,774",
-                        "endColumns": "95,101,98,98,103,102,115,100",
-                        "endOffsets": "146,248,347,446,550,653,769,870"
-                    },
-                    "to": {
-                        "startLines": "38,39,40,41,42,43,44,179",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "3386,3482,3584,3683,3782,3886,3989,16272",
-                        "endColumns": "95,101,98,98,103,102,115,100",
-                        "endOffsets": "3477,3579,3678,3777,3881,3984,4100,16368"
-                    }
-                },
-                {
-                    "source": "/root/.gradle/caches/8.9/transforms/b4086a34d2a1218d1bdc0acc208dbdf8/transformed/jetified-material3-release/res/values-en-rGB/values-en-rGB.xml",
+                    "source": "/root/.gradle/caches/8.9/transforms/d9c46e5c9852c0619ae14873ee66f9d8/transformed/jetified-material3-release/res/values-en-rGB/values-en-rGB.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -105,6 +88,23 @@
                         "startOffsets": "5303,5421,5537,5648,5762,5861,5956,6068,6204,6320,6456,6540,6639,6730,6827,6946,7071,7175,7302,7425,7553,7714,7835,7951,8074,8199,8291,8389,8506,8630,8727,8829,8931,9061,9200,9306,9405,9483,9579,9673,9760,9847,9949,10031,10115,10216,10317,10417,10516,10604,10710,10811,10915,11035,11117,11217",
                         "endColumns": "117,115,110,113,98,94,111,135,115,135,83,98,90,96,118,124,103,126,122,127,160,120,115,122,124,91,97,116,123,96,101,101,129,138,105,98,77,95,93,86,86,101,81,83,100,100,99,98,87,105,100,103,119,81,99,94",
                         "endOffsets": "5416,5532,5643,5757,5856,5951,6063,6199,6315,6451,6535,6634,6725,6822,6941,7066,7170,7297,7420,7548,7709,7830,7946,8069,8194,8286,8384,8501,8625,8722,8824,8926,9056,9195,9301,9400,9478,9574,9668,9755,9842,9944,10026,10110,10211,10312,10412,10511,10599,10705,10806,10910,11030,11112,11212,11307"
+                    }
+                },
+                {
+                    "source": "/root/.gradle/caches/8.9/transforms/b3e95522592871daed04873a8d6b40d2/transformed/core-1.12.0/res/values-en-rGB/values-en-rGB.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,151,253,352,451,555,658,774",
+                        "endColumns": "95,101,98,98,103,102,115,100",
+                        "endOffsets": "146,248,347,446,550,653,769,870"
+                    },
+                    "to": {
+                        "startLines": "38,39,40,41,42,43,44,179",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "3386,3482,3584,3683,3782,3886,3989,16272",
+                        "endColumns": "95,101,98,98,103,102,115,100",
+                        "endOffsets": "3477,3579,3678,3777,3881,3984,4100,16368"
                     }
                 }
             ]

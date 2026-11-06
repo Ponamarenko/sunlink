@@ -6,6 +6,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.app.Notification
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 
@@ -47,7 +48,7 @@ class RealTimeUpdateService : Service() {
         }
     }
 
-    private fun createNotification(): NotificationCompat.Builder {
+    private fun createNotification(): Notification {
         val channelId = "realtime_updates"
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -65,6 +66,7 @@ class RealTimeUpdateService : Service() {
             .setContentText("Real-time monitoring active")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
     }
 
     companion object {

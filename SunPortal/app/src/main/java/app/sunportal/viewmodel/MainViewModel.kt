@@ -1,11 +1,12 @@
 package app.sunportal.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.viewModelScope
 import app.sunportal.api.RetrofitClient
 import app.sunportal.api.OpenMeteoRetrofitClient
-import app.sunportal.data.InverterData
-import app.sunportal.data.WeatherData
+import app.sunportal.data.model.InverterData
+import app.sunportal.data.model.WeatherData
 import app.sunportal.data.model.OpenMeteoData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +18,8 @@ import java.io.IOException
 /**
  * ViewModel для главного экрана приложения
  */
-class MainViewModel : ViewModel() {
+@dagger.hilt.android.lifecycle.HiltViewModel
+class MainViewModel @javax.inject.Inject constructor() : ViewModel() {
     
     // Состояния приложения
     private val _inverterData = MutableStateFlow<InverterData?>(null)
@@ -89,9 +91,9 @@ class MainViewModel : ViewModel() {
             try {
                 val data = RetrofitClient.apiService.getHistoryData(period = period)
                 // Обработка исторических данных
-                _inverterData.value = _inverterData.value?.copy(
-                    timestamp = System.currentTimeMillis()
-                )
+                _inverterData.value = _inverterData.value?.let { old ->
+                    old.copy(timestamp = System.currentTimeMillis())
+                }
             } catch (e: Exception) {
                 _error.value = "History Error: ${e.message}"
             } finally {

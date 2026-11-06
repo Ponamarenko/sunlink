@@ -1,0 +1,97 @@
+package com.sunportal.mobile.ui
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import com.sunportal.mobile.databinding.FragmentAppearanceBinding
+import com.sunportal.mobile.R
+import android.widget.Toast
+import android.widget.Switch
+
+/**
+ * AppearanceFragment - экран настроек внешнего вида
+ */
+class AppearanceFragment : Fragment() {
+
+    private var _binding: FragmentAppearanceBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAppearanceBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        setupUI()
+        setupClickListeners()
+    }
+
+    private fun setupUI() {
+        // Находим элементы в layout
+        val darkModeSwitch = binding.root.findViewById<Switch>(R.id.dark_mode_switch)
+        val fontSizeSpinner = binding.root.findViewById<Spinner>(R.id.font_size_spinner)
+        val languageSpinner = binding.root.findViewById<Spinner>(R.id.language_spinner)
+        val themeSpinner = binding.root.findViewById<Spinner>(R.id.theme_spinner)
+        val saveButton = binding.root.findViewById<View>(R.id.save_button)
+        
+        // Настройка Switch для темной темы
+        darkModeSwitch?.setOnCheckedChangeListener { _, isChecked ->
+            Toast.makeText(requireContext(), "Тема: ${if (isChecked) "Темная" else "Светлая"}", Toast.LENGTH_SHORT).show()
+        }
+        
+        // Настройка Spinner для размера шрифта
+        val fontSizes = arrayOf("Маленький", "Средний", "Большой")
+        val fontAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, fontSizes)
+        fontAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        fontSizeSpinner?.adapter = fontAdapter
+        
+        // Настройка Spinner для языка
+        val languages = arrayOf("Русский", "English", "Українська")
+        val languageAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, languages)
+        languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        languageSpinner?.adapter = languageAdapter
+        
+        // Настройка Spinner для темы
+        val themes = arrayOf("Material Design 3", "Classic", "Minimal")
+        val themeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, themes)
+        themeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        themeSpinner?.adapter = themeAdapter
+    }
+
+    private fun setupClickListeners() {
+        binding.saveButton?.setOnClickListener {
+            Toast.makeText(requireContext(), "Настройки сохранены", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.resetButton?.setOnClickListener {
+            Toast.makeText(requireContext(), "Настройки сброшены", Toast.LENGTH_SHORT).show()
+        }
+
+        // Кнопки тем
+        binding.lightThemeButton?.setOnClickListener {
+            Toast.makeText(requireContext(), "Светлая тема", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.darkThemeButton?.setOnClickListener {
+            Toast.makeText(requireContext(), "Темная тема", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.autoThemeButton?.setOnClickListener {
+            Toast.makeText(requireContext(), "Автоматическая тема", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

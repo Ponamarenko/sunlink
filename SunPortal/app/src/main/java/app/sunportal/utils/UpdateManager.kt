@@ -3,6 +3,7 @@ package app.sunportal.utils
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
+import android.app.PendingIntent
 import android.content.pm.PackageManager
 import android.content.pm.PackageInfo
 import android.net.Uri
@@ -12,6 +13,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import app.sunportal.R
 import app.sunportal.data.model.UpdateInfo
+import app.sunportal.services.UpdateDownloadService
 import app.sunportal.api.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,7 +22,7 @@ import java.util.UUID
 /**
  * Менеджер обновлений приложения
  */
-class UpdateManager(private val context: Context) {
+class UpdateManager @javax.inject.Inject constructor(private val context: Context) {
     
     private val downloadManager: DownloadManager by lazy {
         context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -177,7 +179,7 @@ class UpdateManager(private val context: Context) {
                 PackageManager.GET_META_DATA
             )
             
-            Pair(packageInfo.versionName, packageInfo.versionCode)
+            Pair(packageInfo.versionName ?: "1.0.32", packageInfo.versionCode)
         } catch (e: PackageManager.NameNotFoundException) {
             Pair("1.0.32", 33) // Версия по умолчанию
         }

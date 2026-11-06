@@ -7,6 +7,8 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.net.Uri
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
@@ -56,7 +58,7 @@ class UpdateDownloadService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_DOWNLOAD_UPDATE -> {
-                updateInfo = intent.getParcelableExtra(EXTRA_UPDATE_INFO)
+                updateInfo = intent.getSerializableExtra(EXTRA_UPDATE_INFO) as? UpdateInfo
                 updateInfo?.let {
                     downloadId = updateManager.downloadUpdate(it)
                     startForeground(downloadId.toInt(), createNotification())
@@ -82,8 +84,8 @@ class UpdateDownloadService : Service() {
             if (downloadId != null && downloadId == this@UpdateDownloadService.downloadId) {
                 serviceScope.launch {
                     val query = updateManager.getDownloadStatus(downloadId)
-                    val cursor = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                        .query(query)
+                    val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                    val cursor = downloadManager.query(query)
                     
                     if (cursor.moveToFirst()) {
                         val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))

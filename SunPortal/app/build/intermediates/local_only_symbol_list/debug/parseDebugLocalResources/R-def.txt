@@ -41,6 +41,7 @@ drawable ic_battery
 drawable ic_charts
 drawable ic_forecast
 drawable ic_home
+drawable ic_launcher_foreground
 drawable ic_live
 drawable ic_overview
 drawable ic_settings
@@ -64,6 +65,8 @@ id nav_view
 layout activity_main
 layout nav_header_main
 menu nav_menu_main
+mipmap ic_launcher
+mipmap ic_launcher_round
 string about_app
 string about_license
 string about_support

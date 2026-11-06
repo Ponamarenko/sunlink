@@ -5,12 +5,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import com.sunlink.svitgrid.data.SettingsRepository
+import com.sunlink.svitgrid.network.RetrofitClient
 import androidx.navigation.NavHostController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sunlink.svitgrid.viewmodel.MainViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -19,6 +26,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SvitGridApp() {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        val repo = SettingsRepository(context)
+        RetrofitClient.setBaseUrl(repo.getBaseUrl())
+    }
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -94,44 +106,50 @@ fun SvitGridApp() {
 }
 
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(vm: MainViewModel = viewModel()) {
+    val data by vm.data.collectAsState()
+    val loading by vm.loading.collectAsState()
+    val error by vm.error.collectAsState()
+    LaunchedEffect(Unit) { vm.loadLive() }
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Головна панель", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
-            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Потужність", style = MaterialTheme.typography.titleMedium)
-                Text("2,500 Вт", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            }
-        }
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
-            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Напруга", style = MaterialTheme.typography.titleMedium)
-                Text("230 В", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
-            }
-        }
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
-            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Батарея", style = MaterialTheme.typography.titleMedium)
-                Text("75%", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+        if (loading) CircularProgressIndicator()
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+        data?.forEach { (k, v) ->
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(k, style = MaterialTheme.typography.titleMedium)
+                        Text("$v", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun LiveScreen() {
+fun LiveScreen(vm: MainViewModel = viewModel()) {
+    val data by vm.data.collectAsState()
+    val loading by vm.loading.collectAsState()
+    val error by vm.error.collectAsState()
+    LaunchedEffect(Unit) { vm.loadLive() }
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text("Моніторинг в реальному часі", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        if (loading) CircularProgressIndicator()
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Поточна потужність: 2,500 Вт", style = MaterialTheme.typography.bodyLarge)
-                Text("Напруга: 230 В", style = MaterialTheme.typography.bodyLarge)
-                Text("Струм: 10.9 А", style = MaterialTheme.typography.bodyLarge)
-                Text("Температура: 35°C", style = MaterialTheme.typography.bodyLarge)
-                Text("Статус: Онлайн", style = MaterialTheme.typography.bodyLarge)
+                if (data != null) {
+                    data!!.forEach { (k, v) -> Text("$k: $v", style = MaterialTheme.typography.bodyLarge) }
+                } else {
+                    Text("Немає даних", style = MaterialTheme.typography.bodyLarge)
+                }
             }
         }
     }
@@ -199,11 +217,13 @@ fun ForecastScreen() {
 }
 
 @Composable
-fun SettingsScreen() {
-    var serverAddress by remember { mutableStateOf("sunline.pp.ua") }
-    var serverPort by remember { mutableStateOf("8000") }
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun SettingsScreen(vm: MainViewModel = viewModel()) {
+    val context = LocalContext.current
+    val repo = remember { SettingsRepository(context) }
+    var serverAddress by remember { mutableStateOf(repo.serverAddress) }
+    var serverPort by remember { mutableStateOf(repo.serverPort) }
+    var username by remember { mutableStateOf(repo.username) }
+    var password by remember { mutableStateOf(repo.password) }
     var savedMessage by remember { mutableStateOf("") }
 
     Column(
@@ -250,6 +270,11 @@ fun SettingsScreen() {
                 
                 Button(
                     onClick = {
+                        repo.serverAddress = serverAddress
+                        repo.serverPort = serverPort
+                        repo.username = username
+                        repo.password = password
+                        RetrofitClient.setBaseUrl(repo.getBaseUrl())
                         savedMessage = "Налаштування збережено: $serverAddress:$serverPort"
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -260,6 +285,14 @@ fun SettingsScreen() {
                 if (savedMessage.isNotEmpty()) {
                     Text(savedMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 }
+                val connStatus by vm.error.collectAsState()
+                val loading by vm.loading.collectAsState()
+                Button(
+                    onClick = { vm.checkConnection() },
+                    enabled = !loading,
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text(if (loading) "Перевірка..." else "Тест підключення") }
+                connStatus?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
         }
         
@@ -288,7 +321,7 @@ fun AboutScreen() {
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("SunLink", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Версія: 1.7.0", style = MaterialTheme.typography.bodyLarge)
+                Text("Версія: 2.7.2", style = MaterialTheme.typography.bodyLarge)
                 Text("Розробник: Ponamarenko", style = MaterialTheme.typography.bodyLarge)
                 Text("Ліцензія: MIT", style = MaterialTheme.typography.bodyLarge)
                 Text("© 2026 Ponamarenko", style = MaterialTheme.typography.bodySmall)
@@ -312,8 +345,19 @@ fun AboutScreen() {
                         isChecking = true
                         updateStatus = "Перевірка..."
                         scope.launch {
-                            kotlinx.coroutines.delay(2000)
-                            updateStatus = "Остання версія: v1.7.0\nВи використовуєте актуальну версію"
+                            try {
+                                val client = okhttp3.OkHttpClient()
+                                val request = okhttp3.Request.Builder()
+                                    .url("https://api.github.com/repos/Ponamarenko/sunlink/releases/latest")
+                                    .header("User-Agent", "SunLink-App")
+                                    .header("Accept", "application/vnd.github+json")
+                                    .build()
+                                val response = client.newCall(request).execute()
+                                val body = response.body?.string() ?: ""
+                                updateStatus = "HTTP ${response.code} len=${body.length}\n${body.take(200)}"
+                            } catch (e: Exception) {
+                                updateStatus = "Помилка: ${e.message}"
+                            }
                             isChecking = false
                         }
                     },

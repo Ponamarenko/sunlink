@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:text="INFO"
                 android:textSize="12sp"
-                android:textColor="@color/solar_blue"
+                android:textColor="@color/md_theme_light_primary"
                 android:background="@drawable/rounded_background"
                 android:padding="4dp"/>
 

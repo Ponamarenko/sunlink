@@ -29,6 +29,6 @@
         app:menu="@menu/drawer_menu"
         app:itemTextColor="@color/svitgrid_text_primary"
         app:itemIconTint="@color/svitgrid_primary"
-        app:itemBackground="@color/svitgrid_surface"/>
+        app:itemBackground="@color/md_theme_light_surface"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

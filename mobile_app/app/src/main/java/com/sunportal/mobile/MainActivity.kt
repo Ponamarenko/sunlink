@@ -10,6 +10,10 @@ import androidx.appcompat.widget.Toolbar
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.fragment.app.Fragment
+import com.sunportal.mobile.ui.dashboard.DashboardFragment
+import com.sunportal.mobile.ui.AboutFragment
+import com.sunportal.mobile.viewmodel.MainViewModel
 
 /**
  * MainActivity - главный экран приложения SunLink
@@ -70,17 +74,27 @@ class MainActivity : AppCompatActivity(), OnNavigationItemSelectedListener {
                 loadFragment(DashboardFragment())
                 toolbar.title = "SunLink"
             }
+            R.id.nav_live -> {
+                Toast.makeText(this, "Real-time в разработке", Toast.LENGTH_SHORT).show()
+            }
+            R.id.nav_charts -> {
+                Toast.makeText(this, "Графики в разработке", Toast.LENGTH_SHORT).show()
+            }
+            R.id.nav_battery -> {
+                Toast.makeText(this, "Батарея в разработке", Toast.LENGTH_SHORT).show()
+            }
+            R.id.nav_forecast -> {
+                Toast.makeText(this, "Прогноз в разработке", Toast.LENGTH_SHORT).show()
+            }
             R.id.nav_about -> {
                 loadFragment(AboutFragment())
-                toolbar.title = "Про додаток"
+                toolbar.title = "О приложении"
             }
             R.id.nav_connection -> {
-                loadFragment(ConnectionFragment())
-                toolbar.title = "Підключення"
+                Toast.makeText(this, "Підключення в разработке", Toast.LENGTH_SHORT).show()
             }
             R.id.nav_appearance -> {
-                loadFragment(AppearanceFragment())
-                toolbar.title = "Вигляд"
+                Toast.makeText(this, "Вигляд в разработке", Toast.LENGTH_SHORT).show()
             }
             else -> {
                 Toast.makeText(this, "Функция в разработке", Toast.LENGTH_SHORT).show()

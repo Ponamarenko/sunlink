@@ -1,0 +1,55 @@
+package com.sunportal.mobile.ui
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import com.sunportal.mobile.databinding.FragmentAboutBinding
+import com.sunportal.mobile.R
+
+/**
+ * AboutFragment - экран "О приложении"
+ */
+class AboutFragment : Fragment() {
+
+    private var _binding: FragmentAboutBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentAboutBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        setupUI()
+    }
+
+    private fun setupUI() {
+        // Находим элементы в layout
+        val versionText = binding.root.findViewById<TextView>(R.id.version_text)
+        val descriptionText = binding.root.findViewById<TextView>(R.id.description_text)
+        val copyrightText = binding.root.findViewById<TextView>(R.id.copyright_text)
+        val backButton = binding.root.findViewById<View>(R.id.back_button)
+        
+        versionText?.text = "Версия 1.2.0"
+        descriptionText?.text = "SunLink - современное приложение для мониторинга солнечных систем"
+        copyrightText?.text = "© 2026 Ponamarenko"
+        
+        backButton?.setOnClickListener {
+            requireActivity().onBackPressed()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
