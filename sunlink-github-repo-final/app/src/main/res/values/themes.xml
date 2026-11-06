@@ -1,0 +1,164 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.SunLink" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/sunlink_orange</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+        
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/sunlink_orange</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
+        
+        <!-- Tertiary brand color. -->
+        <item name="colorTertiary">@color/sunlink_orange</item>
+        <item name="colorOnTertiary">@color/white</item>
+        <item name="colorTertiaryContainer">@color/md_theme_light_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_light_onTertiaryContainer</item>
+        
+        <!-- Error color. -->
+        <item name="colorError">@color/md_theme_light_error</item>
+        <item name="colorOnError">@color/md_theme_light_onError</item>
+        <item name="colorErrorContainer">@color/md_theme_light_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_light_onErrorContainer</item>
+        
+        <!-- Background color. -->
+        <item name="android:colorBackground">@color/md_theme_light_background</item>
+        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        
+        <!-- Surface color. -->
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        
+        <!-- Surface color variant. -->
+        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        
+        <!-- Outline color. -->
+        <item name="colorOutline">@color/md_theme_light_outline</item>
+        <item name="colorOutlineVariant">@color/md_theme_light_outlineVariant</item>
+        
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/sunlink_orange</item>
+        
+        <!-- Navigation bar color. -->
+        <item name="android:navigationBarColor">@color/md_theme_light_surface</item>
+        
+        <!-- Window background. -->
+        <item name="android:windowBackground">@color/md_theme_light_background</item>
+        
+        <!-- Action bar color. -->
+        <item name="android:actionBarStyle">@style/Theme.SunLink.ActionBar</item>
+        
+        <!-- Enable edge-to-edge. -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+    </style>
+    
+    <!-- Action bar style. -->
+    <style name="Theme.SunLink.ActionBar" parent="Widget.Material3.ActionBar.Surface">
+        <item name="android:background">@color/sunlink_orange</item>
+        <item name="android:titleTextStyle">@style/Theme.SunLink.ActionBar.TitleTextStyle</item>
+    </style>
+    
+    <!-- Action bar title text style. -->
+    <style name="Theme.SunLink.ActionBar.TitleTextStyle" parent="TextAppearance.Material3.ActionBar.Title">
+        <item name="android:textColor">@color/white</item>
+    </style>
+    
+    <!-- Card view style. -->
+    <style name="Theme.SunLink.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardBackgroundColor">@color/md_theme_light_surface</item>
+    </style>
+    
+    <!-- Button style. -->
+    <style name="Theme.SunLink.Button" parent="Widget.Material3.Button">
+        <item name="android:textColor">@color/white</item>
+        <item name="backgroundTint">@color/sunlink_orange</item>
+        <item name="cornerRadius">24dp</item>
+    </style>
+    
+    <!-- Elevated button style. -->
+    <style name="Theme.SunLink.Button.Elevated" parent="Widget.Material3.Button.ElevatedButton">
+        <item name="android:textColor">@color/sunlink_orange</item>
+        <item name="backgroundTint">@color/md_theme_light_surface</item>
+        <item name="cornerRadius">24dp</item>
+    </style>
+    
+    <!-- Text button style. -->
+    <style name="Theme.SunLink.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">@color/sunlink_orange</item>
+    </style>
+    
+    <!-- Chip style. -->
+    <style name="Theme.SunLink.Chip" parent="Widget.Material3.Chip.Input">
+        <item name="chipBackgroundColor">@color/md_theme_light_primaryContainer</item>
+        <item name="chipTextColor">@color/md_theme_light_onPrimaryContainer</item>
+        <item name="chipStrokeColor">@color/md_theme_light_outline</item>
+    </style>
+    
+    <!-- Navigation bar style. -->
+    <style name="Theme.SunLink.NavigationBar" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/sunlink_orange</item>
+        <item name="itemTextColor">@color/sunlink_orange</item>
+        <item name="itemRippleColor">@color/sunlink_orange</item>
+        <item name="backgroundColor">@color/md_theme_light_surface</item>
+    </style>
+    
+    <!-- Dark theme variant. -->
+    <style name="Theme.SunLink.Dark" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/md_theme_dark_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_dark_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_dark_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_dark_onPrimaryContainer</item>
+        
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/md_theme_dark_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_dark_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_dark_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_dark_onSecondaryContainer</item>
+        
+        <!-- Tertiary brand color. -->
+        <item name="colorTertiary">@color/md_theme_dark_tertiary</item>
+        <item name="colorOnTertiary">@color/md_theme_dark_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_dark_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_dark_onTertiaryContainer</item>
+        
+        <!-- Error color. -->
+        <item name="colorError">@color/md_theme_dark_error</item>
+        <item name="colorOnError">@color/md_theme_dark_onError</item>
+        <item name="colorErrorContainer">@color/md_theme_dark_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_theme_dark_onErrorContainer</item>
+        
+        <!-- Background color. -->
+        <item name="android:colorBackground">@color/md_theme_dark_background</item>
+        <item name="colorOnBackground">@color/md_theme_dark_onBackground</item>
+        
+        <!-- Surface color. -->
+        <item name="colorSurface">@color/md_theme_dark_surface</item>
+        <item name="colorOnSurface">@color/md_theme_dark_onSurface</item>
+        
+        <!-- Surface color variant. -->
+        <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_dark_onSurfaceVariant</item>
+        
+        <!-- Outline color. -->
+        <item name="colorOutline">@color/md_theme_dark_outline</item>
+        <item name="colorOutlineVariant">@color/md_theme_dark_outlineVariant</item>
+        
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/md_theme_dark_primary</item>
+        
+        <!-- Navigation bar color. -->
+        <item name="android:navigationBarColor">@color/md_theme_dark_surface</item>
+        
+        <!-- Window background. -->
+        <item name="android:windowBackground">@color/md_theme_dark_background</item>
+    </style>
+</resources>
