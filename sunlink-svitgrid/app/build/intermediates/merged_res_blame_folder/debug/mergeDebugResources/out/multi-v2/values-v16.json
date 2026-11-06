@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.sunlink.svitgrid.app-mergeDebugResources-51:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "/root/.gradle/caches/8.9/transforms/82fcd6fab8ca1b56a6ab594eb0297c73/transformed/core-1.12.0/res/values-v16/values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
+                    }
+                }
+            ]
+        }
+    ]
+}
