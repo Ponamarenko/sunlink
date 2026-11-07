@@ -100,6 +100,17 @@ int drawable notification_template_icon_bg 0x7f04000f
 int drawable notification_template_icon_low_bg 0x7f040010
 int drawable notification_tile_bg 0x7f040011
 int drawable notify_panel_notification_icon_bg 0x7f040012
+int drawable svit_device_ed1_rs485 0x7f040013
+int drawable svit_device_ed1_wifi 0x7f040014
+int drawable svit_house 0x7f040015
+int drawable svit_household_apartment 0x7f040016
+int drawable svit_household_cabin 0x7f040017
+int drawable svit_household_cottage 0x7f040018
+int drawable svit_household_farm 0x7f040019
+int drawable svit_household_greenhouse 0x7f04001a
+int drawable svit_household_shop 0x7f04001b
+int drawable svit_household_solar_array 0x7f04001c
+int drawable svit_household_workshop 0x7f04001d
 int id accessibility_action_clickable_span 0x7f050000
 int id accessibility_custom_action_0 0x7f050001
 int id accessibility_custom_action_1 0x7f050002

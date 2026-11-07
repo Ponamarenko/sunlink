@@ -101,6 +101,17 @@ drawable notification_template_icon_bg
 drawable notification_template_icon_low_bg
 drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
+drawable svit_device_ed1_rs485
+drawable svit_device_ed1_wifi
+drawable svit_house
+drawable svit_household_apartment
+drawable svit_household_cabin
+drawable svit_household_cottage
+drawable svit_household_farm
+drawable svit_household_greenhouse
+drawable svit_household_shop
+drawable svit_household_solar_array
+drawable svit_household_workshop
 id accessibility_action_clickable_span
 id accessibility_custom_action_0
 id accessibility_custom_action_1

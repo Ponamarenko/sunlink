@@ -1,2 +1,13 @@
 R_DEF: Internal format may change without notice
 local
+drawable svit_device_ed1_rs485
+drawable svit_device_ed1_wifi
+drawable svit_house
+drawable svit_household_apartment
+drawable svit_household_cabin
+drawable svit_household_cottage
+drawable svit_household_farm
+drawable svit_household_greenhouse
+drawable svit_household_shop
+drawable svit_household_solar_array
+drawable svit_household_workshop
