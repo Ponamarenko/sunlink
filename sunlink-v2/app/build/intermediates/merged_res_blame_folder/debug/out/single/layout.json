@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-mergeDebugResources-47:/layout/fragment_about.xml",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/fragment_about.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-mergeDebugResources-47:/layout/fragment_dashboard.xml",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/fragment_dashboard.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-mergeDebugResources-47:/layout/fragment_connection.xml",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/fragment_connection.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-mergeDebugResources-47:/layout/nav_header_main.xml",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/nav_header_main.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-mergeDebugResources-47:/layout/fragment_appearance.xml",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/fragment_appearance.xml"
+    },
+    {
+        "merged": "com.sunlink.v2.app-mergeDebugResources-47:/layout/fragment_about.xml",
+        "source": "com.sunlink.v2.app-main-50:/layout/fragment_about.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-mergeDebugResources-47:/layout/activity_main.xml",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/activity_main.xml"
+    }
+]

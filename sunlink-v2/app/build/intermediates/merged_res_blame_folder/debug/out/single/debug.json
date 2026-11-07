@@ -1,0 +1,106 @@
+[
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-mdpi_ic_launcher_round.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-mdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/drawable_ic_about.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/drawable/ic_about.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-xxhdpi_ic_launcher.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-xxhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-xhdpi_ic_launcher_round.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-xhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/layout_activity_main.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.sunlink.v2.app-merged_res-48:/layout_fragment_about.xml.flat",
+        "source": "com.sunlink.v2.app-main-50:/layout/fragment_about.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/layout_nav_header_main.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/nav_header_main.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/layout_fragment_dashboard.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/fragment_dashboard.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap_ic_launcher_foreground.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/drawable_ic_appearance.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/drawable/ic_appearance.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-mdpi_ic_launcher.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-mdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-xhdpi_ic_launcher.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-xhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/drawable_ic_dashboard.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/drawable/ic_dashboard.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-hdpi_ic_launcher.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-hdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/drawable_rounded_background.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/drawable/rounded_background.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-xxxhdpi_ic_launcher.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-xxxhdpi/ic_launcher.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-xxhdpi_ic_launcher_round.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-xxhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-xxxhdpi_ic_launcher_round.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-xxxhdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/menu_drawer_menu.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/menu/drawer_menu.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/drawable_ic_menu.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/drawable/ic_menu.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/mipmap-hdpi_ic_launcher_round.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/mipmap-hdpi/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/layout_fragment_appearance.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/fragment_appearance.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/layout_fragment_about.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/fragment_about.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/drawable_ic_connection.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/drawable/ic_connection.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-merged_res-48:/layout_fragment_connection.xml.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.v2.app-main-50:/layout/fragment_connection.xml"
+    }
+]
