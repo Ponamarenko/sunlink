@@ -88,3 +88,8 @@ monitoring:
   health_check_interval: 30  # Секунд
   performance_metrics: true
   error_alerts: true
+# Настройки геолокации для погоды
+weather:
+  lat: 50.35  # Киев
+  lon: 30.95
+  timezone: "Europe/Kiev"

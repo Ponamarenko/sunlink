@@ -490,3 +490,101 @@ if __name__ == "__main__":
         reload=False,
         log_level="info"
     )
+# Эндпоинты для погоды и прогноза
+import httpx
+from typing import Optional
+
+# WMO-коды для иконок
+WMO_ICONS = {
+    0: "☀️", 1: "🌤", 2: "⛅", 3: "☁️",
+    45: "🌫", 48: "🌫", 51: "🌦", 53: "🌦",
+    55: "🌦", 61: "🌧", 63: "🌧", 65: "🌧",
+    71: "🌨", 73: "🌨", 75: "🌨", 77: "🌨",
+    80: "🌦", 81: "🌧", 82: "🌧", 85: "🌨",
+    86: "🌨", 95: "⛈", 96: "⛈", 99: "⛈"
+}
+
+WMO_DESC = {
+    0: "Ясно", 1: "Переважно ясно", 2: "Частково хмарно",
+    3: "Хмарно", 45: "Туман", 48: "Туман з інеєм",
+    51: "Легка мряка", 53: "Помірна мряка", 55: "Густа мряка",
+    61: "Легкий дощ", 63: "Помірний дощ", 65: "Сильний дощ",
+    71: "Легкий сніг", 73: "Помірний сніг", 75: "Сильний сніг",
+    77: "Снігові зерна", 80: "Легкі зливи", 81: "Помірні зливи",
+    82: "Сильні зливи", 85: "Легкий сніг", 86: "Сильний сніг",
+    95: "Гроза", 96: "Гроза з градом", 99: "Сильна гроза"
+}
+
+@app.get("/weather")
+async def get_weather():
+    """Поточна погода з Open-Meteo"""
+    try:
+        lat = 50.35  # Київ
+        lon = 30.95
+        
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude": lat,
+            "longitude": lon,
+            "current": "temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,apparent_temperature",
+            "timezone": "Europe/Kiev"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=10.0)
+            data = response.json()
+        
+        current = data.get("current", {})
+        code = current.get("weather_code", 0)
+        
+        return {
+            "temp": current.get("temperature_2m", 0),
+            "feels": current.get("apparent_temperature", 0),
+            "humidity": current.get("relative_humidity_2m", 0),
+            "wind": current.get("wind_speed_10m", 0),
+            "code": code,
+            "icon": WMO_ICONS.get(code, "❓"),
+            "desc": WMO_DESC.get(code, "Невідомо")
+        }
+    except Exception as e:
+        logger.error(f"Помилка отримання погоди: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/forecast")
+async def get_forecast():
+    """Прогноз на 3 дні з Open-Meteo"""
+    try:
+        lat = 50.35  # Київ
+        lon = 30.95
+        
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude": lat,
+            "longitude": lon,
+            "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code",
+            "timezone": "Europe/Kiev",
+            "forecast_days": 3
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=10.0)
+            data = response.json()
+        
+        daily = data.get("daily", {})
+        days = []
+        
+        for i in range(len(daily.get("time", []))):
+            code = daily.get("weather_code", [])[i] if i < len(daily.get("weather_code", [])) else 0
+            days.append({
+                "date": daily.get("time", [])[i],
+                "temp_max": daily.get("temperature_2m_max", [])[i],
+                "temp_min": daily.get("temperature_2m_min", [])[i],
+                "precip": daily.get("precipitation_probability_max", [])[i],
+                "icon": WMO_ICONS.get(code, "❓"),
+                "desc": WMO_DESC.get(code, "Невідомо")
+            })
+        
+        return {"days": days}
+    except Exception as e:
+        logger.error(f"Помилка отримання прогнозу: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

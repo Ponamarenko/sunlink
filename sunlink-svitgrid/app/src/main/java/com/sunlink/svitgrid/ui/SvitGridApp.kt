@@ -117,45 +117,57 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
     LaunchedEffect(Unit) { vm.loadLive() }
     
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        // Заголовок
         Text("Моніторинг сонячної системи", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         
-        // Проста візуалізація потоку енергії
-        Box(
-            modifier = Modifier.fillMaxWidth().height(300.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            if (loading) {
+        if (loading) {
+            Box(modifier = Modifier.fillMaxWidth().height(400.dp), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
-            } else if (error != null) {
-                Text(error!!, color = MaterialTheme.colorScheme.error)
-            } else if (data == null) {
-                Text("Немає даних")
-            } else {
-                val d = data!!
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // Сонячні панелі
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.Info, contentDescription = "Сонячні панелі", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
-                        Text("${d["power_dc"]} Вт DC", style = MaterialTheme.typography.titleMedium)
+            }
+            return
+        }
+        
+        error?.let {
+            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
+            return
+        }
+        
+        val d = data
+        if (d != null) {
+            // Потужність PV
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("PV", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("${d["power_dc"]} Вт", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    }
+                }
+                
+                Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("AC", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("${d["power_ac"]} Вт", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            
+            // Візуалізація потоку енергії
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Схема потоків", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(16.dp))
+                    
+                    // PV → Інвертор
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Info, contentDescription = "PV", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Потік", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.Info, contentDescription = "Інвертор", tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(24.dp))
                     }
                     
-                    // Стрілка
-                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Потік", tint = MaterialTheme.colorScheme.primary)
+                    Spacer(Modifier.height(8.dp))
                     
-                    // Інвертор
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.Info, contentDescription = "Інвертор", tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(32.dp))
-                        Text("${d["power_ac"]} Вт AC", style = MaterialTheme.typography.titleMedium)
-                    }
-                    
-                    // Стрілка
-                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Потік", tint = MaterialTheme.colorScheme.primary)
-                    
-                    // Батарея та Мережа
-                    Row(horizontalArrangement = Arrangement.spacedBy(32.dp)) {
+                    // Інвертор → Батарея/Мережа
+                    Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.Favorite, contentDescription = "Батарея", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
                             Text("${d["battery_soc"]}%", style = MaterialTheme.typography.bodySmall)
@@ -168,11 +180,8 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
                     }
                 }
             }
-        }
-        
-        // Додаткова інформація
-        if (data != null) {
-            val d = data!!
+            
+            // Додаткова інформація
             val stats = listOf(
                 "Ефективність" to "${d["efficiency"]} %",
                 "Енергія сьогодні" to "${d["energy_today"]} кВт·год",
@@ -197,6 +206,8 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
                     }
                 }
             }
+        } else {
+            Text("Немає даних", style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
