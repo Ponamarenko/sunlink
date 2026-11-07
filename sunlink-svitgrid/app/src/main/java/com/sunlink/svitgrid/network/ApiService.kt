@@ -22,4 +22,10 @@ interface ApiService {
 
     @GET("api/v1/health")
     suspend fun getHealth(): Response<Map<String, Any>>
+
+    @GET("weather")
+    suspend fun getWeather(): Response<Map<String, Any>>
+
+    @GET("forecast")
+    suspend fun getForecast(): Response<Map<String, Any>>
 }
