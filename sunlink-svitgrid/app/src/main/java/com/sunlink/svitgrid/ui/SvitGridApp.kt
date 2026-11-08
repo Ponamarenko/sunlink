@@ -97,11 +97,11 @@ fun SvitGridApp() {
                 startDestination = "dashboard",
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable("dashboard") { DashboardScreen() }
+                composable("dashboard") { com.sunlink.svitgrid.ui.dashboard.DashboardScreen() }
                 composable("live") { LiveScreen() }
                 composable("charts") { ChartsScreen() }
                 composable("battery") { BatteryScreen() }
-                composable("forecast") { ForecastScreen() }
+                composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen() }
                 composable("settings") { SettingsScreen() }
                 composable("about") { AboutScreen() }
             }
@@ -318,26 +318,7 @@ fun BatteryScreen(vm: MainViewModel = viewModel()) {
     }
 }
 
-@Composable
-fun ForecastScreen() {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Погода та прогноз", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Погода: Сонячно, 25°C", style = MaterialTheme.typography.bodyLarge)
-                Text("Вологість: 60%", style = MaterialTheme.typography.bodyLarge)
-                Text("Вітер: 5 м/с", style = MaterialTheme.typography.bodyLarge)
-            }
-        }
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Прогноз енергії", style = MaterialTheme.typography.titleMedium)
-                Text("Завтра: 15.2 кВт·год", style = MaterialTheme.typography.bodyLarge)
-                Text("Тиждень: 98.5 кВт·год", style = MaterialTheme.typography.bodyLarge)
-            }
-        }
-    }
-}
+
 
 @Composable
 fun SettingsScreen(vm: MainViewModel = viewModel()) {
