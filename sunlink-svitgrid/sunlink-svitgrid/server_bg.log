@@ -1,0 +1,93 @@
+/root/opt/sunlink-svitgrid/sunlink-svitgrid/server/deye_gateway.py:360: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+/root/opt/sunlink-svitgrid/sunlink-svitgrid/server/deye_gateway.py:367: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("shutdown")
+INFO:     Started server process [28699]
+INFO:     Waiting for application startup.
+2026-11-08 11:34:03,376 - deye_gateway - INFO - Starting Deye Gateway Server
+2026-11-08 11:34:03,376 - deye_gateway - INFO - Server ready - waiting for inverter connection
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8800 (Press CTRL+C to quit)
+2026-11-08 11:34:15,808 - pymodbus.logging - ERROR - Connection to (192.168.1.100, 502) failed: timed out
+2026-11-08 11:34:15,809 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:34:15,809 - deye_gateway - ERROR - Error reading register 184: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:34:25,818 - pymodbus.logging - ERROR - Repeating....
+2026-11-08 11:34:25,818 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:34:25,818 - deye_gateway - ERROR - Error reading register 185: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:34:35,829 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:34:35,829 - deye_gateway - ERROR - Error reading register 186: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:34:45,838 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:34:45,838 - deye_gateway - ERROR - Error reading register 190: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:34:55,848 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:34:55,848 - deye_gateway - ERROR - Error reading register 191: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:35:05,858 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:35:05,859 - deye_gateway - ERROR - Error reading register 186: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:35:15,870 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:35:15,870 - deye_gateway - ERROR - Error reading register 187: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:35:25,876 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:35:25,876 - deye_gateway - ERROR - Error reading register 188: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:35:35,884 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:35:35,884 - deye_gateway - ERROR - Error reading register 109: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:35:45,892 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:35:45,892 - deye_gateway - ERROR - Error reading register 110: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:35:55,898 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:35:55,898 - deye_gateway - ERROR - Error reading register 111: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:36:05,902 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:36:05,902 - deye_gateway - ERROR - Error reading register 112: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:36:15,911 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:36:15,912 - deye_gateway - ERROR - Error reading register 113: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:36:25,919 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:36:25,920 - deye_gateway - ERROR - Error reading register 114: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:36:35,927 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:36:35,927 - deye_gateway - ERROR - Error reading register 150: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:36:45,936 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:36:45,936 - deye_gateway - ERROR - Error reading register 151: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:36:55,947 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:36:55,947 - deye_gateway - ERROR - Error reading register 166: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:37:05,955 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:37:05,955 - deye_gateway - ERROR - Error reading register 167: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:37:15,964 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:37:15,964 - deye_gateway - ERROR - Error reading register 172: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:37:25,973 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:37:25,973 - deye_gateway - ERROR - Error reading register 175: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:37:35,984 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:37:35,984 - deye_gateway - ERROR - Error reading register 176: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:37:45,995 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:37:45,995 - deye_gateway - ERROR - Error reading register 60: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:37:56,004 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:37:56,005 - deye_gateway - ERROR - Error reading register 63: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:38:06,013 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:38:06,013 - deye_gateway - ERROR - Error reading register 74: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:38:16,024 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:38:16,024 - deye_gateway - ERROR - Error reading register 76: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:38:26,035 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:38:26,035 - deye_gateway - ERROR - Error reading register 78: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:38:36,044 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:38:36,045 - deye_gateway - ERROR - Error reading register 80: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:38:46,055 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:38:46,055 - deye_gateway - ERROR - Error reading register 84: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:38:56,066 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:38:56,066 - deye_gateway - ERROR - Error reading register 85: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:39:06,077 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:39:06,077 - deye_gateway - ERROR - Error reading register 192: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:39:16,087 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:39:16,088 - deye_gateway - ERROR - Error reading register 103: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+2026-11-08 11:39:26,099 - deye_gateway - ERROR - Failed to connect to Deye inverter
+2026-11-08 11:39:26,099 - deye_gateway - ERROR - Error reading register 104: ModbusClientMixin.read_holding_registers() got an unexpected keyword argument 'slave_id'
+INFO:     127.0.0.1:49634 - "GET /live HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-11-08 11:39:26,201 - deye_gateway - INFO - Shutting down Deye Gateway Server
+2026-11-08 11:39:26,201 - deye_gateway - INFO - Disconnected from Deye inverter
+INFO:     Application shutdown complete.
+INFO:     Finished server process [28699]

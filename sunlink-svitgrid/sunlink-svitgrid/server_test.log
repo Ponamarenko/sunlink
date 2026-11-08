@@ -1,0 +1,20 @@
+/root/opt/sunlink-svitgrid/sunlink-svitgrid/server/deye_gateway.py:360: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+/root/opt/sunlink-svitgrid/sunlink-svitgrid/server/deye_gateway.py:367: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("shutdown")
+INFO:     Started server process [27583]
+INFO:     Waiting for application startup.
+2026-11-08 11:31:27,049 - deye_gateway - INFO - Starting Deye Gateway Server
+2026-11-08 11:31:27,049 - deye_gateway - INFO - Server ready - waiting for inverter connection
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8800 (Press CTRL+C to quit)
