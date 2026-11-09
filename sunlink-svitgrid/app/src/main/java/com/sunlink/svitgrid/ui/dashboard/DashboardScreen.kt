@@ -70,8 +70,25 @@ private val Mono = FontFamily.Monospace
 
 private fun num(data: Map<String, Any>, key: String): Float? = when (val v = data[key]) {
     is Number -> v.toFloat()
+    is String -> v.toFloatOrNull()
     is Map<*, *> -> (v["value"] as? Number)?.toFloat()
+        ?: (v["value"] as? String)?.toFloatOrNull()
     else -> null
+}
+
+private fun firstNum(data: Map<String, Any>, vararg keys: String): Float? {
+    for (k in keys) num(data, k)?.let { return it }
+    return null
+}
+
+private fun fmt(v: Float?, decimals: Int = 1, suffix: String = ""): String {
+    if (v == null) return "—"
+    return "%.${decimals}f%s".format(v, suffix)
+}
+
+private fun fmtInt(v: Float?, suffix: String = ""): String {
+    if (v == null) return "—"
+    return "${v.toInt()}$suffix"
 }
 
 @Composable
@@ -95,7 +112,7 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
         TimelineSection()
         PVSection(d)
         FlowSchemeSection(d, Modifier.weight(1f))
-        // Нижню навігацію прибрано (використовується сендвіч-меню / drawer)
+        // Нижню навігацію прибрано (сендвіч-меню / drawer)
     }
 }
 
@@ -169,14 +186,32 @@ private fun TimelineSection() {
     }
 }
 
+private data class PvRow(val name: String, val v: Float?, val a: Float?, val w: Float?)
+
 @Composable
 private fun PVSection(data: Map<String, Any>) {
-    val pSun = num(data, "p_sun") ?: num(data, "power_dc") ?: 0f
-    val pvData = listOf(
-        Triple("PV1", num(data, "pv1_voltage") ?: 0f, num(data, "pv1_current") ?: 0f),
-        Triple("PV2", num(data, "pv2_voltage") ?: 0f, num(data, "pv2_current") ?: 0f),
-        Triple("PV3", num(data, "pv3_voltage") ?: 0f, num(data, "pv3_current") ?: 0f),
+    val pSun = firstNum(data, "p_sun", "power_dc")
+    val rows = listOf(
+        PvRow(
+            "PV1",
+            firstNum(data, "pv1_voltage", "pv_voltage_1", "voltage_pv1"),
+            firstNum(data, "pv1_current", "pv_current_1", "current_pv1"),
+            firstNum(data, "p_string1", "pv1_power", "pv_power_1", "power_pv1")
+        ),
+        PvRow(
+            "PV2",
+            firstNum(data, "pv2_voltage", "pv_voltage_2", "voltage_pv2"),
+            firstNum(data, "pv2_current", "pv_current_2", "current_pv2"),
+            firstNum(data, "p_string2", "pv2_power", "pv_power_2", "power_pv2")
+        ),
+        PvRow(
+            "PV3",
+            firstNum(data, "pv3_voltage", "pv_voltage_3", "voltage_pv3"),
+            firstNum(data, "pv3_current", "pv_current_3", "current_pv3"),
+            firstNum(data, "p_string3", "pv3_power", "pv_power_3", "power_pv3")
+        ),
     )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -186,7 +221,7 @@ private fun PVSection(data: Map<String, Any>) {
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Text(
-                text = "☀ ${String.format("%.1f", pSun / 1000f)} кВт",
+                text = "☀ ${if (pSun != null) fmt(pSun / 1000f, 1, " кВт") else "— кВт"}",
                 color = Color.White,
                 fontFamily = Mono,
                 fontWeight = FontWeight.Bold,
@@ -196,16 +231,18 @@ private fun PVSection(data: Map<String, Any>) {
             )
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                pvData.forEach { (name, v, a) ->
+                rows.forEach { row ->
+                    val powerKw = row.w?.div(1000f) ?: if (row.v != null && row.a != null) (row.v * row.a / 1000f) else null
                     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(
-                            painter = painterResource(id = R.drawable.svit_panel),
-                            contentDescription = name,
-                            modifier = Modifier.size(48.dp),
-                            contentScale = ContentScale.Fit
+                        LottieNode("solar.json", Modifier.size(44.dp))
+                        Text(
+                            "${fmtInt(row.v, " В")} · ${fmt(row.a, 1, " А")}",
+                            color = Color.Gray, fontFamily = Mono, fontSize = 9.sp, textAlign = TextAlign.Center
                         )
-                        Text("${v.toInt()} В · ${String.format("%.1f", a)} А", color = Color.Gray, fontFamily = Mono, fontSize = 9.sp, textAlign = TextAlign.Center)
-                        Text("$name · ${String.format("%.1f", v * a / 1000f)}", color = Color.LightGray, fontFamily = Mono, fontSize = 9.sp)
+                        Text(
+                            "${row.name} · ${fmt(powerKw, 1)}",
+                            color = Color.LightGray, fontFamily = Mono, fontSize = 9.sp
+                        )
                     }
                 }
             }
@@ -225,11 +262,15 @@ private fun LottieNode(asset: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modifier) {
-    val batterySoc = num(data, "batt_soc") ?: num(data, "battery_soc") ?: 0f
-    val pBatt = num(data, "p_batt") ?: 0f
-    val pGrid = num(data, "p_grid") ?: 0f
-    val pLoad = num(data, "p_load") ?: 0f
-    val pSun = num(data, "p_sun") ?: num(data, "power_dc") ?: 0f
+    val battSoc = firstNum(data, "batt_soc", "battery_soc", "soc")
+    val battV = firstNum(data, "battery_voltage", "batt_voltage", "bat_voltage")
+    val battA = firstNum(data, "battery_current", "batt_current", "bat_current")
+    val battT = firstNum(data, "battery_temp", "batt_temp", "bat_temp", "temperature")
+    val pBatt = firstNum(data, "p_batt", "battery_power", "bat_power")
+    val pGrid = firstNum(data, "p_grid", "grid_power")
+    val gridV = firstNum(data, "grid_voltage_l1", "grid_voltage", "voltage_ac")
+    val pLoad = firstNum(data, "p_load", "load_power", "home_power", "power_ac")
+    val pSun = firstNum(data, "p_sun", "power_dc")
 
     var selectedNode by remember { mutableStateOf<String?>(null) }
 
@@ -260,6 +301,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             val grid = Offset(w * 0.8f, h * 0.72f)
             val home = Offset(w * 0.5f, h * 0.88f)
 
+            // Bezier-лінії (cubicTo) для всіх 4 потоків
             fun bezier(from: Offset, to: Offset, bend: Float = 0f): Path = Path().apply {
                 moveTo(from.x, from.y)
                 val cx = (from.x + to.x) / 2f + bend
@@ -267,23 +309,24 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                 cubicTo(cx, from.y, cx, to.y, to.x, to.y)
             }
 
-            data class Flow(val path: Path, val color: Color, val power: Float, val reverse: Boolean = false)
+            data class Flow(val path: Path, val color: Color, val power: Float?, val reverse: Boolean = false)
             val flows = listOf(
-                Flow(bezier(pv, inv), AccentOrange, abs(pSun)),
-                Flow(bezier(inv, batt, -30f), if (pBatt >= 0) AccentGreen else AccentBlue, abs(pBatt), pBatt < 0),
-                Flow(bezier(inv, grid, 30f), AccentBlue, abs(pGrid), pGrid < 0),
-                Flow(bezier(inv, home), Color(0xFF9C27B0), abs(pLoad)),
+                Flow(bezier(pv, inv), AccentOrange, pSun?.let { abs(it) }),
+                Flow(bezier(inv, batt, -30f), if ((pBatt ?: 0f) >= 0f) AccentGreen else AccentBlue, pBatt?.let { abs(it) }, (pBatt ?: 0f) < 0f),
+                Flow(bezier(inv, grid, 30f), AccentBlue, pGrid?.let { abs(it) }, (pGrid ?: 0f) < 0f),
+                Flow(bezier(inv, home), Color(0xFF9C27B0), pLoad?.let { abs(it) }),
             )
 
             flows.forEach { f ->
-                if (f.power <= 1f) return@forEach
+                val power = f.power ?: 0f
+                if (power <= 1f) return@forEach
                 drawPath(f.path, color = f.color.copy(alpha = 0.35f), style = Stroke(width = 3f, cap = StrokeCap.Round))
                 val measure = PathMeasure()
                 measure.setPath(f.path, false)
                 val len = measure.length
                 if (len <= 0f) return@forEach
-                val speedFactor = max(0.4f, (f.power / 2000f).coerceIn(0.4f, 2.5f))
-                val count = if (f.power > 500f) 3 else 2
+                val speedFactor = max(0.4f, (power / 2000f).coerceIn(0.4f, 2.5f))
+                val count = if (power > 500f) 3 else 2
                 for (i in 0 until count) {
                     val base = (particleProgress * speedFactor + i.toFloat() / count) % 1f
                     val t = if (f.reverse) 1f - base else base
@@ -294,16 +337,16 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             }
         }
 
-        // PV (top)
+        // PV (top) — Lottie
         Column(
             modifier = Modifier.align(Alignment.TopCenter).padding(top = 4.dp).clickable { selectedNode = "PV" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LottieNode("solar.json", Modifier.size(52.dp))
-            Text("${String.format("%.1f", pSun / 1000f)} кВт", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
+            Text(if (pSun != null) fmt(pSun / 1000f, 1, " кВт") else "— кВт", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
         }
 
-        // Inverter (center)
+        // Inverter (center) — Lottie
         Column(
             modifier = Modifier.align(Alignment.Center).clickable { selectedNode = "Інвертор" },
             horizontalAlignment = Alignment.CenterHorizontally
@@ -312,36 +355,42 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             Text("Інвертор", color = Color.LightGray, fontFamily = Mono, fontSize = 10.sp)
         }
 
-        // Battery (left)
+        // Battery (left) — Lottie
+        val battStatus = when {
+            pBatt == null -> "—"
+            pBatt > 5f -> "Заряд"
+            pBatt < -5f -> "Розряд"
+            else -> "Очікування"
+        }
         Column(
-            modifier = Modifier.align(Alignment.CenterStart).offset(x = 6.dp, y = 46.dp).clickable { selectedNode = "Батарея" },
+            modifier = Modifier.align(Alignment.CenterStart).offset(x = 4.dp, y = 44.dp).clickable { selectedNode = "Батарея" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LottieNode("battery.json", Modifier.size(56.dp))
-            Text("${batterySoc.toInt()}%", color = Color.White, fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(if (battSoc != null) "${battSoc.toInt()}%" else "—%", color = Color.White, fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Text(
-                if (pBatt > 0) "Заряд · ${pBatt.toInt()} Вт" else if (pBatt < 0) "Розряд · ${abs(pBatt).toInt()} Вт" else "Очікування",
+                "$battStatus${if (pBatt != null && abs(pBatt) > 5f) " · ${abs(pBatt).toInt()} Вт" else ""}",
                 color = Color.Gray, fontFamily = Mono, fontSize = 9.sp
             )
         }
 
-        // Grid (right) — Lottie transformer (стовп)
+        // Grid (right) — Lottie transformer (стовб)
         Column(
-            modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-6).dp, y = 46.dp).clickable { selectedNode = "Мережа" },
+            modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-4).dp, y = 44.dp).clickable { selectedNode = "Мережа" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LottieNode("transformer.json", Modifier.size(56.dp))
             Text("Мережа", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
-            Text("${abs(pGrid).toInt()} Вт", color = Color.Gray, fontFamily = Mono, fontSize = 9.sp)
+            Text(if (pGrid != null) "${abs(pGrid).toInt()} Вт" else "— Вт", color = Color.Gray, fontFamily = Mono, fontSize = 9.sp)
         }
 
-        // Home (bottom)
+        // Home (bottom) — Lottie
         Column(
             modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp).clickable { selectedNode = "Дім" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LottieNode("home_sun.json", Modifier.size(60.dp))
-            Text("Дім · ${String.format("%.1f", pLoad / 1000f)} кВт", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
+            Text("Дім · ${if (pLoad != null) fmt(pLoad / 1000f, 1, " кВт") else "— кВт"}", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
         }
 
         // Bottom sheet-like info card on node tap
@@ -359,11 +408,11 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     Text(node, color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     Spacer(Modifier.height(4.dp))
                     val detail = when (node) {
-                        "PV" -> "Потужність: ${String.format("%.2f", pSun / 1000f)} кВт (API: p_sun/power_dc)"
+                        "PV" -> "Потужність: ${if (pSun != null) fmt(pSun / 1000f, 2, " кВт") else "—"} (p_sun/power_dc)"
                         "Інвертор" -> "Deye SUN-12K · Modbus TCP · дані з API"
-                        "Батарея" -> "SOC: ${batterySoc.toInt()}% · ${if (pBatt >= 0) "заряд" else "розряд"} ${abs(pBatt).toInt()} Вт (API: batt_soc/p_batt)"
-                        "Мережа" -> "Потік: ${pGrid.toInt()} Вт (API: p_grid)"
-                        "Дім" -> "Навантаження: ${String.format("%.2f", pLoad / 1000f)} кВт (API: p_load)"
+                        "Батарея" -> "SOC: ${fmtInt(battSoc, "%")} · V: ${fmt(battV, 1)} В · I: ${fmt(battA, 2)} А · T: ${fmt(battT, 0)} °C · $battStatus ${if (pBatt != null) "${abs(pBatt).toInt()} Вт" else "—"} (batt_soc/battery_*/p_batt)"
+                        "Мережа" -> "Потік: ${if (pGrid != null) "${pGrid.toInt()} Вт" else "—"} · V: ${fmt(gridV, 0)} В (p_grid/grid_voltage_l1)"
+                        "Дім" -> "Навантаження: ${if (pLoad != null) fmt(pLoad / 1000f, 2, " кВт") else "—"} (p_load)"
                         else -> ""
                     }
                     Text(detail, color = Color.LightGray, fontFamily = Mono, fontSize = 12.sp)
