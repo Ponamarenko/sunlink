@@ -7,7 +7,7 @@ class SettingsRepository(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("sunlink_settings", Context.MODE_PRIVATE)
 
     var serverAddress: String
-        get() = prefs.getString("server_address", "k4a.pp.ua") ?: "k4a.pp.ua"
+        get() = prefs.getString("server_address", "ha4a.pp.ua") ?: "ha4a.pp.ua"
         set(value) {
             var v = value.trim()
             v = v.removePrefix("http://").removePrefix("https://")
@@ -17,7 +17,7 @@ class SettingsRepository(context: Context) {
         }
 
     var serverPort: String
-        get() = prefs.getString("server_port", "8800") ?: "8800"
+        get() = prefs.getString("server_port", "8000") ?: "8000"
         set(value) = prefs.edit().putString("server_port", value).apply()
 
     var username: String

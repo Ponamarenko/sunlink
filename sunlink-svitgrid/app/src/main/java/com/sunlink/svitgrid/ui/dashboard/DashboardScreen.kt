@@ -134,11 +134,20 @@ private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?) {
             )
             val status = when {
                 loading -> "Оновлення..."
-                hasData -> "Дані з API"
+                hasData -> "Є зв'язок"
                 error != null -> "Немає зв'язку"
                 else -> "Очікування..."
             }
-            Text(status, color = if (hasData) AccentGreen else Color.Gray, fontFamily = Mono, fontSize = 10.sp)
+            Text(status, color = if (hasData) AccentGreen else if (error != null) Color(0xFFE57373) else Color.Gray, fontFamily = Mono, fontSize = 10.sp)
+            if (!hasData && error != null) {
+                Text(
+                    error.take(90),
+                    color = Color(0xFFEF9A9A),
+                    fontFamily = Mono,
+                    fontSize = 8.sp,
+                    maxLines = 2
+                )
+            }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             if (loading) CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = AccentBlue)
