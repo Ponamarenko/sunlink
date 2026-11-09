@@ -8,6 +8,8 @@ drawable svit_household_cabin
 drawable svit_household_cottage
 drawable svit_household_farm
 drawable svit_household_greenhouse
+drawable svit_household_grid
 drawable svit_household_shop
 drawable svit_household_solar_array
 drawable svit_household_workshop
+drawable svit_panel

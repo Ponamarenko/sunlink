@@ -1,8 +1,27 @@
 {
     "logs": [
         {
-            "outputFile": "com.sunlink.svitgrid.app-mergeDebugResources-51:/values-v16/values-v16.xml",
+            "outputFile": "com.sunlink.svitgrid.app-mergeDebugResources-58:/values-v16/values-v16.xml",
             "map": [
+                {
+                    "source": "/root/.gradle/caches/8.9/transforms/9c2c7b131c26419e5bfe1cd8ef0c9136/transformed/appcompat-1.6.1/res/values-v16/values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "223"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "121",
+                        "endLines": "6",
+                        "endColumns": "12",
+                        "endOffsets": "289"
+                    }
+                },
                 {
                     "source": "/root/.gradle/caches/8.9/transforms/82fcd6fab8ca1b56a6ab594eb0297c73/transformed/core-1.12.0/res/values-v16/values-v16.xml",
                     "from": {

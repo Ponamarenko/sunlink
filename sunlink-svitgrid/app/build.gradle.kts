@@ -11,8 +11,8 @@ android {
         applicationId = "com.sunlink.svitgrid"
         minSdk = 26
         targetSdk = 34
-        versionCode = 30
-        versionName = "2.10.0"
+        versionCode = 33
+        versionName = "2.13.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -75,6 +75,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.airbnb.android:lottie-compose:6.1.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

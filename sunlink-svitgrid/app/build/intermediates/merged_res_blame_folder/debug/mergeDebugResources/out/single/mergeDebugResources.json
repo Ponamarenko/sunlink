@@ -1,46 +1,54 @@
 [
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_household_greenhouse.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_household_greenhouse.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_greenhouse.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_greenhouse.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_household_workshop.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_household_workshop.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_workshop.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_workshop.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_house.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_house.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_grid.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_grid.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_household_cottage.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_household_cottage.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_device_ed1_rs485.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_device_ed1_rs485.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_household_farm.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_household_farm.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_apartment.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_apartment.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_household_shop.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_household_shop.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_solar_array.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_solar_array.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_device_ed1_rs485.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_device_ed1_rs485.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_farm.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_farm.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_device_ed1_wifi.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_device_ed1_wifi.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_device_ed1_wifi.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_device_ed1_wifi.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_household_solar_array.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_household_solar_array.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_cottage.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_cottage.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_household_cabin.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_household_cabin.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_panel.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_panel.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-53:/drawable-nodpi_svit_household_apartment.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-55:/drawable-nodpi/svit_household_apartment.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_cabin.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_cabin.png"
+    },
+    {
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_shop.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_shop.png"
+    },
+    {
+        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_house.png.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_house.png"
     }
 ]
