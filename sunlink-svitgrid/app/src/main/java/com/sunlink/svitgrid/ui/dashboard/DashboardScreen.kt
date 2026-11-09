@@ -325,17 +325,12 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             )
         }
 
-        // Grid (right) — 3D PNG (стовп/пристрій) замість червоної вилки
+        // Grid (right) — Lottie transformer (стовп)
         Column(
             modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-6).dp, y = 46.dp).clickable { selectedNode = "Мережа" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.svit_grid),
-                contentDescription = "Мережа",
-                modifier = Modifier.size(56.dp),
-                contentScale = ContentScale.Fit
-            )
+            LottieNode("transformer.json", Modifier.size(56.dp))
             Text("Мережа", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
             Text("${abs(pGrid).toInt()} Вт", color = Color.Gray, fontFamily = Mono, fontSize = 9.sp)
         }

@@ -11,8 +11,8 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 34,
-      "versionName": "2.14.0",
+      "versionCode": 35,
+      "versionName": "2.15.0",
       "outputFile": "resources-debug.ap_"
     }
   ],
