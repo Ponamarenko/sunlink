@@ -44,29 +44,24 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private suspend fun tryLiveUrl(url: String): Map<String, Any>? {
+    private suspend fun tryLiveRelative(
+        pathFetcher: suspend () -> retrofit2.Response<JsonElement>,
+        name: String
+    ): Pair<Map<String, Any>?, String?> {
+        val base = RetrofitClient.getBaseUrl()
+        val url = "$base$name"
         return try {
-            Log.d(tag, "Trying URL: $url")
-            val resp = RetrofitClient.getApiService().getLiveByUrl(url)
-            val bodyStr = try { resp.body()?.toString()?.take(300) } catch (_: Exception) { null }
-            Log.d(tag, "Response ${resp.code()} for $url: $bodyStr")
-            if (resp.isSuccessful) elementToMap(resp.body()) else null
-        } catch (e: Exception) {
-            Log.w(tag, "Error for $url: ${e.javaClass.simpleName}: ${e.message}")
-            null
-        }
-    }
-
-    private suspend fun tryLiveRelative(pathFetcher: suspend () -> retrofit2.Response<JsonElement>, name: String): Map<String, Any>? {
-        return try {
-            Log.d(tag, "Trying relative: $name")
+            Log.d(tag, "Trying: $url")
             val resp = pathFetcher()
-            val bodyStr = try { resp.body()?.toString()?.take(300) } catch (_: Exception) { null }
-            Log.d(tag, "Response ${resp.code()} for $name: $bodyStr")
-            if (resp.isSuccessful) elementToMap(resp.body()) else null
+            val preview = try { resp.body()?.toString()?.take(250) } catch (_: Exception) { null }
+            Log.d(tag, "Response ${resp.code()} $url: $preview")
+            if (resp.isSuccessful) {
+                val map = elementToMap(resp.body())
+                if (map != null && map.isNotEmpty()) map to null else null to "Порожня відповідь: $url"
+            } else null to "HTTP ${resp.code()}: $url"
         } catch (e: Exception) {
-            Log.w(tag, "Error for $name: ${e.javaClass.simpleName}: ${e.message}")
-            null
+            Log.w(tag, "Error $url: ${e.javaClass.simpleName}: ${e.message}")
+            null to "${e.javaClass.simpleName}: $url (${e.message})"
         }
     }
 
@@ -74,55 +69,61 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
+            val base = RetrofitClient.getBaseUrl()
             try {
-                Log.d(tag, "loadLive start")
+                Log.d(tag, "loadLive start, baseUrl=$base")
 
-                // 1) Абсолютні fallback URL (ha4a local + public)
-                val absoluteUrls = listOf(
-                    "http://192.168.25.244:8080/api/live/raw",
-                    "http://ha4a.pp.ua:8080/api/live/raw",
-                )
-                for (url in absoluteUrls) {
-                    val map = tryLiveUrl(url)
-                    if (map != null && map.isNotEmpty()) {
-                        Log.d(tag, "OK from $url, keys=${map.keys.take(8)}")
-                        _data.value = map
-                        _error.value = null
-                        return@launch
-                    }
-                }
-
-                // 2) Відносні endpoint-и на налаштованому сервері
+                // Тільки URL з налаштувань (без жорстких локальних fallback)
+                val attempts = mutableListOf<String?>()
                 for ((name, fetcher) in listOf(
                     "api/live/raw" to suspend { RetrofitClient.getApiService().getLiveRaw() },
                     "live" to suspend { RetrofitClient.getApiService().getLive() },
                 )) {
-                    val map = tryLiveRelative(fetcher, name)
-                    if (map != null && map.isNotEmpty()) {
-                        Log.d(tag, "OK from $name, keys=${map.keys.take(8)}")
+                    val (map, err) = tryLiveRelative(fetcher, name)
+                    attempts += err
+                    if (map != null) {
+                        Log.d(tag, "OK $base$name keys=${map.keys.take(10)}")
                         _data.value = map
                         _error.value = null
                         return@launch
                     }
                 }
 
-                // 3) Fallback: inverter API
-                val invResp = RetrofitClient.getApiService().getInverters()
-                val body = invResp.body()
-                val ids = (body?.get("inverters") as? List<*>)?.map { it.toString() } ?: emptyList()
-                val firstId = ids.firstOrNull()
-                if (firstId != null) {
-                    val resp = RetrofitClient.getApiService().getInverterData(firstId)
-                    if (resp.isSuccessful) _data.value = resp.body()
-                    else _error.value = "Помилка: ${resp.code()}"
-                } else {
-                    val stats = RetrofitClient.getApiService().getSystemStats()
-                    if (stats.isSuccessful) _data.value = stats.body()
-                    else _error.value = "Немає інверторів"
+                // Fallback: inverter/system API на тому ж сервері
+                try {
+                    val invResp = RetrofitClient.getApiService().getInverters()
+                    val body = invResp.body()
+                    val ids = (body?.get("inverters") as? List<*>)?.map { it.toString() } ?: emptyList()
+                    val firstId = ids.firstOrNull()
+                    if (firstId != null) {
+                        val resp = RetrofitClient.getApiService().getInverterData(firstId)
+                        if (resp.isSuccessful && resp.body() != null) {
+                            _data.value = resp.body()
+                            _error.value = null
+                            return@launch
+                        }
+                        attempts += "HTTP ${resp.code()}: ${base}api/v1/inverters/$firstId/data"
+                    } else {
+                        val stats = RetrofitClient.getApiService().getSystemStats()
+                        if (stats.isSuccessful && stats.body() != null) {
+                            _data.value = stats.body()
+                            _error.value = null
+                            return@launch
+                        }
+                        attempts += "Немає інверторів/system stats: $base"
+                    }
+                } catch (e: Exception) {
+                    attempts += "inverter API: ${e.javaClass.simpleName} ($base)"
                 }
+
+                _data.value = null
+                val detail = attempts.filterNotNull().distinct().joinToString("; ").ifBlank { "невідомо" }
+                _error.value = "API недоступний ($base): $detail"
+                Log.w(tag, _error.value ?: "")
             } catch (e: Exception) {
                 Log.e(tag, "loadLive failed", e)
-                _error.value = "Помилка підключення: ${e.message}"
+                _data.value = null
+                _error.value = "Помилка підключення: $base (${e.javaClass.simpleName}: ${e.message})"
             } finally {
                 _loading.value = false
             }
@@ -133,16 +134,41 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             _loading.value = true
             _error.value = null
+            val base = RetrofitClient.getBaseUrl()
             try {
-                val url = "http://192.168.25.244:8080/api/live/raw"
-                Log.d(tag, "checkConnection $url")
-                val resp = RetrofitClient.getApiService().getLiveByUrl(url)
-                val preview = resp.body()?.toString()?.take(220) ?: ""
-                _error.value = if (resp.isSuccessful) "API OK ${resp.code()}: $preview" else "Помилка: ${resp.code()}"
-                Log.d(tag, "checkConnection result: ${_error.value}")
+                Log.d(tag, "checkConnection baseUrl=$base")
+                val msgs = mutableListOf<String>()
+                // Спроба live endpoint-ів (ті самі, що використовує додаток)
+                for ((name, fetcher) in listOf(
+                    "api/live/raw" to suspend { RetrofitClient.getApiService().getLiveRaw() },
+                    "live" to suspend { RetrofitClient.getApiService().getLive() },
+                )) {
+                    try {
+                        val resp = fetcher()
+                        val preview = resp.body()?.toString()?.take(180) ?: ""
+                        Log.d(tag, "check $name ${resp.code()}: $preview")
+                        if (resp.isSuccessful) {
+                            _error.value = "OK ${resp.code()} $base$name ${preview.take(80)}"
+                            return@launch
+                        } else msgs += "${resp.code()} $base$name"
+                    } catch (e: Exception) {
+                        msgs += "${e.javaClass.simpleName} $base$name"
+                    }
+                }
+                // Додатково: health
+                try {
+                    val resp = RetrofitClient.getApiService().getHealth()
+                    if (resp.isSuccessful) {
+                        _error.value = "OK ${resp.code()} ${base}api/v1/health"
+                        return@launch
+                    } else msgs += "${resp.code()} ${base}api/v1/health"
+                } catch (e: Exception) {
+                    msgs += "${e.javaClass.simpleName} ${base}api/v1/health"
+                }
+                _error.value = "Недоступно ($base): ${msgs.joinToString("; ")}"
             } catch (e: Exception) {
                 Log.e(tag, "checkConnection failed", e)
-                _error.value = "Помилка: ${e.javaClass.simpleName}: ${e.message}"
+                _error.value = "Помилка: $base (${e.javaClass.simpleName}: ${e.message})"
             } finally {
                 _loading.value = false
             }

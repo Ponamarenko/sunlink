@@ -11,13 +11,24 @@ android {
         applicationId = "com.sunlink.svitgrid"
         minSdk = 26
         targetSdk = 34
-        versionCode = 35
-        versionName = "2.15.0"
+        versionCode = 36
+        versionName = "2.16.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val gitHash = try {
+            providers.exec { commandLine("git", "rev-parse", "--short", "HEAD") }
+                .standardOutput.asText.get().trim()
+        } catch (_: Exception) { "unknown" }
+        val buildTime = try {
+            providers.exec { commandLine("date", "-u", "+%Y-%m-%d %H:%M:%S UTC") }
+                .standardOutput.asText.get().trim()
+        } catch (_: Exception) { "unknown" }
+        buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
+        buildConfigField("String", "GIT_HASH", "\"$gitHash\"")
     }
 
     buildTypes {
@@ -41,6 +52,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {

@@ -18,6 +18,8 @@ object RetrofitClient {
         apiService = null
     }
 
+    fun getBaseUrl(): String = baseUrl
+
     fun getApiService(): ApiService {
         if (apiService == null) {
             val loggingInterceptor = HttpLoggingInterceptor().apply {

@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import android.content.Context
 import androidx.compose.ui.platform.LocalContext
+import com.sunlink.svitgrid.BuildConfig
 import com.sunlink.svitgrid.data.SettingsRepository
 import com.sunlink.svitgrid.network.RetrofitClient
 import androidx.navigation.NavHostController
@@ -322,11 +323,13 @@ fun AboutScreen() {
         Text("Про додаток", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text("SunLink", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Версія: 2.7.2", style = MaterialTheme.typography.bodyLarge)
-                Text("Розробник: Ponamarenko", style = MaterialTheme.typography.bodyLarge)
-                Text("Ліцензія: MIT", style = MaterialTheme.typography.bodyLarge)
+                Text("Версія: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", style = MaterialTheme.typography.bodyLarge)
+                Text("Дата збірки: ${BuildConfig.BUILD_TIME}", style = MaterialTheme.typography.bodyMedium)
+                Text("Git-коміт: ${BuildConfig.GIT_HASH}", style = MaterialTheme.typography.bodyMedium)
+                Text("Розробник: Ponamarenko", style = MaterialTheme.typography.bodyMedium)
+                Text("Ліцензія: MIT", style = MaterialTheme.typography.bodySmall)
                 Text("© 2026 Ponamarenko", style = MaterialTheme.typography.bodySmall)
             }
         }
