@@ -21,14 +21,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -71,73 +68,64 @@ private val AccentOrange = Color(0xFFFF9800)
 private val AccentGreen = Color(0xFF66BB6A)
 private val Mono = FontFamily.Monospace
 
+private fun num(data: Map<String, Any>, key: String): Float? = when (val v = data[key]) {
+    is Number -> v.toFloat()
+    is Map<*, *> -> (v["value"] as? Number)?.toFloat()
+    else -> null
+}
+
 @Composable
 fun DashboardScreen(vm: MainViewModel = viewModel()) {
     val data by vm.data.collectAsState()
     val loading by vm.loading.collectAsState()
     val error by vm.error.collectAsState()
 
-    val testData = remember {
-        mapOf(
-            "power_dc" to mapOf("value" to 4680.0),
-            "power_ac" to mapOf("value" to 4708.0),
-            "battery_soc" to mapOf("value" to 65.0),
-            "battery_voltage" to mapOf("value" to 48.2),
-            "pv1_voltage" to mapOf("value" to 296.0),
-            "pv1_current" to mapOf("value" to 2.1),
-            "pv2_voltage" to mapOf("value" to 295.0),
-            "pv2_current" to mapOf("value" to 2.0),
-            "pv3_voltage" to mapOf("value" to 294.0),
-            "pv3_current" to mapOf("value" to 1.9),
-            "p_sun" to 4680.0,
-            "p_load" to 4708.0,
-            "p_batt" to 0.0,
-            "p_grid" to 28.0
-        )
-    }
-
-    val d = data ?: testData
     LaunchedEffect(Unit) { vm.loadLive() }
+
+    // Реальні дані з API (без testData). Порожня мапа, якщо даних ще немає.
+    val d = data ?: emptyMap()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(BgDark)
     ) {
-        HeaderSection()
+        HeaderSection(loading = loading, hasData = data != null, error = error)
         BlackoutSection()
         TimelineSection()
         PVSection(d)
         FlowSchemeSection(d, Modifier.weight(1f))
-        BottomNavigationSection()
+        // Нижню навігацію прибрано (використовується сендвіч-меню / drawer)
     }
 }
 
 @Composable
-private fun HeaderSection() {
+private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "HOME",
-            style = MaterialTheme.typography.headlineMedium.copy(
-                fontFamily = Mono,
-                fontWeight = FontWeight.Bold
-            ),
-            color = Color.White,
-            fontSize = 20.sp
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("14° Мряка", style = MaterialTheme.typography.bodyMedium, color = Color.Gray, fontFamily = Mono)
-            Text("Щойно", style = MaterialTheme.typography.bodySmall, color = Color.LightGray, fontFamily = Mono)
+        Column {
+            Text(
+                text = "HOME",
+                style = MaterialTheme.typography.headlineMedium.copy(fontFamily = Mono, fontWeight = FontWeight.Bold),
+                color = Color.White,
+                fontSize = 18.sp
+            )
+            val status = when {
+                loading -> "Оновлення..."
+                hasData -> "Дані з API"
+                error != null -> "Немає зв'язку"
+                else -> "Очікування..."
+            }
+            Text(status, color = if (hasData) AccentGreen else Color.Gray, fontFamily = Mono, fontSize = 10.sp)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("•", color = Color.White, fontFamily = Mono)
-            Text("☰", color = Color.White, fontFamily = Mono)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (loading) CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = AccentBlue)
+            Text("14° Мряка", style = MaterialTheme.typography.bodySmall, color = Color.Gray, fontFamily = Mono)
         }
     }
 }
@@ -147,13 +135,13 @@ private fun BlackoutSection() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFCDDC39)),
         shape = RoundedCornerShape(18.dp)
     ) {
         Text(
             text = "Без світла 16 хв · на акумуляторі",
-            modifier = Modifier.padding(14.dp).fillMaxWidth(),
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Mono, fontWeight = FontWeight.Bold),
             color = Color.Black,
             textAlign = TextAlign.Center
@@ -166,14 +154,14 @@ private fun TimelineSection() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         for (i in 0..23) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(18.dp)
+                    .height(16.dp)
                     .clip(RoundedCornerShape(2.dp))
                     .background(if (i % 3 == 0) AccentGreen else Color(0xFFE74C3C))
             )
@@ -183,55 +171,41 @@ private fun TimelineSection() {
 
 @Composable
 private fun PVSection(data: Map<String, Any>) {
-    val pSun = (data["p_sun"] as? Number)?.toFloat() ?: 0f
+    val pSun = num(data, "p_sun") ?: num(data, "power_dc") ?: 0f
     val pvData = listOf(
-        Triple("PV1", (data["pv1_voltage"] as? Number)?.toFloat() ?: 296f, (data["pv1_current"] as? Number)?.toFloat() ?: 2.1f),
-        Triple("PV2", (data["pv2_voltage"] as? Number)?.toFloat() ?: 295f, (data["pv2_current"] as? Number)?.toFloat() ?: 2.0f),
-        Triple("PV3", (data["pv3_voltage"] as? Number)?.toFloat() ?: 294f, (data["pv3_current"] as? Number)?.toFloat() ?: 1.9f),
+        Triple("PV1", num(data, "pv1_voltage") ?: 0f, num(data, "pv1_current") ?: 0f),
+        Triple("PV2", num(data, "pv2_voltage") ?: 0f, num(data, "pv2_current") ?: 0f),
+        Triple("PV3", num(data, "pv3_voltage") ?: 0f, num(data, "pv3_current") ?: 0f),
     )
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
         colors = CardDefaults.cardColors(containerColor = BgCard),
         shape = RoundedCornerShape(18.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(10.dp)) {
             Text(
-                text = "☀ ${(pSun / 1000f).let { String.format("%.1f", it) }} кВт",
+                text = "☀ ${String.format("%.1f", pSun / 1000f)} кВт",
                 color = Color.White,
                 fontFamily = Mono,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
+                fontSize = 15.sp,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 pvData.forEach { (name, v, a) ->
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         Image(
                             painter = painterResource(id = R.drawable.svit_panel),
                             contentDescription = name,
-                            modifier = Modifier.size(52.dp),
+                            modifier = Modifier.size(48.dp),
                             contentScale = ContentScale.Fit
                         )
-                        Text(
-                            "${v.toInt()} В · ${String.format("%.1f", a)} А",
-                            color = Color.Gray,
-                            fontFamily = Mono,
-                            fontSize = 10.sp,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            "$name · ${String.format("%.1f", v * a / 1000f)}",
-                            color = Color.LightGray,
-                            fontFamily = Mono,
-                            fontSize = 10.sp
-                        )
+                        Text("${v.toInt()} В · ${String.format("%.1f", a)} А", color = Color.Gray, fontFamily = Mono, fontSize = 9.sp, textAlign = TextAlign.Center)
+                        Text("$name · ${String.format("%.1f", v * a / 1000f)}", color = Color.LightGray, fontFamily = Mono, fontSize = 9.sp)
                     }
                 }
             }
@@ -251,11 +225,11 @@ private fun LottieNode(asset: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modifier) {
-    val batterySoc = ((data["battery_soc"] as? Map<*, *>)?.get("value") as? Number)?.toFloat() ?: 65f
-    val pBatt = (data["p_batt"] as? Number)?.toFloat() ?: 0f
-    val pGrid = (data["p_grid"] as? Number)?.toFloat() ?: 0f
-    val pLoad = (data["p_load"] as? Number)?.toFloat() ?: 0f
-    val pSun = (data["p_sun"] as? Number)?.toFloat() ?: 0f
+    val batterySoc = num(data, "batt_soc") ?: num(data, "battery_soc") ?: 0f
+    val pBatt = num(data, "p_batt") ?: 0f
+    val pGrid = num(data, "p_grid") ?: 0f
+    val pLoad = num(data, "p_load") ?: 0f
+    val pSun = num(data, "p_sun") ?: num(data, "power_dc") ?: 0f
 
     var selectedNode by remember { mutableStateOf<String?>(null) }
 
@@ -273,7 +247,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(18.dp))
             .background(Brush.verticalGradient(listOf(BgCard, BgDark)))
     ) {
@@ -295,10 +269,10 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
 
             data class Flow(val path: Path, val color: Color, val power: Float, val reverse: Boolean = false)
             val flows = listOf(
-                Flow(bezier(pv, inv), AccentOrange, pSun),
+                Flow(bezier(pv, inv), AccentOrange, abs(pSun)),
                 Flow(bezier(inv, batt, -30f), if (pBatt >= 0) AccentGreen else AccentBlue, abs(pBatt), pBatt < 0),
                 Flow(bezier(inv, grid, 30f), AccentBlue, abs(pGrid), pGrid < 0),
-                Flow(bezier(inv, home), Color(0xFF9C27B0), pLoad),
+                Flow(bezier(inv, home), Color(0xFF9C27B0), abs(pLoad)),
             )
 
             flows.forEach { f ->
@@ -322,11 +296,11 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
 
         // PV (top)
         Column(
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = 6.dp).clickable { selectedNode = "PV" },
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 4.dp).clickable { selectedNode = "PV" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("solar.json", Modifier.size(54.dp))
-            Text("${(pSun / 1000f).let { String.format("%.1f", it) }} кВт", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
+            LottieNode("solar.json", Modifier.size(52.dp))
+            Text("${String.format("%.1f", pSun / 1000f)} кВт", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
         }
 
         // Inverter (center)
@@ -334,16 +308,16 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             modifier = Modifier.align(Alignment.Center).clickable { selectedNode = "Інвертор" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("inverter.json", Modifier.size(64.dp))
+            LottieNode("inverter.json", Modifier.size(62.dp))
             Text("Інвертор", color = Color.LightGray, fontFamily = Mono, fontSize = 10.sp)
         }
 
         // Battery (left)
         Column(
-            modifier = Modifier.align(Alignment.CenterStart).offset(x = 8.dp, y = 50.dp).clickable { selectedNode = "Батарея" },
+            modifier = Modifier.align(Alignment.CenterStart).offset(x = 6.dp, y = 46.dp).clickable { selectedNode = "Батарея" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("battery.json", Modifier.size(58.dp))
+            LottieNode("battery.json", Modifier.size(56.dp))
             Text("${batterySoc.toInt()}%", color = Color.White, fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Text(
                 if (pBatt > 0) "Заряд · ${pBatt.toInt()} Вт" else if (pBatt < 0) "Розряд · ${abs(pBatt).toInt()} Вт" else "Очікування",
@@ -351,15 +325,15 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             )
         }
 
-        // Grid (right)
+        // Grid (right) — 3D PNG (стовп/пристрій) замість червоної вилки
         Column(
-            modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-8).dp, y = 50.dp).clickable { selectedNode = "Мережа" },
+            modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-6).dp, y = 46.dp).clickable { selectedNode = "Мережа" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = painterResource(id = R.drawable.svit_household_grid),
+                painter = painterResource(id = R.drawable.svit_grid),
                 contentDescription = "Мережа",
-                modifier = Modifier.size(58.dp),
+                modifier = Modifier.size(56.dp),
                 contentScale = ContentScale.Fit
             )
             Text("Мережа", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
@@ -368,11 +342,11 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
 
         // Home (bottom)
         Column(
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp).clickable { selectedNode = "Дім" },
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp).clickable { selectedNode = "Дім" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("home_sun.json", Modifier.size(62.dp))
-            Text("Дім · ${(pLoad / 1000f).let { String.format("%.1f", it) }} кВт", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
+            LottieNode("home_sun.json", Modifier.size(60.dp))
+            Text("Дім · ${String.format("%.1f", pLoad / 1000f)} кВт", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
         }
 
         // Bottom sheet-like info card on node tap
@@ -381,7 +355,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(12.dp)
+                    .padding(10.dp)
                     .clickable { selectedNode = null },
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1E2633)),
                 shape = RoundedCornerShape(16.dp)
@@ -390,51 +364,17 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     Text(node, color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     Spacer(Modifier.height(4.dp))
                     val detail = when (node) {
-                        "PV" -> "Потужність: ${(pSun / 1000f).let { String.format("%.2f", it) }} кВт"
-                        "Інвертор" -> "Deye SUN-12K · гібридний режим"
-                        "Батарея" -> "SOC: ${batterySoc.toInt()}% · ${if (pBatt >= 0) "заряд" else "розряд"} ${abs(pBatt).toInt()} Вт · 32 кВт·г"
-                        "Мережа" -> "Потік: ${pGrid.toInt()} Вт · Modbus TCP"
-                        "Дім" -> "Навантаження: ${(pLoad / 1000f).let { String.format("%.2f", it) }} кВт"
+                        "PV" -> "Потужність: ${String.format("%.2f", pSun / 1000f)} кВт (API: p_sun/power_dc)"
+                        "Інвертор" -> "Deye SUN-12K · Modbus TCP · дані з API"
+                        "Батарея" -> "SOC: ${batterySoc.toInt()}% · ${if (pBatt >= 0) "заряд" else "розряд"} ${abs(pBatt).toInt()} Вт (API: batt_soc/p_batt)"
+                        "Мережа" -> "Потік: ${pGrid.toInt()} Вт (API: p_grid)"
+                        "Дім" -> "Навантаження: ${String.format("%.2f", pLoad / 1000f)} кВт (API: p_load)"
                         else -> ""
                     }
                     Text(detail, color = Color.LightGray, fontFamily = Mono, fontSize = 12.sp)
                     Text("Торкніться щоб закрити", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp, modifier = Modifier.padding(top = 6.dp))
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun BottomNavigationSection() {
-    NavigationBar(
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = Color(0xFF111821)
-    ) {
-        val items = listOf("Дім", "Дані", "Графіки", "Сонце", "Налашт.")
-        items.forEachIndexed { index, label ->
-            NavigationBarItem(
-                selected = index == 0,
-                onClick = { },
-                icon = {
-                    val iconRes = when (index) {
-                        0 -> R.drawable.svit_house
-                        1 -> R.drawable.svit_household_workshop
-                        2 -> R.drawable.svit_household_cabin
-                        3 -> R.drawable.svit_panel
-                        else -> R.drawable.svit_device_ed1_wifi
-                    }
-                    Image(painter = painterResource(id = iconRes), contentDescription = label, modifier = Modifier.size(22.dp), contentScale = ContentScale.Fit)
-                },
-                label = { Text(label, fontFamily = Mono, fontSize = 9.sp) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.White,
-                    selectedTextColor = Color.White,
-                    unselectedIconColor = Color.Gray,
-                    unselectedTextColor = Color.Gray,
-                    indicatorColor = Color(0xFF223047)
-                )
-            )
         }
     }
 }

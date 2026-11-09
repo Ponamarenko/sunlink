@@ -22,6 +22,29 @@ class MainViewModel : ViewModel() {
             _loading.value = true
             _error.value = null
             try {
+                // 1) Flat live endpoints (ha4a/k4a style): p_sun, p_load, p_batt, p_grid, batt_soc, pv*
+                try {
+                    val resp = RetrofitClient.getApiService().getLiveRaw()
+                    if (resp.isSuccessful) {
+                        val body = resp.body()
+                        if (body != null && body.isNotEmpty()) {
+                            _data.value = body
+                            return@launch
+                        }
+                    }
+                } catch (_: Exception) { }
+                try {
+                    val resp = RetrofitClient.getApiService().getLive()
+                    if (resp.isSuccessful) {
+                        val body = resp.body()
+                        if (body != null && body.isNotEmpty()) {
+                            _data.value = body
+                            return@launch
+                        }
+                    }
+                } catch (_: Exception) { }
+
+                // 2) Fallback: inverter API
                 val invResp = RetrofitClient.getApiService().getInverters()
                 val body = invResp.body()
                 val ids = (body?.get("inverters") as? List<*>)?.map { it.toString() } ?: emptyList()

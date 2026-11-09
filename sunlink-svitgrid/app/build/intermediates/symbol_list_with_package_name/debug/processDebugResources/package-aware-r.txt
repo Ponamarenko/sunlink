@@ -697,6 +697,7 @@ drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
 drawable svit_device_ed1_rs485
 drawable svit_device_ed1_wifi
+drawable svit_grid
 drawable svit_house
 drawable svit_household_apartment
 drawable svit_household_cabin

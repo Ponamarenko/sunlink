@@ -5,6 +5,12 @@ import retrofit2.http.Path
 import retrofit2.Response
 
 interface ApiService {
+    @GET("api/live/raw")
+    suspend fun getLiveRaw(): Response<Map<String, Any>>
+
+    @GET("live")
+    suspend fun getLive(): Response<Map<String, Any>>
+
     @GET("api/v1/inverters")
     suspend fun getInverters(): Response<Map<String, Any>>
 
