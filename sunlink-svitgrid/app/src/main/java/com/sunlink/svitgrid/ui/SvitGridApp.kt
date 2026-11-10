@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.sunlink.svitgrid.BuildConfig
 import com.sunlink.svitgrid.data.SettingsRepository
 import com.sunlink.svitgrid.network.RetrofitClient
+import com.sunlink.svitgrid.ui.debug.DebugScreen
 import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.viewmodel.MainViewModel
@@ -60,6 +61,7 @@ fun SvitGridApp() {
                     "charts" to ("Графіки" to Icons.Default.List),
                     "battery" to ("Батарея" to Icons.Default.Favorite),
                     "forecast" to ("Прогноз" to Icons.Default.DateRange),
+                    "debug" to ("Відладка / Сирі дані" to Icons.Default.Info),
                     "settings" to ("Налаштування" to Icons.Default.Settings),
                     "about" to ("Про додаток" to Icons.Default.Info)
                 ).forEach { (route, pair) ->
@@ -103,6 +105,7 @@ fun SvitGridApp() {
                 composable("charts") { ChartsScreen() }
                 composable("battery") { BatteryScreen() }
                 composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen() }
+                composable("debug") { DebugScreen() }
                 composable("settings") { SettingsScreen() }
                 composable("about") { AboutScreen() }
             }
