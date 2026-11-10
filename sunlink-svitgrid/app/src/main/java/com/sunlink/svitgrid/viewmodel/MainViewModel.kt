@@ -32,7 +32,7 @@ class MainViewModel : ViewModel() {
                 el.isJsonArray -> {
                     val arr = el.asJsonArray
                     if (arr.size() == 0) return null
-                    arr.last().asJsonObject // останній = найсвіжіший запис
+                    arr.last().asJsonObject
                 }
                 else -> return null
             }
@@ -51,11 +51,34 @@ class MainViewModel : ViewModel() {
         else -> null
     }
 
+    // Розгортання формату deye_gateway.py (/live): {"data": {"pv1_voltage":{"value":296,"unit":"V"},...}, "p_sun":...}
+    private fun flattenGatewayData(map: Map<String, Any>): Map<String, Any> {
+        val nested = map["data"] as? Map<*, *> ?: return map
+        val out = mutableMapOf<String, Any>()
+        // верхній рівень (p_sun, p_load, p_batt, p_grid, status, timestamp)
+        for ((k, v) in map) if (k != "data" && v != null) out[k.toString()] = v
+        // вкладені регістри -> плоскі значення
+        for ((k, v) in nested) {
+            val key = k?.toString() ?: continue
+            val flat = when (v) {
+                is Map<*, *> -> v["value"] ?: v
+                else -> v
+            }
+            if (flat != null) out[key] = flat
+        }
+        mapCommonFields(out)
+        return out
+    }
+
+    private fun hasRichFields(m: Map<String, Any>): Boolean {
+        val keys = listOf("p_string1","p_string2","p_string3","pv1_voltage","pv1_current","p_batt","p_grid","p_load","grid_voltage_l1")
+        return keys.any { m[it] != null }
+    }
+
     private fun mergeInverterData(maps: List<Map<String, Any>>): Map<String, Any> {
         if (maps.isEmpty()) return emptyMap()
         if (maps.size == 1) return maps[0].toMutableMap().apply { mapCommonFields(this) }
         val out = mutableMapOf<String, Any>()
-        // зберігаємо всі ключі першого для сумісності
         out.putAll(maps[0])
         var sumDc = 0f; var hasDc = false
         var sumAc = 0f; var hasAc = false
@@ -66,42 +89,43 @@ class MainViewModel : ViewModel() {
             asFloat(m["power_dc"])?.let { sumDc += it; hasDc = true }
             asFloat(m["power_ac"])?.let { sumAc += it; hasAc = true }
             asFloat(m["energy_today"])?.let { sumToday += it; hasToday = true }
-            asFloat(m["battery_soc"] ?: m["batt_soc"])?.let { if (it > 0f || socN > 0) { socSum += it; socN++ } else { socSum += it; socN++ } }
+            asFloat(m["battery_soc"] ?: m["batt_soc"])?.let { socSum += it; socN++ }
             if (battV == null) battV = asFloat(m["battery_voltage"])
         }
-        if (hasDc) out["p_sun"] = sumDc; out["power_dc_total"] = sumDc
-        if (hasAc) out["p_load"] = sumAc; out["power_ac_total"] = sumAc // наближення, якщо немає p_load
+        if (hasDc) { out["p_sun"] = sumDc; out["power_dc_total"] = sumDc }
+        if (hasAc) { out["p_load"] = sumAc; out["power_ac_total"] = sumAc }
         if (hasToday) out["energy_today"] = sumToday
         if (socN > 0) out["batt_soc"] = socSum / socN
         battV?.let { out["battery_voltage"] = it }
         out["inverters_merged"] = maps.size
-        // якщо сервер дає точні p_* — не перезаписуємо їх нулями
         mapCommonFields(out)
         return out
     }
 
     private fun mapCommonFields(m: MutableMap<String, Any>) {
-        // Мапінг полів inverter API -> поля Dashboard, тільки якщо ціль відсутня
         fun setIfMissing(key: String, vararg sources: String) {
             if (m[key] != null) return
             for (s in sources) { val v = asFloat(m[s]); if (v != null) { m[key] = v; return } }
         }
         setIfMissing("p_sun", "power_dc", "pv_power")
-        setIfMissing("p_load", "load_power", "home_power") // power_ac — не завжди = навантаження
+        setIfMissing("p_load", "load_power", "home_power")
         setIfMissing("batt_soc", "battery_soc", "soc")
-        if (m["p_batt"] == null) m["p_batt"] = 0f
-        if (m["p_grid"] == null) m["p_grid"] = 0f
+        setIfMissing("p_batt", "battery_power", "bat_power")
+        setIfMissing("p_grid", "grid_power", "grid_inverter_power")
     }
 
     private suspend fun tryLiveByUrl(url: String): Pair<Map<String, Any>?, String?> {
         return try {
             Log.d(tag, "Trying: $url")
             val resp = RetrofitClient.getApiService().getLiveByUrl(url)
-            val preview = try { resp.body()?.toString()?.take(300) } catch (_: Exception) { null }
+            val preview = try { resp.body()?.toString()?.take(350) } catch (_: Exception) { null }
             Log.d(tag, "Response ${resp.code()} $url: $preview")
             if (resp.isSuccessful) {
                 val map = elementToMap(resp.body())
-                if (map != null && map.isNotEmpty()) map to null else null to "Порожня відповідь: $url"
+                if (map != null && map.isNotEmpty()) {
+                    val flat = if (map.containsKey("data") && map["data"] is Map<*, *>) flattenGatewayData(map) else map.toMutableMap().also { mapCommonFields(it) }
+                    flat to null
+                } else null to "Порожня відповідь: $url"
             } else null to "HTTP ${resp.code()}: $url"
         } catch (e: Exception) {
             Log.w(tag, "Error $url: ${e.javaClass.simpleName}: ${e.message}")
@@ -117,11 +141,14 @@ class MainViewModel : ViewModel() {
         return try {
             Log.d(tag, "Trying: $base$name")
             val resp = pathFetcher()
-            val preview = try { resp.body()?.toString()?.take(300) } catch (_: Exception) { null }
+            val preview = try { resp.body()?.toString()?.take(350) } catch (_: Exception) { null }
             Log.d(tag, "Response ${resp.code()} $base$name: $preview")
             if (resp.isSuccessful) {
                 val map = elementToMap(resp.body())
-                if (map != null && map.isNotEmpty()) map to null else null to "Порожня відповідь: $base$name"
+                if (map != null && map.isNotEmpty()) {
+                    val flat = if (map.containsKey("data") && map["data"] is Map<*, *>) flattenGatewayData(map) else map.toMutableMap().also { mapCommonFields(it) }
+                    flat to null
+                } else null to "Порожня відповідь: $base$name"
             } else null to "HTTP ${resp.code()}: $base$name"
         } catch (e: Exception) {
             Log.w(tag, "Error $base$name: ${e.javaClass.simpleName}: ${e.message}")
@@ -141,7 +168,7 @@ class MainViewModel : ViewModel() {
             for (id in ids) {
                 try {
                     val resp = RetrofitClient.getApiService().getInverterData(id)
-                    Log.d(tag, "inverter $id ${resp.code()}: ${resp.body()?.keys?.take(12)}")
+                    Log.d(tag, "inverter $id ${resp.code()}: ${resp.body()?.keys?.take(14)}")
                     if (resp.isSuccessful) resp.body()?.let { maps += it }
                 } catch (e: Exception) {
                     Log.w(tag, "inverter $id error: ${e.message}")
@@ -149,14 +176,12 @@ class MainViewModel : ViewModel() {
             }
             if (maps.isNotEmpty()) {
                 val merged = mergeInverterData(maps)
-                Log.d(tag, "Merged ${maps.size} inverters, keys=${merged.keys.take(14)}")
+                Log.d(tag, "Merged ${maps.size} inverters, keys=${merged.keys.take(16)}")
                 merged to null
             } else {
-                // fallback: system stats
                 val stats = RetrofitClient.getApiService().getSystemStats()
                 if (stats.isSuccessful && stats.body() != null) {
                     val s = stats.body()!!.toMutableMap()
-                    // stats.total_power -> p_sun (наближення)
                     if (s["p_sun"] == null) asFloat(s["total_power"])?.let { s["p_sun"] = it }
                     s to null
                 } else null to "Немає даних інверторів: $base"
@@ -168,7 +193,6 @@ class MainViewModel : ViewModel() {
     }
 
     private suspend fun tryAllOnBase(base: String, attempts: MutableList<String?>): Map<String, Any>? {
-        // переконуємось, що Retrofit налаштований на цей base
         if (RetrofitClient.getBaseUrl() != base) RetrofitClient.setBaseUrl(base)
         for ((name, fetcher) in listOf(
             "api/live/raw" to suspend { RetrofitClient.getApiService().getLiveRaw() },
@@ -183,6 +207,12 @@ class MainViewModel : ViewModel() {
         return map
     }
 
+    private fun mergeOverlay(base: MutableMap<String, Any>, extra: Map<String, Any>) {
+        for ((k, v) in extra) {
+            if (base[k] == null || (asFloat(base[k]) == 0f && asFloat(v) != null && asFloat(v) != 0f)) base[k] = v
+        }
+    }
+
     fun loadLive() {
         viewModelScope.launch {
             _loading.value = true
@@ -192,21 +222,38 @@ class MainViewModel : ViewModel() {
                 Log.d(tag, "loadLive start, configuredBase=$configuredBase")
                 val attempts = mutableListOf<String?>()
 
-                // 1) Налаштований сервер (з Налаштувань)
-                tryAllOnBase(configuredBase, attempts)?.let {
-                    _data.value = it; _error.value = null; Log.d(tag, "OK configured $configuredBase"); return@launch
+                // 1) Налаштований сервер
+                val primary = tryAllOnBase(configuredBase, attempts)
+
+                // 2) LAN fallback 192.168.25.20:8000 (SvitGrid v2.0.0)
+                var best = primary?.toMutableMap()
+                if (best == null) {
+                    val lan8000 = "http://192.168.25.20:8000/"
+                    if (configuredBase != lan8000) {
+                        tryAllOnBase(lan8000, attempts)?.let { best = it.toMutableMap() }
+                        RetrofitClient.setBaseUrl(configuredBase)
+                    }
                 }
 
-                // 2) Fallback: LAN IP сервера (AI-сервер 192.168.25.20:8000), якщо відрізняється
-                val lanBase = "http://192.168.25.20:8000/"
-                if (configuredBase != lanBase) {
-                    Log.d(tag, "Trying LAN fallback $lanBase")
-                    tryAllOnBase(lanBase, attempts)?.let {
-                        _data.value = it; _error.value = "Дані з LAN ($lanBase). Перевірте URL у Налаштуваннях."
-                        Log.d(tag, "OK LAN fallback"); return@launch
+                // 3) Додатковий fallback: deye_gateway.py :8800 (/live) для PV/батареї/мережі
+                val gw8800 = "http://192.168.25.20:8800/"
+                if (best == null || !hasRichFields(best!!)) {
+                    Log.d(tag, "Trying gateway 8800 for rich fields")
+                    for (url in listOf("${gw8800}live", "${gw8800}api/live/raw")) {
+                        val (m, err) = tryLiveByUrl(url)
+                        attempts += err
+                        if (m != null) {
+                            if (best == null) best = m.toMutableMap() else mergeOverlay(best!!, m)
+                            if (hasRichFields(best!!)) break
+                        }
                     }
-                    // повертаємо Retrofit на налаштований base
-                    RetrofitClient.setBaseUrl(configuredBase)
+                }
+
+                if (best != null && best!!.isNotEmpty()) {
+                    _data.value = best
+                    _error.value = if (RetrofitClient.getBaseUrl() == configuredBase) null else "Дані з fallback. Перевірте URL у Налаштуваннях."
+                    Log.d(tag, "OK keys=${best!!.keys.take(18)}")
+                    return@launch
                 }
 
                 _data.value = null
@@ -232,16 +279,16 @@ class MainViewModel : ViewModel() {
             try {
                 Log.d(tag, "checkConnection configuredBase=$configuredBase")
                 val msgs = mutableListOf<String>()
-                for (base in listOf(configuredBase, "http://192.168.25.20:8000/").distinct()) {
+                for (base in listOf(configuredBase, "http://192.168.25.20:8000/", "http://192.168.25.20:8800/").distinct()) {
                     if (RetrofitClient.getBaseUrl() != base) RetrofitClient.setBaseUrl(base)
-                    for ((name, path) in listOf("health" to "api/v1/health", "inverters" to "api/v1/inverters", "live/raw" to "api/live/raw")) {
+                    for (path in listOf("api/live/raw", "live", "api/v1/health", "api/v1/inverters")) {
                         try {
                             val resp = RetrofitClient.getApiService().getLiveByUrl("$base$path")
-                            val preview = resp.body()?.toString()?.take(160) ?: ""
+                            val preview = resp.body()?.toString()?.take(120) ?: ""
                             Log.d(tag, "check $base$path ${resp.code()}: $preview")
                             if (resp.isSuccessful) {
                                 RetrofitClient.setBaseUrl(configuredBase)
-                                _error.value = "OK ${resp.code()} $base$path ${preview.take(70)}"
+                                _error.value = "OK ${resp.code()} $base$path ${preview.take(60)}"
                                 return@launch
                             } else msgs += "${resp.code()} $base$path"
                         } catch (e: Exception) {
