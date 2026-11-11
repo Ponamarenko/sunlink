@@ -6,9 +6,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,16 +38,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -67,6 +73,9 @@ private val AccentBlue = Color(0xFF2196F3)
 private val AccentOrange = Color(0xFFFF9800)
 private val AccentGreen = Color(0xFF66BB6A)
 private val Mono = FontFamily.Monospace
+private val GlassCard = Color.White.copy(alpha = 0.14f)
+private val GlassBorder = Color.White.copy(alpha = 0.2f)
+private val GlassShape = RoundedCornerShape(16.dp)
 
 private fun num(data: Map<String, Any>, key: String): Float? = when (val v = data[key]) {
     is Number -> v.toFloat()
@@ -121,7 +130,7 @@ private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -130,7 +139,7 @@ private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?) {
                 text = "HOME",
                 style = MaterialTheme.typography.headlineMedium.copy(fontFamily = Mono, fontWeight = FontWeight.Bold),
                 color = Color.White,
-                fontSize = 18.sp
+                fontSize = 22.sp
             )
             val status = when {
                 loading -> "Оновлення..."
@@ -138,13 +147,23 @@ private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?) {
                 error != null -> "Немає зв'язку"
                 else -> "Очікування..."
             }
-            Text(status, color = if (hasData) AccentGreen else if (error != null) Color(0xFFE57373) else Color.Gray, fontFamily = Mono, fontSize = 10.sp)
+            val connected = hasData && !loading
+            Text(
+                status,
+                color = if (connected) AccentGreen else if (error != null) Color(0xFFE57373) else Color.Gray,
+                fontFamily = Mono,
+                fontSize = 12.sp,
+                fontWeight = if (connected) FontWeight.Bold else FontWeight.Normal,
+                style = if (connected) TextStyle(
+                    shadow = Shadow(color = AccentGreen.copy(alpha = 0.9f), blurRadius = 14f)
+                ) else TextStyle.Default
+            )
             if (!hasData && error != null) {
                 Text(
                     error.take(90),
                     color = Color(0xFFEF9A9A),
                     fontFamily = Mono,
-                    fontSize = 8.sp,
+                    fontSize = 9.sp,
                     maxLines = 2
                 )
             }
@@ -161,15 +180,17 @@ private fun BlackoutSection() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFCDDC39)),
-        shape = RoundedCornerShape(18.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .shadow(8.dp, RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFCDDC39).copy(alpha = 0.85f)),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
     ) {
         Text(
             text = "Без світла 16 хв · на акумуляторі",
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Mono, fontWeight = FontWeight.Bold),
-            color = Color.Black,
+            color = Color(0xFF111111),
             textAlign = TextAlign.Center
         )
     }
@@ -224,39 +245,61 @@ private fun PVSection(data: Map<String, Any>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = BgCard),
-        shape = RoundedCornerShape(18.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .shadow(8.dp, GlassShape),
+        colors = CardDefaults.cardColors(containerColor = GlassCard),
+        shape = GlassShape,
+        border = BorderStroke(1.dp, GlassBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(modifier = Modifier.padding(10.dp)) {
-            Text(
-                text = "☀ ${if (pSun != null) fmt(pSun / 1000f, 1, " кВт") else "— кВт"}",
-                color = Color.White,
-                fontFamily = Mono,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+        Box {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .blur(20.dp)
+                    .background(Color.White.copy(alpha = 0.03f))
             )
-            Spacer(Modifier.height(6.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                rows.forEach { row ->
-                    val powerW = row.w ?: if (row.v != null && row.a != null) row.v * row.a else null
-                    val powerText = when {
-                        powerW == null -> "—"
-                        abs(powerW) >= 1000f -> "${String.format("%.2f", powerW / 1000f)} кВт"
-                        else -> "${powerW.toInt()} Вт"
-                    }
-                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        LottieNode("solar.json", Modifier.size(44.dp))
-                        Text(
-                            "${fmtInt(row.v, " В")} · ${fmt(row.a, 1, " А")}",
-                            color = Color.Gray, fontFamily = Mono, fontSize = 9.sp, textAlign = TextAlign.Center
-                        )
-                        Text(
-                            "${row.name} · $powerText",
-                            color = Color.LightGray, fontFamily = Mono, fontSize = 9.sp
-                        )
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("☀️", fontSize = 20.sp)
+                    Spacer(Modifier.size(6.dp))
+                    Text(
+                        text = if (pSun != null) fmt(pSun / 1000f, 2, " кВт") else "— кВт",
+                        color = Color.White,
+                        fontFamily = Mono,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 26.sp
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    rows.forEach { row ->
+                        val powerW = row.w ?: if (row.v != null && row.a != null) row.v * row.a else null
+                        val powerText = when {
+                            powerW == null -> "—"
+                            abs(powerW) >= 1000f -> "${String.format("%.2f", powerW / 1000f)} кВт"
+                            else -> "${powerW.toInt()} Вт"
+                        }
+                        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("☀️", fontSize = 14.sp)
+                            LottieNode("solar.json", Modifier.size(48.dp))
+                            Text(
+                                "${fmtInt(row.v, " В")} · ${fmt(row.a, 1, " А")}",
+                                color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, textAlign = TextAlign.Center
+                            )
+                            Text(
+                                row.name,
+                                color = Color.Gray, fontFamily = Mono, fontSize = 10.sp
+                            )
+                            Text(
+                                powerText,
+                                color = Color.White, fontFamily = Mono, fontSize = 13.sp, fontWeight = FontWeight.SemiBold
+                            )
+                        }
                     }
                 }
             }
@@ -303,9 +346,17 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .background(Brush.verticalGradient(listOf(BgCard, BgDark)))
+            .shadow(8.dp, GlassShape)
+            .clip(GlassShape)
+            .background(Brush.verticalGradient(listOf(GlassCard, Color(0x220A0D12))))
+            .border(BorderStroke(1.dp, GlassBorder), GlassShape)
     ) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .blur(18.dp)
+                .background(Color.White.copy(alpha = 0.02f))
+        )
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
@@ -353,11 +404,14 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
 
         // PV (top) — Lottie
         Column(
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = 4.dp).clickable { selectedNode = "PV" },
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 6.dp).clickable { selectedNode = "PV" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("solar.json", Modifier.size(52.dp))
-            Text(if (pSun != null) fmt(pSun / 1000f, 1, " кВт") else "— кВт", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
+            Text("☀️", fontSize = 18.sp)
+            LottieNode("solar.json", Modifier.size(58.dp))
+            val pvText = if (pSun != null) fmt(pSun / 1000f, 2, " кВт") else "— кВт"
+            Text(pvText, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("PV", color = Color.Gray, fontFamily = Mono, fontSize = 11.sp)
         }
 
         // Inverter (center) — Lottie
@@ -365,8 +419,8 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             modifier = Modifier.align(Alignment.Center).clickable { selectedNode = "Інвертор" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("inverter.json", Modifier.size(62.dp))
-            Text("Інвертор", color = Color.LightGray, fontFamily = Mono, fontSize = 10.sp)
+            LottieNode("inverter.json", Modifier.size(76.dp))
+            Text("Інвертор", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 11.sp)
         }
 
         // Battery (left) — Lottie
@@ -377,40 +431,58 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             else -> "Очікування"
         }
         Column(
-            modifier = Modifier.align(Alignment.CenterStart).offset(x = 4.dp, y = 44.dp).clickable { selectedNode = "Батарея" },
+            modifier = Modifier.align(Alignment.CenterStart).offset(x = 6.dp, y = 46.dp).clickable { selectedNode = "Батарея" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("battery.json", Modifier.size(56.dp))
-            Text(if (battSoc != null) "${battSoc.toInt()}%" else "—%", color = Color.White, fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Box(
+                modifier = Modifier
+                    .size(66.dp)
+                    .shadow(10.dp, RoundedCornerShape(18.dp))
+                    .background(
+                        Brush.radialGradient(
+                            listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)
+                        ),
+                        RoundedCornerShape(18.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                LottieNode("battery.json", Modifier.size(60.dp))
+            }
+            Text(if (battSoc != null) "${battSoc.toInt()}%" else "—%", color = Color.White, fontFamily = Mono, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("SOC", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
             Text(
                 "$battStatus${if (pBatt != null && abs(pBatt) > 5f) " · ${abs(pBatt).toInt()} Вт" else ""}",
-                color = Color.Gray, fontFamily = Mono, fontSize = 9.sp
+                color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp
             )
         }
 
-        // Grid (right) — Lottie transformer (стовб)
+        // Grid (right) — Lottie transformer
         val gridLabel = when {
             pGrid == null -> "— Вт"
             pGrid > 0.5f -> "Експорт ${pGrid.toInt()} Вт"
             pGrid < -0.5f -> "Імпорт ${abs(pGrid).toInt()} Вт"
             else -> "0 Вт"
         }
+        val gridMain = if (pGrid != null) "${abs(pGrid).toInt()} Вт" else "— Вт"
         Column(
-            modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-4).dp, y = 44.dp).clickable { selectedNode = "Мережа" },
+            modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-6).dp, y = 46.dp).clickable { selectedNode = "Мережа" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("transformer.json", Modifier.size(56.dp))
-            Text("Мережа", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
-            Text(gridLabel, color = Color.Gray, fontFamily = Mono, fontSize = 9.sp)
+            LottieNode("transformer.json", Modifier.size(64.dp))
+            Text(gridMain, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("Мережа", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
+            Text(gridLabel, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, textAlign = TextAlign.Center)
         }
 
         // Home (bottom) — Lottie
         Column(
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp).clickable { selectedNode = "Дім" },
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp).clickable { selectedNode = "Дім" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LottieNode("home_sun.json", Modifier.size(60.dp))
-            Text("Дім · ${if (pLoad != null) fmt(pLoad / 1000f, 1, " кВт") else "— кВт"}", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
+            LottieNode("home_sun.json", Modifier.size(68.dp))
+            val homeText = if (pLoad != null) fmt(pLoad / 1000f, 2, " кВт") else "— кВт"
+            Text(homeText, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("Дім", color = Color.Gray, fontFamily = Mono, fontSize = 11.sp)
         }
 
         // Bottom sheet-like info card on node tap
@@ -420,9 +492,12 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .padding(10.dp)
+                    .shadow(8.dp, GlassShape)
                     .clickable { selectedNode = null },
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E2633)),
-                shape = RoundedCornerShape(16.dp)
+                colors = CardDefaults.cardColors(containerColor = GlassCard),
+                shape = GlassShape,
+                border = BorderStroke(1.dp, GlassBorder),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     Text(node, color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 15.sp)
