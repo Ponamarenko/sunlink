@@ -425,11 +425,14 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
 
         // Battery (left) — Lottie
         val battStatus = when {
-            pBatt == null -> "—"
-            pBatt > 5f -> "Заряд"
-            pBatt < -5f -> "Розряд"
+            pBatt == null -> "Очікування"
+            pBatt > 5f -> "Заряд · ${abs(pBatt).toInt()} Вт"
+            pBatt < -5f -> "Розряд · ${abs(pBatt).toInt()} Вт"
             else -> "Очікування"
         }
+        val battSocV = if (battSoc != null || battV != null) {
+            "${if (battSoc != null) "${battSoc.toInt()}%" else "—%"} · ${fmt(battV, 2, "V")}"
+        } else "—% · —V"
         Column(
             modifier = Modifier.align(Alignment.CenterStart).offset(x = 6.dp, y = 46.dp).clickable { selectedNode = "Батарея" },
             horizontalAlignment = Alignment.CenterHorizontally
@@ -448,20 +451,24 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             ) {
                 LottieNode("battery.json", Modifier.size(60.dp))
             }
-            Text(if (battSoc != null) "${battSoc.toInt()}%" else "—%", color = Color.White, fontFamily = Mono, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-            Text("SOC", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
-            Text(
-                "$battStatus${if (pBatt != null && abs(pBatt) > 5f) " · ${abs(pBatt).toInt()} Вт" else ""}",
-                color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp
-            )
+            Text(battSocV, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+            Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
         }
 
         // Grid (right) — Lottie transformer
-        val gridLabel = when {
-            pGrid == null -> "— Вт"
-            pGrid > 0.5f -> "Експорт ${pGrid.toInt()} Вт"
-            pGrid < -0.5f -> "Імпорт ${abs(pGrid).toInt()} Вт"
-            else -> "0 Вт"
+        val gridV2 = firstNum(data, "grid_voltage_l2", "voltage_l2")
+        val gridV3 = firstNum(data, "grid_voltage_l3", "voltage_l3")
+        val gridVoltageText = when {
+            gridV != null && gridV2 != null && gridV3 != null ->
+                "${fmtInt(gridV)}/${fmtInt(gridV2)}/${fmtInt(gridV3)} V"
+            gridV != null -> "${fmt(gridV, 1, "V")}"
+            else -> "—V"
+        }
+        val gridDir = when {
+            pGrid == null -> null
+            pGrid > 0.5f -> "Експорт"
+            pGrid < -0.5f -> "Імпорт"
+            else -> "Баланс"
         }
         val gridMain = if (pGrid != null) "${abs(pGrid).toInt()} Вт" else "— Вт"
         Column(
@@ -470,8 +477,17 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
         ) {
             LottieNode("transformer.json", Modifier.size(64.dp))
             Text(gridMain, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text(gridVoltageText, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
+            Text(
+                gridDir ?: "—",
+                color = when (gridDir) {
+                    "Експорт" -> Color(0xFFE57373)
+                    "Імпорт" -> AccentBlue
+                    else -> Color(0xFFB0BEC5)
+                },
+                fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.SemiBold
+            )
             Text("Мережа", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
-            Text(gridLabel, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, textAlign = TextAlign.Center)
         }
 
         // Home (bottom) — Lottie
@@ -482,7 +498,8 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             LottieNode("home_sun.json", Modifier.size(68.dp))
             val homeText = if (pLoad != null) fmt(pLoad / 1000f, 2, " кВт") else "— кВт"
             Text(homeText, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text("Дім", color = Color.Gray, fontFamily = Mono, fontSize = 11.sp)
+            Text("Споживання", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
+            Text("Дім", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
         }
 
         // Bottom sheet-like info card on node tap
@@ -505,7 +522,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     val detail = when (node) {
                         "PV" -> "Потужність: ${if (pSun != null) fmt(pSun / 1000f, 2, " кВт") else "—"} (p_sun/power_dc)"
                         "Інвертор" -> "Deye SUN-12K · Modbus TCP · дані з API"
-                        "Батарея" -> "SOC: ${fmtInt(battSoc, "%")} · V: ${fmt(battV, 1)} В · I: ${fmt(battA, 2)} А · T: ${fmt(battT, 0)} °C · $battStatus ${if (pBatt != null) "${abs(pBatt).toInt()} Вт" else "—"} (batt_soc/battery_*/p_batt)"
+                        "Батарея" -> "SOC: ${fmtInt(battSoc, "%")} · V: ${fmt(battV, 2)} В · I: ${fmt(battA, 2)} А · T: ${fmt(battT, 0)} °C · $battStatus (batt_soc/battery_*/p_batt)"
                         "Мережа" -> {
                             val dir = when {
                                 pGrid == null -> "—"
