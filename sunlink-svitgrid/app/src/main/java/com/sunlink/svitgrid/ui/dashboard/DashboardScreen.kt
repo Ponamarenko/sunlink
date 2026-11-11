@@ -340,6 +340,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
     }
 
     var selectedNode by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) { selectedNode = null }
 
     val transition = rememberInfiniteTransition(label = "flow")
     val particleProgress by transition.animateFloat(
@@ -513,12 +514,13 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(56.dp)
-                            .shadow(8.dp, RoundedCornerShape(16.dp))
-                            .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(16.dp)),
+                            .size(84.dp)
+                            .shadow(10.dp, RoundedCornerShape(18.dp))
+                            .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(18.dp)),
                         contentAlignment = Alignment.Center
-                    ) { LottieNode("battery.json", Modifier.size(50.dp)) }
-                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
+                    ) { LottieNode("battery.json", Modifier.size(76.dp)) }
+                    Spacer(Modifier.height(2.dp))
+                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
                         Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         Text("·", color = Color.White, fontFamily = Mono, fontSize = 13.sp, fontWeight = FontWeight.Bold)
@@ -586,7 +588,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     .padding(horizontal = 10.dp, vertical = 6.dp)
                     .shadow(6.dp, GlassShape)
                     .clickable { selectedNode = null },
-                colors = CardDefaults.cardColors(containerColor = GlassCard.copy(alpha = 0.75f)),
+                colors = CardDefaults.cardColors(containerColor = Color(0xCC1E2633)),
                 shape = GlassShape,
                 border = BorderStroke(1.dp, GlassBorder),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -605,8 +607,8 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                         "Дім" -> "Навантаження: ${if (pLoad != null) fmt(pLoad / 1000f, 2, " кВт") else "—"} (p_load)"
                         else -> ""
                     }
-                    Text(detail, color = Color.LightGray, fontFamily = Mono, fontSize = 12.sp)
-                    Text("Торкніться щоб закрити", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp, modifier = Modifier.padding(top = 6.dp))
+                    Text(detail, color = Color.White, fontFamily = Mono, fontSize = 12.sp)
+                    Text("Торкніться щоб закрити", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 10.sp, modifier = Modifier.padding(top = 6.dp))
                 }
             }
         }
