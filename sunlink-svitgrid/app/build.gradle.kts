@@ -11,8 +11,8 @@ android {
         applicationId = "com.sunlink.svitgrid"
         minSdk = 26
         targetSdk = 34
-        versionCode = 43
-        versionName = "2.23.0"
+        versionCode = 44
+        versionName = "2.24.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

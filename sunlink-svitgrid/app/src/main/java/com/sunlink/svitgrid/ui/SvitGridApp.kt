@@ -15,11 +15,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import com.sunlink.svitgrid.BuildConfig
 import com.sunlink.svitgrid.data.SettingsRepository
 import com.sunlink.svitgrid.network.RetrofitClient
 import com.sunlink.svitgrid.ui.debug.DebugScreen
+import com.sunlink.svitgrid.update.UpdateInfo
+import com.sunlink.svitgrid.update.UpdateManager
 import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.viewmodel.MainViewModel
@@ -227,22 +230,30 @@ fun BatteryScreen(vm: MainViewModel = viewModel()) {
 fun SettingsScreen(vm: MainViewModel = viewModel()) {
     val context = LocalContext.current
     val repo = remember { SettingsRepository(context) }
+    val scope = rememberCoroutineScope()
     var serverAddress by remember { mutableStateOf(repo.serverAddress) }
     var serverPort by remember { mutableStateOf(repo.serverPort) }
     var username by remember { mutableStateOf(repo.username) }
     var password by remember { mutableStateOf(repo.password) }
     var savedMessage by remember { mutableStateOf("") }
 
+    var checkingUpdate by remember { mutableStateOf(false) }
+    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    var downloading by remember { mutableStateOf(false) }
+    var downloadProgress by remember { mutableStateOf(0) }
+    var downloadError by remember { mutableStateOf<String?>(null) }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Налаштування", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        
+
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Підключення до сервера", style = MaterialTheme.typography.titleMedium)
-                
+
                 OutlinedTextField(
                     value = serverAddress,
                     onValueChange = { serverAddress = it },
@@ -250,7 +261,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     placeholder = { Text("sunline.pp.ua") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 OutlinedTextField(
                     value = serverPort,
                     onValueChange = { serverPort = it },
@@ -258,7 +269,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     placeholder = { Text("8000") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
@@ -266,7 +277,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     placeholder = { Text("admin") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -274,7 +285,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Button(
                     onClick = {
                         repo.serverAddress = serverAddress
@@ -288,7 +299,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                 ) {
                     Text("Зберегти")
                 }
-                
+
                 if (savedMessage.isNotEmpty()) {
                     Text(savedMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 }
@@ -302,7 +313,46 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                 connStatus?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
         }
-        
+
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Оновлення", style = MaterialTheme.typography.titleMedium)
+                Text("Поточна версія: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", style = MaterialTheme.typography.bodySmall)
+                Button(
+                    onClick = {
+                        checkingUpdate = true
+                        scope.launch {
+                            val result = UpdateManager.checkForUpdates()
+                            checkingUpdate = false
+                            result.onSuccess { info ->
+                                if (info != null) {
+                                    updateInfo = info
+                                    showUpdateDialog = true
+                                } else {
+                                    Toast.makeText(context, "У вас остання версія", Toast.LENGTH_SHORT).show()
+                                }
+                            }.onFailure {
+                                Toast.makeText(context, "Не вдалося перевірити оновлення", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    },
+                    enabled = !checkingUpdate && !downloading,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (checkingUpdate) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text(if (checkingUpdate) "Перевірка..." else "Перевірити оновлення")
+                }
+                if (downloading) {
+                    LinearProgressIndicator(progress = { downloadProgress / 100f }, modifier = Modifier.fillMaxWidth())
+                    Text("Завантаження: $downloadProgress%", style = MaterialTheme.typography.bodySmall)
+                }
+                downloadError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+            }
+        }
+
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Інформація", style = MaterialTheme.typography.titleMedium)
@@ -310,6 +360,42 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                 Text("Авторизація буде реалізована на сервері", style = MaterialTheme.typography.bodySmall)
             }
         }
+    }
+
+    if (showUpdateDialog && updateInfo != null) {
+        val info = updateInfo!!
+        AlertDialog(
+            onDismissRequest = { if (!downloading) showUpdateDialog = false },
+            title = { Text("Доступне оновлення ${info.version}") },
+            text = {
+                Column {
+                    Text(info.changelog.ifBlank { "Немає опису змін." }, style = MaterialTheme.typography.bodyMedium)
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !downloading,
+                    onClick = {
+                        downloading = true
+                        downloadProgress = 0
+                        downloadError = null
+                        scope.launch {
+                            val res = UpdateManager.downloadAndInstall(context, info.downloadUrl) { pct ->
+                                downloadProgress = pct
+                            }
+                            downloading = false
+                            res.onFailure { e ->
+                                downloadError = "Помилка завантаження: ${e.message}"
+                            }
+                            showUpdateDialog = false
+                        }
+                    }
+                ) { Text("Завантажити та встановити") }
+            },
+            dismissButton = {
+                TextButton(enabled = !downloading, onClick = { showUpdateDialog = false }) { Text("Скасувати") }
+            }
+        )
     }
 }
 
