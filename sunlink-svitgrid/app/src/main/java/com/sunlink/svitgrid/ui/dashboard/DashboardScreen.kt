@@ -397,27 +397,36 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             val invRight = Offset(inv.x + w * 0.08f, inv.y)
             val invBottom = Offset(inv.x, inv.y + h * 0.08f)
 
+            fun lerp(a: Float, b: Float, t: Float) = a + (b - a) * t
+            fun nearStraight(from: Offset, to: Offset, curve: Float = 0.08f): Path {
+                val c1 = Offset(lerp(from.x, to.x, 0.33f), lerp(from.y, to.y, 0.33f - curve * 0.15f))
+                val c2 = Offset(lerp(from.x, to.x, 0.66f), lerp(from.y, to.y, 0.66f - curve * 0.15f))
+                return bezier(from, to, c1, c2)
+            }
+
             val flows = mutableListOf<Flow>()
-            // each PV panel -> inverter (converge)
+            // each PV panel -> inverter (converge), almost straight
             val pvStarts = listOf(pv1, pv2, pv3)
             pvPowers.forEachIndexed { i, p ->
                 val from = Offset(pvStarts[i].x, pvStarts[i].y + h * 0.06f)
-                val bend = (i - 1) * w * 0.04f
-                flows += Flow(
-                    bezier(from, invTop, Offset(from.x + bend, (from.y + invTop.y) / 2f), Offset(invTop.x + bend * 0.3f, (from.y + invTop.y) / 2f)),
-                    AccentOrange, p?.let { abs(it) }, particles = 4
-                )
+                val to = invTop
+                val c1 = Offset(lerp(from.x, to.x, 0.35f), lerp(from.y, to.y, 0.35f))
+                val c2 = Offset(lerp(from.x, to.x, 0.70f), lerp(from.y, to.y, 0.70f))
+                flows += Flow(bezier(from, to, c1, c2), AccentOrange, p?.let { abs(it) }, particles = 4)
             }
+            val battTo = Offset(batt.x + w * 0.07f, batt.y)
             flows += Flow(
-                bezier(invLeft, Offset(batt.x + w * 0.07f, batt.y), Offset((invLeft.x + batt.x) / 2f, invLeft.y), Offset((invLeft.x + batt.x) / 2f, batt.y)),
+                nearStraight(invLeft, battTo),
                 if ((pBatt ?: 0f) >= 0f) AccentGreen else AccentBlue, pBatt?.let { abs(it) }, reverse = (pBatt ?: 0f) < 0f
             )
+            val gridTo = Offset(grid.x - w * 0.07f, grid.y)
             flows += Flow(
-                bezier(invRight, Offset(grid.x - w * 0.07f, grid.y), Offset((invRight.x + grid.x) / 2f, invRight.y), Offset((invRight.x + grid.x) / 2f, grid.y)),
+                nearStraight(invRight, gridTo),
                 AccentBlue, pGrid?.let { abs(it) }, reverse = (pGrid ?: 0f) < 0f
             )
+            val homeTo = Offset(home.x, home.y - h * 0.06f)
             flows += Flow(
-                bezier(invBottom, Offset(home.x, home.y - h * 0.06f), Offset(invBottom.x, (invBottom.y + home.y) / 2f), Offset(home.x, (invBottom.y + home.y) / 2f)),
+                nearStraight(invBottom, homeTo),
                 Color(0xFF9C27B0), pLoad?.let { abs(it) }, particles = 4
             )
 
@@ -454,9 +463,9 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     ) {
                         Text("☀️", fontSize = 16.sp)
                         LottieNode("solar.json", Modifier.size(44.dp))
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                            if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
+                            Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                            if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                         Text("${fmtInt(row.v, "В")}·${fmt(row.a, 1, "А")}", color = Color(0xFF90A4AE), fontFamily = Mono, fontSize = 9.sp)
                         Text(row.name, color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
@@ -485,14 +494,14 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                             .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(18.dp)),
                         contentAlignment = Alignment.Center
                     ) { LottieNode("battery.json", Modifier.size(58.dp)) }
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 34.sp, fontWeight = FontWeight.Bold)
-                        Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Text(" · ", color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                        Text(if (battV != null) fmt(battV, 2) else "—", color = Color.White, fontFamily = Mono, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-                        Text("V", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
+                        Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(" · ", color = Color.White, fontFamily = Mono, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(if (battV != null) fmt(battV, 2) else "—", color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text("V", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
-                    Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
+                    Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, modifier = Modifier.padding(top = 1.dp))
                 }
 
                 val gridV2 = firstNum(data, "grid_voltage_l2", "voltage_l2")
@@ -513,9 +522,9 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     LottieNode("transformer.json", Modifier.size(64.dp))
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 34.sp, fontWeight = FontWeight.Bold)
-                        Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
+                        Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     }
                     Text(gridVoltageText, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
                     Text(
@@ -528,14 +537,17 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
 
             // Home bottom
             Column(
-                modifier = Modifier.fillMaxWidth().clickable { selectedNode = "Дім" },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = if (selectedNode != null) 70.dp else 6.dp)
+                    .clickable { selectedNode = "Дім" },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                LottieNode("home_sun.json", Modifier.size(66.dp))
-                Row(verticalAlignment = Alignment.Bottom) {
+                LottieNode("home_sun.json", Modifier.size(64.dp))
+                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
                     val homeVal = if (pLoad != null) fmt(pLoad / 1000f, 2) else "—"
-                    Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 34.sp, fontWeight = FontWeight.Bold)
-                    Text(" кВт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                    Text(" кВт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
                 Text("Споживання", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
             }
@@ -547,13 +559,13 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(10.dp)
-                    .shadow(8.dp, GlassShape)
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .shadow(6.dp, GlassShape)
                     .clickable { selectedNode = null },
-                colors = CardDefaults.cardColors(containerColor = GlassCard),
+                colors = CardDefaults.cardColors(containerColor = GlassCard.copy(alpha = 0.75f)),
                 shape = GlassShape,
                 border = BorderStroke(1.dp, GlassBorder),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     Text(node, color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 15.sp)
