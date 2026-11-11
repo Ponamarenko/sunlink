@@ -1,0 +1,28 @@
+# Gradle / Android build
+.gradle/
+**/build/
+local.properties
+*.iml
+.idea/
+.cxx/
+captures/
+.externalNativeBuild/
+
+# Logs / temp
+*.log
+/tmp/
+
+# APKs (зазвичай публікуються в GitHub Releases)
+/*.apk
+app/build/outputs/**/*.apk
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+
+# OS / misc
+.DS_Store
+Thumbs.db
