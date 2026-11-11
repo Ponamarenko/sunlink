@@ -119,7 +119,6 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
         HeaderSection(loading = loading, hasData = data != null, error = error)
         BlackoutSection()
         TimelineSection()
-        PVSection(d)
         FlowSchemeSection(d, Modifier.weight(1f))
         // Нижню навігацію прибрано (сендвіч-меню / drawer)
     }
@@ -328,6 +327,17 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
     val gridV = firstNum(data, "grid_voltage_l1", "grid_voltage", "voltage_ac")
     val pLoad = firstNum(data, "p_load", "load_power", "home_power", "power_ac")
     val pSun = firstNum(data, "p_sun", "power_dc")
+    val pvRows = listOf(
+        PvRow("PV1", firstNum(data, "pv1_voltage", "pv_voltage_1", "voltage_pv1"), firstNum(data, "pv1_current", "pv_current_1", "current_pv1"), firstNum(data, "p_string1", "pv1_power", "pv_power_1", "power_pv1")),
+        PvRow("PV2", firstNum(data, "pv2_voltage", "pv_voltage_2", "voltage_pv2"), firstNum(data, "pv2_current", "pv_current_2", "current_pv2"), firstNum(data, "p_string2", "pv2_power", "pv_power_2", "power_pv2")),
+        PvRow("PV3", firstNum(data, "pv3_voltage", "pv_voltage_3", "voltage_pv3"), firstNum(data, "pv3_current", "pv_current_3", "current_pv3"), firstNum(data, "p_string3", "pv3_power", "pv_power_3", "power_pv3")),
+    )
+    val battStatus = when {
+        pBatt == null -> "Очікування"
+        pBatt > 5f -> "Заряд · ${abs(pBatt).toInt()} Вт"
+        pBatt < -5f -> "Розряд · ${abs(pBatt).toInt()} Вт"
+        else -> "Очікування"
+    }
 
     var selectedNode by remember { mutableStateOf<String?>(null) }
 
@@ -345,7 +355,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
             .shadow(8.dp, GlassShape)
             .clip(GlassShape)
             .background(Brush.verticalGradient(listOf(GlassCard, Color(0x220A0D12))))
@@ -360,146 +370,175 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height
-            val pv = Offset(w * 0.5f, h * 0.12f)
-            val inv = Offset(w * 0.5f, h * 0.42f)
-            val batt = Offset(w * 0.2f, h * 0.72f)
-            val grid = Offset(w * 0.8f, h * 0.72f)
-            val home = Offset(w * 0.5f, h * 0.88f)
+            // layout: PV row top, inverter center, battery left / grid right same level, home bottom
+            val inv = Offset(w * 0.5f, h * 0.46f)
+            val pvY = h * 0.18f
+            val pv1 = Offset(w * 0.17f, pvY)
+            val pv2 = Offset(w * 0.5f, pvY)
+            val pv3 = Offset(w * 0.83f, pvY)
+            val sideY = h * 0.46f
+            val batt = Offset(w * 0.16f, sideY)
+            val grid = Offset(w * 0.84f, sideY)
+            val home = Offset(w * 0.5f, h * 0.86f)
 
-            // Bezier-лінії (cubicTo) для всіх 4 потоків
-            fun bezier(from: Offset, to: Offset, bend: Float = 0f): Path = Path().apply {
+            fun bezier(from: Offset, to: Offset, c1: Offset, c2: Offset): Path = Path().apply {
                 moveTo(from.x, from.y)
-                val cx = (from.x + to.x) / 2f + bend
-                val cy = (from.y + to.y) / 2f
-                cubicTo(cx, from.y, cx, to.y, to.x, to.y)
+                cubicTo(c1.x, c1.y, c2.x, c2.y, to.x, to.y)
             }
 
-            data class Flow(val path: Path, val color: Color, val power: Float?, val reverse: Boolean = false)
-            val flows = listOf(
-                Flow(bezier(pv, inv, 40f), AccentOrange, pSun?.let { abs(it) }),
-                Flow(bezier(inv, batt, -30f), if ((pBatt ?: 0f) >= 0f) AccentGreen else AccentBlue, pBatt?.let { abs(it) }, (pBatt ?: 0f) < 0f),
-                Flow(bezier(inv, grid, 30f), AccentBlue, pGrid?.let { abs(it) }, (pGrid ?: 0f) < 0f),
-                Flow(bezier(inv, home, -40f), Color(0xFF9C27B0), pLoad?.let { abs(it) }),
+            data class Flow(val path: Path, val color: Color, val power: Float?, val reverse: Boolean = false, val particles: Int = 3)
+            val pvPowers = listOf(
+                pvRows[0].w ?: if (pvRows[0].v != null && pvRows[0].a != null) pvRows[0].v!! * pvRows[0].a!! else null,
+                pvRows[1].w ?: if (pvRows[1].v != null && pvRows[1].a != null) pvRows[1].v!! * pvRows[1].a!! else null,
+                pvRows[2].w ?: if (pvRows[2].v != null && pvRows[2].a != null) pvRows[2].v!! * pvRows[2].a!! else null,
+            )
+            val invTop = Offset(inv.x, inv.y - h * 0.06f)
+            val invLeft = Offset(inv.x - w * 0.08f, inv.y)
+            val invRight = Offset(inv.x + w * 0.08f, inv.y)
+            val invBottom = Offset(inv.x, inv.y + h * 0.08f)
+
+            val flows = mutableListOf<Flow>()
+            // each PV panel -> inverter (converge)
+            val pvStarts = listOf(pv1, pv2, pv3)
+            pvPowers.forEachIndexed { i, p ->
+                val from = Offset(pvStarts[i].x, pvStarts[i].y + h * 0.06f)
+                val bend = (i - 1) * w * 0.04f
+                flows += Flow(
+                    bezier(from, invTop, Offset(from.x + bend, (from.y + invTop.y) / 2f), Offset(invTop.x + bend * 0.3f, (from.y + invTop.y) / 2f)),
+                    AccentOrange, p?.let { abs(it) }, particles = 4
+                )
+            }
+            flows += Flow(
+                bezier(invLeft, Offset(batt.x + w * 0.07f, batt.y), Offset((invLeft.x + batt.x) / 2f, invLeft.y), Offset((invLeft.x + batt.x) / 2f, batt.y)),
+                if ((pBatt ?: 0f) >= 0f) AccentGreen else AccentBlue, pBatt?.let { abs(it) }, reverse = (pBatt ?: 0f) < 0f
+            )
+            flows += Flow(
+                bezier(invRight, Offset(grid.x - w * 0.07f, grid.y), Offset((invRight.x + grid.x) / 2f, invRight.y), Offset((invRight.x + grid.x) / 2f, grid.y)),
+                AccentBlue, pGrid?.let { abs(it) }, reverse = (pGrid ?: 0f) < 0f
+            )
+            flows += Flow(
+                bezier(invBottom, Offset(home.x, home.y - h * 0.06f), Offset(invBottom.x, (invBottom.y + home.y) / 2f), Offset(home.x, (invBottom.y + home.y) / 2f)),
+                Color(0xFF9C27B0), pLoad?.let { abs(it) }, particles = 4
             )
 
             flows.forEach { f ->
                 val power = f.power ?: 0f
                 if (power <= 0.1f) return@forEach
-                drawPath(f.path, color = f.color.copy(alpha = 0.35f), style = Stroke(width = 3f, cap = StrokeCap.Round))
+                drawPath(f.path, color = f.color.copy(alpha = 0.38f), style = Stroke(width = 3.5f, cap = StrokeCap.Round))
                 val measure = PathMeasure()
                 measure.setPath(f.path, false)
                 val len = measure.length
                 if (len <= 0f) return@forEach
-                val speedFactor = max(0.4f, (power / 2000f).coerceIn(0.4f, 2.5f))
-                val count = if (power > 500f) 3 else 2
+                val speedFactor = max(0.45f, (power / 2200f).coerceIn(0.45f, 2.6f))
+                val count = f.particles
                 for (i in 0 until count) {
                     val base = (particleProgress * speedFactor + i.toFloat() / count) % 1f
                     val t = if (f.reverse) 1f - base else base
                     val pos = measure.getPosition(t * len)
-                    drawCircle(color = f.color, radius = 4.5f, center = pos)
-                    drawCircle(color = Color.White.copy(alpha = 0.5f), radius = 2f, center = pos)
+                    drawCircle(color = f.color, radius = 5f, center = pos)
+                    drawCircle(color = Color.White.copy(alpha = 0.55f), radius = 2.2f, center = pos)
                 }
             }
         }
 
-        // PV (top) — Lottie
-        Column(
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = 6.dp).clickable { selectedNode = "PV" },
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("☀️", fontSize = 18.sp)
-            LottieNode("solar.json", Modifier.size(58.dp))
-            val pvText = if (pSun != null) fmt(pSun / 1000f, 2, " кВт") else "— кВт"
-            Text(pvText, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text("PV", color = Color.Gray, fontFamily = Mono, fontSize = 11.sp)
-        }
-
-        // Inverter (center) — Lottie
-        Column(
-            modifier = Modifier.align(Alignment.Center).clickable { selectedNode = "Інвертор" },
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LottieNode("inverter.json", Modifier.size(76.dp))
-            Text("Інвертор", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 11.sp)
-        }
-
-        // Battery (left) — Lottie
-        val battStatus = when {
-            pBatt == null -> "Очікування"
-            pBatt > 5f -> "Заряд · ${abs(pBatt).toInt()} Вт"
-            pBatt < -5f -> "Розряд · ${abs(pBatt).toInt()} Вт"
-            else -> "Очікування"
-        }
-        val battSocV = if (battSoc != null || battV != null) {
-            "${if (battSoc != null) "${battSoc.toInt()}%" else "—%"} · ${fmt(battV, 2, "V")}"
-        } else "—% · —V"
-        Column(
-            modifier = Modifier.align(Alignment.CenterStart).offset(x = 6.dp, y = 46.dp).clickable { selectedNode = "Батарея" },
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(66.dp)
-                    .shadow(10.dp, RoundedCornerShape(18.dp))
-                    .background(
-                        Brush.radialGradient(
-                            listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)
-                        ),
-                        RoundedCornerShape(18.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                LottieNode("battery.json", Modifier.size(60.dp))
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 6.dp)) {
+            // PV row (each panel separate with own line start)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                pvRows.forEachIndexed { idx, row ->
+                    val powerW = row.w ?: if (row.v != null && row.a != null) row.v * row.a else null
+                    val pvVal = if (powerW == null) "—" else if (abs(powerW) >= 1000f) fmt(powerW / 1000f, 2) else powerW.toInt().toString()
+                    val pvUnit = if (powerW == null) "" else if (abs(powerW) >= 1000f) "кВт" else "Вт"
+                    Column(
+                        modifier = Modifier.weight(1f).clickable { selectedNode = "PV" },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("☀️", fontSize = 16.sp)
+                        LottieNode("solar.json", Modifier.size(44.dp))
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                            if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Text("${fmtInt(row.v, "В")}·${fmt(row.a, 1, "А")}", color = Color(0xFF90A4AE), fontFamily = Mono, fontSize = 9.sp)
+                        Text(row.name, color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
+                    }
+                }
             }
-            Text(battSocV, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
-        }
 
-        // Grid (right) — Lottie transformer
-        val gridV2 = firstNum(data, "grid_voltage_l2", "voltage_l2")
-        val gridV3 = firstNum(data, "grid_voltage_l3", "voltage_l3")
-        val gridVoltageText = when {
-            gridV != null && gridV2 != null && gridV3 != null ->
-                "${fmtInt(gridV)}/${fmtInt(gridV2)}/${fmtInt(gridV3)} V"
-            gridV != null -> "${fmt(gridV, 1, "V")}"
-            else -> "—V"
-        }
-        val gridDir = when {
-            pGrid == null -> null
-            pGrid > 0.5f -> "Експорт"
-            pGrid < -0.5f -> "Імпорт"
-            else -> "Баланс"
-        }
-        val gridMain = if (pGrid != null) "${abs(pGrid).toInt()} Вт" else "— Вт"
-        Column(
-            modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-6).dp, y = 46.dp).clickable { selectedNode = "Мережа" },
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LottieNode("transformer.json", Modifier.size(64.dp))
-            Text(gridMain, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text(gridVoltageText, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
-            Text(
-                gridDir ?: "—",
-                color = when (gridDir) {
-                    "Експорт" -> Color(0xFFE57373)
-                    "Імпорт" -> AccentBlue
-                    else -> Color(0xFFB0BEC5)
-                },
-                fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.SemiBold
-            )
-            Text("Мережа", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
-        }
+            // middle: inverter center, battery left, grid right (same level)
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.align(Alignment.Center).clickable { selectedNode = "Інвертор" },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    LottieNode("inverter.json", Modifier.size(82.dp))
+                    Text("Інвертор", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 11.sp)
+                }
 
-        // Home (bottom) — Lottie
-        Column(
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp).clickable { selectedNode = "Дім" },
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LottieNode("home_sun.json", Modifier.size(68.dp))
-            val homeText = if (pLoad != null) fmt(pLoad / 1000f, 2, " кВт") else "— кВт"
-            Text(homeText, color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text("Споживання", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
-            Text("Дім", color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
+                Column(
+                    modifier = Modifier.align(Alignment.CenterStart).padding(start = 2.dp).clickable { selectedNode = "Батарея" },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .shadow(10.dp, RoundedCornerShape(18.dp))
+                            .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(18.dp)),
+                        contentAlignment = Alignment.Center
+                    ) { LottieNode("battery.json", Modifier.size(58.dp)) }
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                        Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(" · ", color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text(if (battV != null) fmt(battV, 2) else "—", color = Color.White, fontFamily = Mono, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                        Text("V", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
+                }
+
+                val gridV2 = firstNum(data, "grid_voltage_l2", "voltage_l2")
+                val gridV3 = firstNum(data, "grid_voltage_l3", "voltage_l3")
+                val gridVoltageText = when {
+                    gridV != null && gridV2 != null && gridV3 != null -> "${fmtInt(gridV)}/${fmtInt(gridV2)}/${fmtInt(gridV3)} V"
+                    gridV != null -> "${fmt(gridV, 1, "V")}"
+                    else -> "—V"
+                }
+                val gridDir = when {
+                    pGrid == null -> null
+                    pGrid > 0.5f -> "Експорт"
+                    pGrid < -0.5f -> "Імпорт"
+                    else -> "Баланс"
+                }
+                Column(
+                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp).clickable { selectedNode = "Мережа" },
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    LottieNode("transformer.json", Modifier.size(64.dp))
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                        Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Text(gridVoltageText, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
+                    Text(
+                        gridDir ?: "—",
+                        color = when (gridDir) { "Експорт" -> Color(0xFFE57373); "Імпорт" -> AccentBlue; else -> Color(0xFFB0BEC5) },
+                        fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            // Home bottom
+            Column(
+                modifier = Modifier.fillMaxWidth().clickable { selectedNode = "Дім" },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LottieNode("home_sun.json", Modifier.size(66.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    val homeVal = if (pLoad != null) fmt(pLoad / 1000f, 2) else "—"
+                    Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                    Text(" кВт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                }
+                Text("Споживання", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
+            }
         }
 
         // Bottom sheet-like info card on node tap
@@ -520,16 +559,11 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     Text(node, color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     Spacer(Modifier.height(4.dp))
                     val detail = when (node) {
-                        "PV" -> "Потужність: ${if (pSun != null) fmt(pSun / 1000f, 2, " кВт") else "—"} (p_sun/power_dc)"
+                        "PV" -> "PV1: ${fmt(pvRows[0].v,0)}В ${fmt(pvRows[0].a,1)}А · PV2: ${fmt(pvRows[1].v,0)}В ${fmt(pvRows[1].a,1)}А · PV3: ${fmt(pvRows[2].v,0)}В ${fmt(pvRows[2].a,1)}А · Σ ${if (pSun!=null) fmt(pSun/1000f,2," кВт") else "—"}"
                         "Інвертор" -> "Deye SUN-12K · Modbus TCP · дані з API"
                         "Батарея" -> "SOC: ${fmtInt(battSoc, "%")} · V: ${fmt(battV, 2)} В · I: ${fmt(battA, 2)} А · T: ${fmt(battT, 0)} °C · $battStatus (batt_soc/battery_*/p_batt)"
                         "Мережа" -> {
-                            val dir = when {
-                                pGrid == null -> "—"
-                                pGrid > 0.5f -> "Експорт"
-                                pGrid < -0.5f -> "Імпорт"
-                                else -> "Баланс"
-                            }
+                            val dir = when { pGrid == null -> "—"; pGrid > 0.5f -> "Експорт"; pGrid < -0.5f -> "Імпорт"; else -> "Баланс" }
                             "Потік: ${if (pGrid != null) "${pGrid.toInt()} Вт ($dir)" else "—"} · V: ${fmt(gridV, 0)} В (p_grid/grid_voltage_l1)"
                         }
                         "Дім" -> "Навантаження: ${if (pLoad != null) fmt(pLoad / 1000f, 2, " кВт") else "—"} (p_load)"
