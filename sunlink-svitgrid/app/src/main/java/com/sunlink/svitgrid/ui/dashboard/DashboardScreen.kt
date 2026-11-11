@@ -241,7 +241,12 @@ private fun PVSection(data: Map<String, Any>) {
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 rows.forEach { row ->
-                    val powerKw = row.w?.div(1000f) ?: if (row.v != null && row.a != null) (row.v * row.a / 1000f) else null
+                    val powerW = row.w ?: if (row.v != null && row.a != null) row.v * row.a else null
+                    val powerText = when {
+                        powerW == null -> "—"
+                        abs(powerW) >= 1000f -> "${String.format("%.2f", powerW / 1000f)} кВт"
+                        else -> "${powerW.toInt()} Вт"
+                    }
                     Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         LottieNode("solar.json", Modifier.size(44.dp))
                         Text(
@@ -249,7 +254,7 @@ private fun PVSection(data: Map<String, Any>) {
                             color = Color.Gray, fontFamily = Mono, fontSize = 9.sp, textAlign = TextAlign.Center
                         )
                         Text(
-                            "${row.name} · ${fmt(powerKw, 1)}",
+                            "${row.name} · $powerText",
                             color = Color.LightGray, fontFamily = Mono, fontSize = 9.sp
                         )
                     }
@@ -320,15 +325,15 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
 
             data class Flow(val path: Path, val color: Color, val power: Float?, val reverse: Boolean = false)
             val flows = listOf(
-                Flow(bezier(pv, inv), AccentOrange, pSun?.let { abs(it) }),
+                Flow(bezier(pv, inv, 40f), AccentOrange, pSun?.let { abs(it) }),
                 Flow(bezier(inv, batt, -30f), if ((pBatt ?: 0f) >= 0f) AccentGreen else AccentBlue, pBatt?.let { abs(it) }, (pBatt ?: 0f) < 0f),
                 Flow(bezier(inv, grid, 30f), AccentBlue, pGrid?.let { abs(it) }, (pGrid ?: 0f) < 0f),
-                Flow(bezier(inv, home), Color(0xFF9C27B0), pLoad?.let { abs(it) }),
+                Flow(bezier(inv, home, -40f), Color(0xFF9C27B0), pLoad?.let { abs(it) }),
             )
 
             flows.forEach { f ->
                 val power = f.power ?: 0f
-                if (power <= 1f) return@forEach
+                if (power <= 0.1f) return@forEach
                 drawPath(f.path, color = f.color.copy(alpha = 0.35f), style = Stroke(width = 3f, cap = StrokeCap.Round))
                 val measure = PathMeasure()
                 measure.setPath(f.path, false)
@@ -384,13 +389,19 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
         }
 
         // Grid (right) — Lottie transformer (стовб)
+        val gridLabel = when {
+            pGrid == null -> "— Вт"
+            pGrid > 0.5f -> "Експорт ${pGrid.toInt()} Вт"
+            pGrid < -0.5f -> "Імпорт ${abs(pGrid).toInt()} Вт"
+            else -> "0 Вт"
+        }
         Column(
             modifier = Modifier.align(Alignment.CenterEnd).offset(x = (-4).dp, y = 44.dp).clickable { selectedNode = "Мережа" },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LottieNode("transformer.json", Modifier.size(56.dp))
             Text("Мережа", color = Color.White, fontFamily = Mono, fontSize = 11.sp)
-            Text(if (pGrid != null) "${abs(pGrid).toInt()} Вт" else "— Вт", color = Color.Gray, fontFamily = Mono, fontSize = 9.sp)
+            Text(gridLabel, color = Color.Gray, fontFamily = Mono, fontSize = 9.sp)
         }
 
         // Home (bottom) — Lottie
@@ -420,7 +431,15 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                         "PV" -> "Потужність: ${if (pSun != null) fmt(pSun / 1000f, 2, " кВт") else "—"} (p_sun/power_dc)"
                         "Інвертор" -> "Deye SUN-12K · Modbus TCP · дані з API"
                         "Батарея" -> "SOC: ${fmtInt(battSoc, "%")} · V: ${fmt(battV, 1)} В · I: ${fmt(battA, 2)} А · T: ${fmt(battT, 0)} °C · $battStatus ${if (pBatt != null) "${abs(pBatt).toInt()} Вт" else "—"} (batt_soc/battery_*/p_batt)"
-                        "Мережа" -> "Потік: ${if (pGrid != null) "${pGrid.toInt()} Вт" else "—"} · V: ${fmt(gridV, 0)} В (p_grid/grid_voltage_l1)"
+                        "Мережа" -> {
+                            val dir = when {
+                                pGrid == null -> "—"
+                                pGrid > 0.5f -> "Експорт"
+                                pGrid < -0.5f -> "Імпорт"
+                                else -> "Баланс"
+                            }
+                            "Потік: ${if (pGrid != null) "${pGrid.toInt()} Вт ($dir)" else "—"} · V: ${fmt(gridV, 0)} В (p_grid/grid_voltage_l1)"
+                        }
                         "Дім" -> "Навантаження: ${if (pLoad != null) fmt(pLoad / 1000f, 2, " кВт") else "—"} (p_load)"
                         else -> ""
                     }

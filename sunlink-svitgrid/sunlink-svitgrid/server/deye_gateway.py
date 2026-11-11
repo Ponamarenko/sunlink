@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 # Конфигурация
 CONFIG = {
     "modbus": {
-        "host": "192.168.1.100",  # IP NA111-E
+        "host": "192.168.25.15",  # Deye inverter (Modbus TCP)
         "port": 502,
-        "timeout": 10,
+        "timeout": 2,
         "slave_id": 1
     },
     "server": {
@@ -65,15 +65,15 @@ class DeyeRegisterMap:
         self.registers = self._load_register_map()
         
     def _load_register_map(self) -> Dict[int, RegisterDefinition]:
-        """Загрузка карты регистров"""
+        """Загрузка карты регистров (Deye SG02LP1/standard, скориговано)"""
         return {
             # Аккумулятор
+            183: RegisterDefinition(183, "battery_voltage", "U_WORD", 0.01, "V", False, "Battery Voltage"),
             184: RegisterDefinition(184, "battery_soc", "U_WORD", 1.0, "%", False, "Battery State of Charge"),
-            185: RegisterDefinition(185, "battery_voltage", "U_WORD", 0.01, "V", False, "Battery Voltage"),
-            186: RegisterDefinition(186, "battery_temp", "U_WORD", 0.1, "°C", False, "Battery Temperature"),
+            182: RegisterDefinition(182, "battery_temp", "U_WORD", 0.1, "°C", False, "Battery Temperature"),
             190: RegisterDefinition(190, "battery_power", "S_WORD", 1.0, "W", False, "Battery Power"),
-            191: RegisterDefinition(191, "battery_current", "S_WORD", 0.1, "A", False, "Battery Current"),
-            
+            191: RegisterDefinition(191, "battery_current", "S_WORD", 0.01, "A", False, "Battery Current"),
+
             # Солнечные панели (3 MPPT)
             186: RegisterDefinition(186, "pv1_power", "U_WORD", 1.0, "W", False, "PV1 Power"),
             187: RegisterDefinition(187, "pv2_power", "U_WORD", 1.0, "W", False, "PV2 Power"),
@@ -84,17 +84,17 @@ class DeyeRegisterMap:
             112: RegisterDefinition(112, "pv2_current", "U_WORD", 0.1, "A", False, "PV2 Current"),
             113: RegisterDefinition(113, "pv3_voltage", "U_WORD", 0.1, "V", False, "PV3 Voltage"),
             114: RegisterDefinition(114, "pv3_current", "U_WORD", 0.1, "A", False, "PV3 Current"),
-            
-            # Сеть и нагрузка
-            150: RegisterDefinition(150, "grid_voltage", "U_WORD", 0.1, "V", False, "Grid Voltage"),
+
+            # Сеть и навантаження
+            150: RegisterDefinition(150, "grid_voltage", "U_WORD", 0.1, "V", False, "Grid Voltage L1"),
             151: RegisterDefinition(151, "grid_frequency", "U_WORD", 0.01, "Hz", False, "Grid Frequency"),
-            166: RegisterDefinition(166, "grid_inverter_power", "S_WORD", 1.0, "W", False, "Grid Inverter Power"),
+            166: RegisterDefinition(166, "grid_inverter_power", "S_WORD", 1.0, "W", False, "Grid/Inverter Power"),
             167: RegisterDefinition(167, "grid_l1_power", "S_WORD", 1.0, "W", False, "Grid L1 Power"),
             172: RegisterDefinition(172, "grid_ct_power", "S_WORD", 1.0, "W", False, "Grid CT Power"),
             175: RegisterDefinition(175, "total_load_power", "U_WORD", 1.0, "W", False, "Total Load Power"),
             176: RegisterDefinition(176, "load_l1_power", "U_WORD", 1.0, "W", False, "Load L1 Power"),
-            
-            # Энергетическая статистика (32-битные)
+
+            # Енергія (32-бітні)
             60: RegisterDefinition(60, "total_pv_production", "U_DWORD", 0.1, "kWh", False, "Total PV Production"),
             63: RegisterDefinition(63, "daily_pv_production", "U_DWORD", 0.1, "kWh", False, "Daily PV Production"),
             74: RegisterDefinition(74, "daily_buy_energy", "U_DWORD", 0.1, "kWh", False, "Daily Buy Energy"),
@@ -103,21 +103,21 @@ class DeyeRegisterMap:
             80: RegisterDefinition(80, "total_sell_energy", "U_DWORD", 0.1, "kWh", False, "Total Sell Energy"),
             84: RegisterDefinition(84, "daily_load_energy", "U_DWORD", 0.1, "kWh", False, "Daily Load Energy"),
             85: RegisterDefinition(85, "total_load_energy", "U_DWORD", 0.1, "kWh", False, "Total Load Energy"),
-            
-            # Управление (записываемые)
+
+            # Управління (записувані)
             230: RegisterDefinition(230, "max_solar_power_limit", "U_WORD", 1.0, "W", True, "Max Solar Power Limit"),
             232: RegisterDefinition(232, "max_charge_current", "U_WORD", 1.0, "A", True, "Max Charge Current"),
             233: RegisterDefinition(233, "max_discharge_current", "U_WORD", 1.0, "A", True, "Max Discharge Current"),
             248: RegisterDefinition(248, "tou_enable", "U_WORD", 1.0, "", True, "Time of Use Enable"),
-            
-            # Time of Use слоты
+
+            # TOU слоти
             250: RegisterDefinition(250, "tou_time_1", "U_WORD", 1.0, "HHMM", True, "TOU Time Slot 1"),
             256: RegisterDefinition(256, "tou_soc_1", "U_WORD", 1.0, "%", True, "TOU SOC Slot 1"),
             257: RegisterDefinition(257, "tou_power_1", "U_WORD", 1.0, "W", True, "TOU Power Slot 1"),
             258: RegisterDefinition(258, "tou_grid_charge_1", "U_WORD", 1.0, "", True, "TOU Grid Charge Slot 1"),
-            
-            # Диагностика
-            192: RegisterDefinition(192, "inverter_temp", "U_WORD", 0.1, "°C", False, "Inverter Temperature"),
+
+            # Діагностика
+            90: RegisterDefinition(90, "inverter_temp", "U_WORD", 0.1, "°C", False, "Inverter Temperature"),
             103: RegisterDefinition(103, "fault_code_1", "U_WORD", 1.0, "", False, "Fault Code 1"),
             104: RegisterDefinition(104, "fault_code_2", "U_WORD", 1.0, "", False, "Fault Code 2"),
         }
@@ -202,9 +202,11 @@ class DeyeGateway:
                 logger.info("Connected to Deye inverter")
                 return True
             else:
+                self.connection_status = False
                 logger.error("Failed to connect to Deye inverter")
                 return False
         except Exception as e:
+            self.connection_status = False
             logger.error(f"Connection error: {e}")
             return False
             
@@ -218,68 +220,67 @@ class DeyeGateway:
     async def read_register(self, address: int) -> Optional[float]:
         """Чтение одного регистра"""
         if not self.connection_status:
-            await self.connect()
-            
+            ok = await self.connect()
+            if not ok:
+                return None
+
         try:
             register_def = self.register_map.registers.get(address)
             if not register_def:
                 logger.error(f"Unknown register address: {address}")
                 return None
-                
+
+            device_id = self.config["modbus"].get("slave_id", 1)
             if register_def.data_type == "U_DWORD":
-                # Чтение 32-битного значения
-                result = self.client.read_holding_registers(address, slave_id=self.config["modbus"]["slave_id"])
+                result = self.client.read_holding_registers(address, count=2, device_id=device_id)
                 if not result.isError():
                     value = result.registers[0] + (result.registers[1] << 16)
                     return value * register_def.scale
             else:
-                # Чтение 16-битного значения
-                result = self.client.read_holding_registers(address, slave_id=self.config["modbus"]["slave_id"])
+                result = self.client.read_holding_registers(address, count=1, device_id=device_id)
                 if not result.isError():
                     value = result.registers[0]
-                    if register_def.data_type == "S_WORD":
-                        # Обработка знакового значения
-                        if value > 32767:
-                            value = value - 65536
+                    if register_def.data_type == "S_WORD" and value > 32767:
+                        value = value - 65536
                     return value * register_def.scale
-                    
+
             logger.error(f"Failed to read register {address}")
             return None
-            
+
         except ModbusIOException as e:
             logger.error(f"Modbus I/O error reading register {address}: {e}")
+            self.connection_status = False
             return None
         except Exception as e:
             logger.error(f"Error reading register {address}: {e}")
+            self.connection_status = False
             return None
             
     async def write_register(self, address: int, value: float) -> bool:
         """Безопасная запись регистра с валидацией"""
         if not self.connection_status:
-            await self.connect()
-            
+            ok = await self.connect()
+            if not ok:
+                return False
+
         register_def = self.register_map.registers.get(address)
         if not register_def or not register_def.writable:
             logger.error(f"Register {address} is not writable")
             return False
-            
-        # Валидация значения
+
         if not self.safety_manager.validate_write_value(register_def, value):
             logger.error(f"Invalid value for register {address}: {value}")
             return False
-            
-        # Проверка возможности записи
+
         if not self.safety_manager.start_write():
             return False
-            
+
         try:
-            # Преобразование значения для записи
             raw_value = int(value / register_def.scale)
-            
             if register_def.data_type == "S_WORD" and raw_value < 0:
                 raw_value = raw_value + 65536
-                
-            result = self.client.write_register(address, raw_value, slave_id=self.config["modbus"]["slave_id"])
+            device_id = self.config["modbus"].get("slave_id", 1)
+            result = self.client.write_register(address, raw_value, device_id=device_id)
             if not result.isError():
                 logger.info(f"Successfully wrote register {address}: {value}")
                 self.safety_manager.finish_write()
@@ -288,26 +289,31 @@ class DeyeGateway:
                 logger.error(f"Failed to write register {address}")
                 self.safety_manager.finish_write()
                 return False
-                
         except Exception as e:
             logger.error(f"Error writing register {address}: {e}")
+            self.connection_status = False
             self.safety_manager.finish_write()
             return False
             
     async def read_all_registers(self) -> Dict[str, Any]:
-        """Чтение всех регистров"""
+        """Чтение всех регистров (быстрый выход при недоступности Modbus)"""
         data = {}
-        
-        # Группы чтения для оптимизации
+        if not self.connection_status:
+            ok = await self.connect()
+            if not ok:
+                return data
+
         read_groups = [
-            [184, 185, 186, 190, 191],  # Battery
+            [182, 183, 184, 190, 191],  # Battery
             [186, 187, 188, 109, 110, 111, 112, 113, 114],  # PV
             [150, 151, 166, 167, 172, 175, 176],  # Grid & Load
             [60, 63, 74, 76, 78, 80, 84, 85],  # Energy counters
-            [192, 103, 104]  # Diagnostics
+            [90, 103, 104]  # Diagnostics
         ]
-        
+
         for group in read_groups:
+            if not self.connection_status:
+                break
             for address in group:
                 if address in self.register_map.registers:
                     value = await self.read_register(address)
@@ -319,7 +325,6 @@ class DeyeGateway:
                             "unit": register_def.unit,
                             "timestamp": datetime.now().isoformat()
                         }
-                        
         self.last_data = data
         return data
         
@@ -432,50 +437,100 @@ async def write_register(request: WriteRequest):
         "timestamp": datetime.now().isoformat()
     }
 
+def _flat_live(data: Dict[str, Any], status: Dict[str, Any]) -> Dict[str, Any]:
+    def v(name: str, default=0.0):
+        item = data.get(name)
+        if isinstance(item, dict):
+            return item.get("value", default)
+        return item if item is not None else default
+
+    p_string1 = float(v("pv1_power", 0.0))
+    p_string2 = float(v("pv2_power", 0.0))
+    p_string3 = float(v("pv3_power", 0.0))
+    pv_sum = p_string1 + p_string2 + p_string3
+    p_sun = float(v("power_dc", pv_sum))
+    if p_sun == 0.0 and pv_sum > 0.0:
+        p_sun = pv_sum
+    p_load = float(v("total_load_power", v("power_ac", 0.0)))
+    p_batt = float(v("battery_power", 0.0))
+    grid_ct = float(v("grid_ct_power", 0.0))
+    if grid_ct != 0.0:
+        p_grid = grid_ct
+    else:
+        # баланс потужності, якщо немає CT/прямого виміру
+        p_grid = p_load - p_sun - p_batt
+
+    flat = {
+        "p_sun": p_sun,
+        "p_load": p_load,
+        "p_batt": p_batt,
+        "p_grid": p_grid,
+        "batt_soc": float(v("battery_soc", 0.0)),
+        "battery_voltage": float(v("battery_voltage", 0.0)),
+        "battery_current": float(v("battery_current", 0.0)),
+        "battery_temp": float(v("battery_temp", 0.0)),
+        "pv1_voltage": float(v("pv1_voltage", 0.0)),
+        "pv1_current": float(v("pv1_current", 0.0)),
+        "pv2_voltage": float(v("pv2_voltage", 0.0)),
+        "pv2_current": float(v("pv2_current", 0.0)),
+        "pv3_voltage": float(v("pv3_voltage", 0.0)),
+        "pv3_current": float(v("pv3_current", 0.0)),
+        "p_string1": p_string1,
+        "p_string2": p_string2,
+        "p_string3": p_string3,
+        "grid_voltage_l1": float(v("grid_voltage", 0.0)),
+        "grid_voltage": float(v("grid_voltage", 0.0)),
+        "timestamp": datetime.now().isoformat(),
+        "connection_status": status.get("connection_status", False),
+    }
+    # також додаємо всі сирі значення плоско
+    for name, item in data.items():
+        if name not in flat and isinstance(item, dict) and "value" in item:
+            flat[name] = item["value"]
+    return flat
+
 @app.get("/live")
 async def get_live_data():
-    """Получение live данных"""
+    """Получение live данных (с швидким fallback, якщо Modbus недоступний)"""
     try:
         data = await gateway.read_all_registers()
         status = await gateway.get_system_status()
-        
-        # Вычисляем дополнительные поля для SvitGrid
-        p_sun = data.get("power_dc", {}).get("value", 0)  # Мощность от солнца
-        p_load = data.get("power_ac", {}).get("value", 0)  # Мощность нагрузки
-        p_batt = data.get("battery_power", {}).get("value", 0)  # Мощность батареи
-        p_grid = p_load - p_sun  # Мощность сети (простой расчет)
-        
+        if not data:
+            raise RuntimeError("No modbus data")
+        flat = _flat_live(data, status)
         return {
             "data": data,
             "status": status,
-            "p_sun": p_sun,
-            "p_load": p_load,
-            "p_batt": p_batt,
-            "p_grid": p_grid,
-            "timestamp": datetime.now().isoformat()
+            "p_sun": flat["p_sun"],
+            "p_load": flat["p_load"],
+            "p_batt": flat["p_batt"],
+            "p_grid": flat["p_grid"],
+            "timestamp": flat["timestamp"]
         }
-    except Exception as e:
-        # Возвращаем тестовые данные если нет подключения
+    except Exception:
         return {
-            "data": {
-                "power_dc": {"value": 4680.0, "unit": "W"},
-                "power_ac": {"value": 4708.0, "unit": "W"},
-                "battery_soc": {"value": 65.0, "unit": "%"},
-                "battery_voltage": {"value": 48.2, "unit": "V"},
-                "pv1_voltage": {"value": 296.0, "unit": "V"},
-                "pv1_current": {"value": 2.1, "unit": "A"},
-                "pv2_voltage": {"value": 295.0, "unit": "V"},
-                "pv2_current": {"value": 2.0, "unit": "A"},
-                "pv3_voltage": {"value": 294.0, "unit": "V"},
-                "pv3_current": {"value": 1.9, "unit": "A"},
-            },
+            "data": {},
             "status": {"connection_status": False},
-            "p_sun": 4680.0,
-            "p_load": 4708.0,
+            "p_sun": 0.0,
+            "p_load": 0.0,
             "p_batt": 0.0,
-            "p_grid": 28.0,
-            "timestamp": datetime.now().isoformat()
+            "p_grid": 0.0,
+            "timestamp": datetime.now().isoformat(),
+            "error": "Modbus unavailable"
         }
+
+@app.get("/api/live/raw")
+async def get_live_raw():
+    """Плоский JSON для Android (сумісність з SvitGrid-style полями)"""
+    try:
+        data = await gateway.read_all_registers()
+        status = await gateway.get_system_status()
+        flat = _flat_live(data, status)
+        if not data:
+            flat["error"] = "Modbus unavailable"
+        return flat
+    except Exception as e:
+        return {"error": str(e), "timestamp": datetime.now().isoformat(), "connection_status": False}
 
 @app.post("/emergency-stop")
 async def emergency_stop():
