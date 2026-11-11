@@ -371,20 +371,15 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             val w = size.width
             val h = size.height
             // layout: PV row top, inverter center, battery left / grid right same level, home bottom
-            val inv = Offset(w * 0.5f, h * 0.46f)
-            val pvY = h * 0.18f
+            val inv = Offset(w * 0.5f, h * 0.48f)
+            val pvY = h * 0.16f
             val pv1 = Offset(w * 0.17f, pvY)
             val pv2 = Offset(w * 0.5f, pvY)
             val pv3 = Offset(w * 0.83f, pvY)
-            val sideY = h * 0.46f
+            val sideY = h * 0.48f
             val batt = Offset(w * 0.16f, sideY)
             val grid = Offset(w * 0.84f, sideY)
-            val home = Offset(w * 0.5f, h * 0.86f)
-
-            fun bezier(from: Offset, to: Offset, c1: Offset, c2: Offset): Path = Path().apply {
-                moveTo(from.x, from.y)
-                cubicTo(c1.x, c1.y, c2.x, c2.y, to.x, to.y)
-            }
+            val home = Offset(w * 0.5f, h * 0.84f)
 
             data class Flow(val path: Path, val color: Color, val power: Float?, val reverse: Boolean = false, val particles: Int = 3)
             val pvPowers = listOf(
@@ -392,41 +387,70 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                 pvRows[1].w ?: if (pvRows[1].v != null && pvRows[1].a != null) pvRows[1].v!! * pvRows[1].a!! else null,
                 pvRows[2].w ?: if (pvRows[2].v != null && pvRows[2].a != null) pvRows[2].v!! * pvRows[2].a!! else null,
             )
-            val invTop = Offset(inv.x, inv.y - h * 0.06f)
-            val invLeft = Offset(inv.x - w * 0.08f, inv.y)
-            val invRight = Offset(inv.x + w * 0.08f, inv.y)
-            val invBottom = Offset(inv.x, inv.y + h * 0.08f)
+            val invTop = Offset(inv.x, inv.y - h * 0.055f)
+            val invLeft = Offset(inv.x - w * 0.075f, inv.y)
+            val invRight = Offset(inv.x + w * 0.075f, inv.y)
+            val invBottom = Offset(inv.x, inv.y + h * 0.075f)
+            val r = minOf(w, h) * 0.045f
 
-            fun lerp(a: Float, b: Float, t: Float) = a + (b - a) * t
-            fun nearStraight(from: Offset, to: Offset, curve: Float = 0.08f): Path {
-                val c1 = Offset(lerp(from.x, to.x, 0.33f), lerp(from.y, to.y, 0.33f - curve * 0.15f))
-                val c2 = Offset(lerp(from.x, to.x, 0.66f), lerp(from.y, to.y, 0.66f - curve * 0.15f))
-                return bezier(from, to, c1, c2)
+            fun orthogonalPV(from: Offset, toTop: Offset, dir: Int): Path = Path().apply {
+                // dir: -1 left panel (turn right at bottom), 0 straight, 1 right panel (turn left)
+                moveTo(from.x, from.y)
+                if (dir == 0) {
+                    lineTo(toTop.x, toTop.y)
+                } else {
+                    val midY = toTop.y
+                    val turnY = midY - r
+                    val targetX = toTop.x
+                    if (from.y < turnY) lineTo(from.x, turnY) else lineTo(from.x, midY)
+                    val sx = if (dir < 0) 1f else -1f // move toward center
+                    quadraticBezierTo(from.x, midY, from.x + sx * r, midY)
+                    if (kotlin.math.abs(targetX - (from.x + sx * r)) > r) {
+                        lineTo(targetX - sx * r, midY)
+                        quadraticBezierTo(targetX, midY, targetX, midY - r)
+                        lineTo(toTop.x, toTop.y)
+                    } else {
+                        lineTo(toTop.x, toTop.y)
+                    }
+                }
             }
 
             val flows = mutableListOf<Flow>()
-            // each PV panel -> inverter (converge), almost straight
             val pvStarts = listOf(pv1, pv2, pv3)
+            val pvFromY = pvY + h * 0.05f
+            val dirs = listOf(-1, 0, 1)
             pvPowers.forEachIndexed { i, p ->
-                val from = Offset(pvStarts[i].x, pvStarts[i].y + h * 0.06f)
-                val to = invTop
-                val c1 = Offset(lerp(from.x, to.x, 0.35f), lerp(from.y, to.y, 0.35f))
-                val c2 = Offset(lerp(from.x, to.x, 0.70f), lerp(from.y, to.y, 0.70f))
-                flows += Flow(bezier(from, to, c1, c2), AccentOrange, p?.let { abs(it) }, particles = 4)
+                val from = Offset(pvStarts[i].x, pvFromY)
+                val path = if (dirs[i] == 0) {
+                    Path().apply { moveTo(from.x, from.y); lineTo(invTop.x, invTop.y) }
+                } else {
+                    val dir = dirs[i]
+                    val midY = invTop.y + r * 0.2f
+                    val turnY = midY - r
+                    val targetX = invTop.x
+                    Path().apply {
+                        moveTo(from.x, from.y)
+                        lineTo(from.x, turnY)
+                        val sx = if (dir < 0) 1f else -1f
+                        quadraticBezierTo(from.x, midY, from.x + sx * r, midY)
+                        lineTo(targetX - sx * r, midY)
+                        quadraticBezierTo(targetX, midY, targetX, midY - r * 0.2f)
+                        lineTo(invTop.x, invTop.y)
+                    }
+                }
+                flows += Flow(path, AccentOrange, p?.let { abs(it) }, particles = 4)
             }
+            // inverter -> battery (horizontal left)
             val battTo = Offset(batt.x + w * 0.07f, batt.y)
-            flows += Flow(
-                nearStraight(invLeft, battTo),
-                if ((pBatt ?: 0f) >= 0f) AccentGreen else AccentBlue, pBatt?.let { abs(it) }, reverse = (pBatt ?: 0f) < 0f
-            )
+            flows += Flow(Path().apply { moveTo(invLeft.x, invLeft.y); lineTo(battTo.x, battTo.y) },
+                if ((pBatt ?: 0f) >= 0f) AccentGreen else AccentBlue, pBatt?.let { abs(it) }, reverse = (pBatt ?: 0f) < 0f)
+            // inverter -> grid (horizontal right)
             val gridTo = Offset(grid.x - w * 0.07f, grid.y)
-            flows += Flow(
-                nearStraight(invRight, gridTo),
-                AccentBlue, pGrid?.let { abs(it) }, reverse = (pGrid ?: 0f) < 0f
-            )
-            val homeTo = Offset(home.x, home.y - h * 0.06f)
-            flows += Flow(
-                nearStraight(invBottom, homeTo),
+            flows += Flow(Path().apply { moveTo(invRight.x, invRight.y); lineTo(gridTo.x, gridTo.y) },
+                AccentBlue, pGrid?.let { abs(it) }, reverse = (pGrid ?: 0f) < 0f)
+            // inverter -> home (vertical down)
+            val homeTo = Offset(home.x, home.y - h * 0.055f)
+            flows += Flow(Path().apply { moveTo(invBottom.x, invBottom.y); lineTo(homeTo.x, homeTo.y) },
                 Color(0xFF9C27B0), pLoad?.let { abs(it) }, particles = 4
             )
 
@@ -464,8 +488,8 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                         Text("☀️", fontSize = 16.sp)
                         LottieNode("solar.json", Modifier.size(44.dp))
                         Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
-                            Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                            if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                         Text("${fmtInt(row.v, "В")}·${fmt(row.a, 1, "А")}", color = Color(0xFF90A4AE), fontFamily = Mono, fontSize = 9.sp)
                         Text(row.name, color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
@@ -494,14 +518,14 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                             .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(18.dp)),
                         contentAlignment = Alignment.Center
                     ) { LottieNode("battery.json", Modifier.size(58.dp)) }
-                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
-                        Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Text(" · ", color = Color.White, fontFamily = Mono, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text(if (battV != null) fmt(battV, 2) else "—", color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        Text("V", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp, start = 2.dp, end = 2.dp)) {
+                        Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("·", color = Color.White, fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Text(if (battV != null) fmt(battV, 2) else "—", color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text("V", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
-                    Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, modifier = Modifier.padding(top = 1.dp))
+                    Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, modifier = Modifier.padding(top = 2.dp))
                 }
 
                 val gridV2 = firstNum(data, "grid_voltage_l2", "voltage_l2")
@@ -522,9 +546,9 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     LottieNode("transformer.json", Modifier.size(64.dp))
-                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
-                        Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp, start = 2.dp, end = 2.dp)) {
+                        Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                     Text(gridVoltageText, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
                     Text(
@@ -546,8 +570,8 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                 LottieNode("home_sun.json", Modifier.size(64.dp))
                 Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
                     val homeVal = if (pLoad != null) fmt(pLoad / 1000f, 2) else "—"
-                    Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-                    Text(" кВт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(" кВт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 Text("Споживання", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
             }
