@@ -474,10 +474,10 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             }
         }
 
-        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 6.dp)) {
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 4.dp)) {
             // PV row (each panel separate with own line start)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                pvRows.forEachIndexed { idx, row ->
+                pvRows.forEachIndexed { _, row ->
                     val powerW = row.w ?: if (row.v != null && row.a != null) row.v * row.a else null
                     val pvVal = if (powerW == null) "—" else if (abs(powerW) >= 1000f) fmt(powerW / 1000f, 2) else powerW.toInt().toString()
                     val pvUnit = if (powerW == null) "" else if (abs(powerW) >= 1000f) "кВт" else "Вт"
@@ -485,14 +485,14 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                         modifier = Modifier.weight(1f).clickable { selectedNode = "PV" },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("☀️", fontSize = 16.sp)
-                        LottieNode("solar.json", Modifier.size(44.dp))
-                        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
-                            Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("☀️", fontSize = 14.sp)
+                        LottieNode("solar.json", Modifier.size(38.dp))
+                        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
+                            Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         }
-                        Text("${fmtInt(row.v, "В")}·${fmt(row.a, 1, "А")}", color = Color(0xFF90A4AE), fontFamily = Mono, fontSize = 9.sp)
-                        Text(row.name, color = Color.Gray, fontFamily = Mono, fontSize = 10.sp)
+                        Text("${fmtInt(row.v, "В")}·${fmt(row.a, 1, "А")}", color = Color(0xFF90A4AE), fontFamily = Mono, fontSize = 14.sp)
+                        Text(row.name, color = Color.Gray, fontFamily = Mono, fontSize = 9.sp)
                     }
                 }
             }
@@ -503,29 +503,29 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     modifier = Modifier.align(Alignment.Center).clickable { selectedNode = "Інвертор" },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LottieNode("inverter.json", Modifier.size(82.dp))
-                    Text("Інвертор", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 11.sp)
+                    LottieNode("inverter.json", Modifier.size(72.dp))
+                    Text("Інвертор", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 10.sp)
                 }
 
                 Column(
-                    modifier = Modifier.align(Alignment.CenterStart).padding(start = 2.dp).clickable { selectedNode = "Батарея" },
+                    modifier = Modifier.align(Alignment.CenterStart).padding(start = 0.dp).clickable { selectedNode = "Батарея" },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(64.dp)
-                            .shadow(10.dp, RoundedCornerShape(18.dp))
-                            .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(18.dp)),
+                            .size(56.dp)
+                            .shadow(8.dp, RoundedCornerShape(16.dp))
+                            .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(16.dp)),
                         contentAlignment = Alignment.Center
-                    ) { LottieNode("battery.json", Modifier.size(58.dp)) }
-                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp, start = 2.dp, end = 2.dp)) {
-                        Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                        Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        Text("·", color = Color.White, fontFamily = Mono, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        Text(if (battV != null) fmt(battV, 2) else "—", color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                        Text("V", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    ) { LottieNode("battery.json", Modifier.size(50.dp)) }
+                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
+                        Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("·", color = Color.White, fontFamily = Mono, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text(if (battV != null) fmt(battV, 2) else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text("V", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
-                    Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, modifier = Modifier.padding(top = 2.dp))
+                    Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 9.sp)
                 }
 
                 val gridV2 = firstNum(data, "grid_voltage_l2", "voltage_l2")
@@ -542,19 +542,19 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     else -> "Баланс"
                 }
                 Column(
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 2.dp).clickable { selectedNode = "Мережа" },
+                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 0.dp).clickable { selectedNode = "Мережа" },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LottieNode("transformer.json", Modifier.size(64.dp))
-                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp, start = 2.dp, end = 2.dp)) {
-                        Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                        Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    LottieNode("transformer.json", Modifier.size(56.dp))
+                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
+                        Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
-                    Text(gridVoltageText, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
+                    Text(gridVoltageText, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp)
                     Text(
                         gridDir ?: "—",
                         color = when (gridDir) { "Експорт" -> Color(0xFFE57373); "Імпорт" -> AccentBlue; else -> Color(0xFFB0BEC5) },
-                        fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.SemiBold
+                        fontFamily = Mono, fontSize = 10.sp, fontWeight = FontWeight.SemiBold
                     )
                 }
             }
@@ -563,17 +563,17 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = if (selectedNode != null) 70.dp else 6.dp)
+                    .padding(bottom = if (selectedNode != null) 72.dp else 2.dp)
                     .clickable { selectedNode = "Дім" },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                LottieNode("home_sun.json", Modifier.size(64.dp))
-                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
+                LottieNode("home_sun.json", Modifier.size(56.dp))
+                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
                     val homeVal = if (pLoad != null) fmt(pLoad / 1000f, 2) else "—"
-                    Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    Text(" кВт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(" кВт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
-                Text("Споживання", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp)
+                Text("Споживання", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp)
             }
         }
 
