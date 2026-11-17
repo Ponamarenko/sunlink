@@ -2,6 +2,12 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.23.0-prepare] — 2026-11-17 (подготовка к первому read-only опросу)
+- **DeyeReadonlyAdapter:** отдельный read-only Modbus-драйвер для SUN-12K-SG02LP1-EU-AM3 (только FC 03 Read Holding Registers, нет методов записи)
+- **Тесты:** 22 mock-теста (U/S_WORD декодирование, отрицательные значения, DWORD порядок LW,HW, отсутствие write-вызовов на клиенте) — пройдены
+- **Документация:** docs/modbus-register-map.md, docs/readonly-driver.md, docs/equipment.md, docs/architecture.md, docs/stages/
+- **Этап 3:** подготовлен readonly_diagnostic.py (один цикл чтения, без polling); ожидается подтверждение остановки клиента Home Assistant перед физическим подключением к 192.168.25.15:502
+
 ## [v2.22.0] — 2026-11 (поточний)
 - **UI/дашборд:** потужність PV-рядків у **Вт/кВт**; плавніші Bezier-шляхи потоків, відображення частинок при малих потоках; підписи мережі **Експорт/Імпорт/Баланс** за знаком `p_grid`.
 - **Gateway:** виправлення Modbus (хост `192.168.25.15`, `timeout`, використання `device_id` для pymodbus 3.x), корекції карти регістрів/масштабів, розрахунок/нормалізація `p_sun,p_load,p_batt,p_grid,p_string1-3`, плоский `/api/live/raw`, `/live` без тестових даних при недоступності Modbus (fallback зі статусом помилки).

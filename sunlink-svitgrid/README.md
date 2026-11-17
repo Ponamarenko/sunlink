@@ -58,6 +58,11 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [INSTALL.md](INSTALL.md) — вимоги, інвертор, gateway, MikroTik NAT, збірка, налаштування застосунку
 - [ARCHITECTURE.md](ARCHITECTURE.md) — схема, формат `/api/live/raw`, карта регістрів Deye, логіка fallback/парсингу/візуалізації
 - [CHANGELOG.md](CHANGELOG.md) — історія версій та ключові віхи
+- [docs/modbus-register-map.md](docs/modbus-register-map.md) — карта регістрів Deye SG02LP1 (уровень B, требує верифікації на пристрої)
+- [docs/readonly-driver.md](docs/readonly-driver.md) — read-only Modbus-драйвер DeyeReadonlyAdapter (тільки FC 03)
+- [docs/equipment.md](docs/equipment.md) — обладнання: інвертор, Ebyte NA111-E, мережа
+- [docs/architecture.md](docs/architecture.md) — архітектура read-only драйвера (доповнення до кореневого ARCHITECTURE.md)
+- [docs/stages/](docs/stages/) — звіти етапів розробки (стадія 2.5 аудит, стадія 3 перший опрос)
 
 ## Історія версій (коротко)
 
