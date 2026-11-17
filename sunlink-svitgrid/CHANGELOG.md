@@ -2,11 +2,17 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
-## [v2.23.0-prepare] — 2026-11-17 (подготовка к первому read-only опросу)
+## [v2.23.0-prepare] — 2026-11-17 (подготовка и первый read-only опрос)
 - **DeyeReadonlyAdapter:** отдельный read-only Modbus-драйвер для SUN-12K-SG02LP1-EU-AM3 (только FC 03 Read Holding Registers, нет методов записи)
 - **Тесты:** 22 mock-теста (U/S_WORD декодирование, отрицательные значения, DWORD порядок LW,HW, отсутствие write-вызовов на клиенте) — пройдены
-- **Документация:** docs/modbus-register-map.md, docs/readonly-driver.md, docs/equipment.md, docs/architecture.md, docs/stages/
-- **Этап 3:** подготовлен readonly_diagnostic.py (один цикл чтения, без polling); ожидается подтверждение остановки клиента Home Assistant перед физическим подключением к 192.168.25.15:502
+- **Документация:** docs/modbus-register-map.md, docs/readonly-driver.md, docs/equipment.md, docs/architecture.md, docs/stages/, docs/research/
+- **Этап 3:** выполнен первый физический read-only опрос через readonly_diagnostic.py (один цикл, без polling; соединение закрыто)
+  - Подтверждён Slave ID = 1 (reg 184 Battery SOC = 86%)
+  - Все 19 регистров SG02LP1 прочитаны (measured, ошибок нет)
+  - TCP 192.168.25.15:502 открыт, существующих соединений нет, другой Modbus Master не обнаружен
+  - pymodbus 3.16.2, параметр device_id
+  - Исправлен баг readonly_diagnostic.py (attribute last_successful_read адаптера, не снимка)
+  - Водитель не интегрирован в backend; записей в инвертор не выполнялось
 
 ## [v2.22.0] — 2026-11 (поточний)
 - **UI/дашборд:** потужність PV-рядків у **Вт/кВт**; плавніші Bezier-шляхи потоків, відображення частинок при малих потоках; підписи мережі **Експорт/Імпорт/Баланс** за знаком `p_grid`.

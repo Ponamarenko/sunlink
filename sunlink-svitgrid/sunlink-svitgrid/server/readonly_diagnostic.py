@@ -127,7 +127,7 @@ def main() -> int:
 
     print("-" * 72)
     print(f"Connection OK : {snapshot.connection_ok}")
-    print(f"Last success  : {snapshot.last_successful_read or 'none'}")
+    print(f"Last success  : {adapter.last_successful_read or 'none'}")
     print(f"Finished at   : {datetime.now(timezone.utc).isoformat()}")
 
     # 5. Закрыть соединение — один раз, без фоновых процессов
