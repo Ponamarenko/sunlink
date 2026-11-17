@@ -194,12 +194,12 @@
 | Поле | Значение |
 |---|---|
 | Ветка | `main` (origin/main) |
-| Локальный HEAD | `9f2a2f9` (после коммита этапа 8) |
+| Локальный HEAD | `04c8b4a` (после коммита этапа 8) |
 | Remote HEAD (origin/main) | совпадает с локальным |
 | Изменённые файлы | `server/services/`, `server/modbus/`, `server/demo_stage8.py`, `server/tests/test_polling_*.py`, `docs/stages/stage-8-modbus-integration.md`, `README.md`, `CHANGELOG.md` |
 | Секреты в коммите | отсутствуют |
 | Тесты | 116/116 проходят (до этапа 8: 66, нового: 50) |
-| Ссылка на коммит | https://github.com/Ponamarenko/sunlink/commit/9f2a2f9 |
+| Ссылка на коммит | https://github.com/Ponamarenko/sunlink/commit/04c8b4a |
 
 ## 12. Что не подключено к production
 
