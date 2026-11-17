@@ -63,6 +63,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [docs/equipment.md](docs/equipment.md) — обладнання: інвертор, Ebyte NA111-E, мережа
 - [docs/architecture.md](docs/architecture.md) — архітектура read-only драйвера (доповнення до кореневого ARCHITECTURE.md)
 - [docs/stages/](docs/stages/) — звіти етапів розробки (стадія 2.5 аудит, стадія 3 перший опрос)
+- [docs/research/third-party-deye-mqtt-mcp-projects.md](docs/research/third-party-deye-mqtt-mcp-projects.md) — дослідження сторонніх Deye/MQTT/MCP проєктів (етап 3.5)
 
 ## Історія версій (коротко)
 
