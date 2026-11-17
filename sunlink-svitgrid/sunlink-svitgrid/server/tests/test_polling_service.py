@@ -139,6 +139,8 @@ class TestPollingServiceSuccessfulCycle(unittest.TestCase):
         self.assertEqual(len(result.errors), 0)
         self.assertEqual(self.state.connection_status, ConnectionStatus.ONLINE)
         self.assertEqual(self.state.consecutive_failures, 0)
+        # Connection must be closed after every cycle (read-only diagnostic safety).
+        self.assertGreaterEqual(self.adapter.disconnect_calls, 1)
 
     def test_raw_values_preserved(self):
         result = self.service.poll_once()
@@ -209,11 +211,14 @@ class TestPollingServicePartialError(unittest.TestCase):
         self.assertIn(190, result.errors)
         self.assertNotEqual(self.state.connection_status, ConnectionStatus.OFFLINE)
         self.assertEqual(self.state.connection_status, ConnectionStatus.DEGRADED)
+        # Connection must be closed even after partial errors.
+        self.assertGreaterEqual(self.adapter.disconnect_calls, 1)
 
     def test_failed_register_not_persisted(self):
         self.service.poll_once()
         self.assertIsNone(self.repo.get_latest("test-inv", "battery_power"))
         self.assertIsNotNone(self.repo.get_latest("test-inv", "battery_voltage"))
+        self.assertGreaterEqual(self.adapter.disconnect_calls, 1)
 
 
 class TestPollingServiceConnectFailure(unittest.TestCase):

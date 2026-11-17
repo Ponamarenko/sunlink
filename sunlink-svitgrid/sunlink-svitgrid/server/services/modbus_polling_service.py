@@ -213,6 +213,9 @@ class ModbusPollingService:
                 storage_error = str(exc)
                 errors["_storage"] = storage_error
 
+        # Guaranteed connection close after every cycle (read-only diagnostic safety).
+        self._adapter.disconnect()
+
         duration_ms = (time.perf_counter() - start) * 1000.0
 
         has_register_errors = len(errors) > 0 and "_storage" not in errors
