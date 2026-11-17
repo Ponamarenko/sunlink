@@ -65,6 +65,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [docs/stages/](docs/stages/) — звіти етапів розробки (стадія 2.5 аудит, стадія 3 перший опрос, стадія 7 Data Layer)
 - [docs/research/third-party-deye-mqtt-mcp-projects.md](docs/research/third-party-deye-mqtt-mcp-projects.md) — дослідження сторонніх Deye/MQTT/MCP проєктів (етап 3.5)
 - [docs/stages/stage-7-data-layer.md](docs/stages/stage-7-data-layer.md) — базовий Data Layer SunPortal: моделі, нормалізація, SQLite-х історію (етап 7)
+- [docs/stages/stage-8-modbus-integration.md](docs/stages/stage-8-modbus-integration.md) — Modbus опросчик та інтеграція Data Layer (етап 8)
 
 ## Історія версій (коротко)
 

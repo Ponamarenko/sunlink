@@ -55,6 +55,8 @@
 | 90 | DC temperature | signed_raw × 0.1 − 100 °C | provisional | Offset −100 по Sunsynk TempSensor, не измерен на AM3 |
 | 91 | AC temperature | signed_raw × 0.1 − 100 °C | provisional | Offset −100 по Sunsynk TempSensor, не измерен на AM3 |
 
+Всего: 6 corroborated + 3 provisional = 9 регистров.
+
 **Явно не включены (без отдельного решения):** 166, 167, 169, 172, 175–178, 182, 192, 194, 76–84, 248–279.  
 Регистр 169 не включён: масштаб ×1 (Sunsynk) vs ×10 (текущий адаптер) не разрешён.  
 Регистр 182 не включён: в логе HA значение 222 °C — нефизическое.  

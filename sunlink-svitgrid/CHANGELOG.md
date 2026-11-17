@@ -2,6 +2,19 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.23.0-prepare] — 2026-11-17 (подготовка, первый опрос, базовый Data Layer и Modbus интеграция)
+- **Этап 8:** реализован Modbus polling service с интеграцией Data Layer
+  - `server/services/modbus_polling_service.py` — цикл последовательного опроса регистров этапа 7 (FC 03 только)
+  - `server/services/inverter_state.py` — состояние инвертора: online/offline/degraded/unknown, актуальность данных
+  - `server/services/polling_config.py` — настройки интервалов, таймаутов, ретраев, бэкоффа
+  - `server/modbus/client_interface.py` — интерфейс Modbus клиента (ABC)
+  - `server/modbus/mock_client.py` — mock Modbus устройство для офлайн-тестирования (задержки, таймауты, TCP отказ, Modbus исключения, ошибки регистров, восстановление)
+  - `server/demo_stage8.py` — демонстрационный сценарий с mock устройством и временной SQLite БД
+  - `server/tests/test_polling_*.py` — 50 новых тестов (конфигурация, состояние, mock клиент, интеграционные сценарии опроса)
+  - Все 116 тестов проходят (22 этапа 2 + 44 этапа 7 + 50 этапа 8)
+  - Физический инвертор, Ebyte, Solarman, HA, production backend, Android не затрагиваются
+  - Нет Modbus write операций; опрос только через mock устройство
+
 ## [v2.23.0-prepare] — 2026-11-17 (подготовка, первый опрос и базовый Data Layer)
 - **Этап 7:** реализован базовый Data Layer SunPortal (независимый слой данных инвертора)
   - `server/domain/models.py` — типизированные модели измерений (`Measurement`, `NormalizedReading`, перечисления качества/достоверности/источника)
