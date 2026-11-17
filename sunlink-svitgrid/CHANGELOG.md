@@ -2,6 +2,17 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.23.0-prepare] — 2026-11-17 (подготовка, первый опрос и базовый Data Layer)
+- **Этап 7:** реализован базовый Data Layer SunPortal (независимый слой данных инвертора)
+  - `server/domain/models.py` — типизированные модели измерений (`Measurement`, `NormalizedReading`, перечисления качества/достоверности/источника)
+  - `server/domain/register_metadata.py` — метаданные регистров с уровнями достоверности (корректно: 9 рег., provisional: 190, 90, 91)
+  - `server/domain/normalizer.py` — чистые функции нормализации (U_WORD/S_WORD, масштаб, температурный offset −100)
+  - `server/storage/repository.py` — интерфейс `MeasurementRepository` (ABC)
+  - `server/storage/sqlite_repository.py` — SQLite-хранение истории (версия схемы, индексы, транзакции, параметризованные SQL)
+  - `server/demo_stage7.py` — демонстрационный сценарий с данными этапов 4 и 6 (временная SQLite БД)
+  - `server/tests/` — 44 новых теста (модели, нормализатор, SQLite, API-контракт); все 66 тестов проходят (22 существующих + 44 новых)
+  - Физический инвертор, production backend и Android не затрагиваются; новых Modbus-запросов нет
+
 ## [v2.23.0-prepare] — 2026-11-17 (подготовка и первый read-only опрос)
 - **DeyeReadonlyAdapter:** отдельный read-only Modbus-драйвер для SUN-12K-SG02LP1-EU-AM3 (только FC 03 Read Holding Registers, нет методов записи)
 - **Тесты:** 22 mock-теста (U/S_WORD декодирование, отрицательные значения, DWORD порядок LW,HW, отсутствие write-вызовов на клиенте) — пройдены
