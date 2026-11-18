@@ -67,6 +67,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [docs/stages/stage-7-data-layer.md](docs/stages/stage-7-data-layer.md) — базовий Data Layer SunPortal: моделі, нормалізація, SQLite-х історію (етап 7)
 - [docs/stages/stage-8-modbus-integration.md](docs/stages/stage-8-modbus-integration.md) — Modbus опросчик та інтеграція Data Layer (етап 8)
 - [docs/stages/stage-9.2-official-protocol-documentation.md](docs/stages/stage-9.2-official-protocol-documentation.md) — верифікація офіційної документації протоколу Deye та Ebyte NA111-E (етап 9.2)
+- [docs/stages/stage-9.3-network-topology-and-master-audit.md](docs/stages/stage-9.3-network-topology-and-master-audit.md) — статичний аудит топології Deye ↔ Ebyte NA111-E ↔ Home Assistant, ролі Modbus master (етап 9.3)
 
 ## Історія версій (коротко)
 
