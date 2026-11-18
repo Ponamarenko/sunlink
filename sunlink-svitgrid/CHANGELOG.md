@@ -2,6 +2,17 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.23.0-prepare] — 2026-11-18 (интеграция deye_gateway.py с Data Layer, read-only production API)
+- **Этап 10:** deye_gateway.py интегрирован с Data Layer (этапы 7–8)
+  - `sunlink-svitgrid/server/deye_gateway.py` — рефакторинг: использует `domain/register_metadata.py` (9 регистров этапа 7) вместо инлайновой карты; `domain/normalizer.py` для RAW → инж. величин; `storage/sqlite_repository.py` для сохранения в SQLite
+  - Новые production endpoints: `GET /api/measurements/latest`, `GET /api/measurements/latest/{parameter}`, `GET /api/measurements/history`
+  - Сохранена совместимость с Android: `/api/live/raw`, `/live`, `/status`, `/registers`, `/weather`, `/forecast`, `/ws`
+  - Удалена вся запись Modbus: нет метода `write_register`, нет `SafetyManager`, нет endpoint `/write`, нет writable регистров — строго read-only (FC 03 только)
+  - `sunlink-svitgrid/server/tests/test_deye_gateway_api.py` — 24 новых теста (read-only, нормализация, репозиторий, endpoints, совместимость с Android)
+  - `sunlink-svitgrid/server/storage/measurements.db` добавлен в .gitignore
+  - `docs/stages/stage-10-gateway-data-layer-integration.md` — отчёт этапа 10
+  - Физический инвертор не опрашивался; Ebyte не подключался; HA не останавливался; production backend, Android, .env, Redis, firewall не изменялись; нет Modbus write-операций
+
 ## [v2.23.0-prepare] — 2026-11-18 (аудит доказательств, сверка топологии, восстановление документации)
 - **Этап 9.3.1:** документация-only, статический аудит доказательств этапа 9.3
   - `docs/stages/stage-9.3.1-evidence-reconciliation.md` — отчёт этапа 9.3.1

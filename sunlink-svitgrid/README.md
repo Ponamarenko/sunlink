@@ -69,6 +69,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [docs/stages/stage-9.2-official-protocol-documentation.md](docs/stages/stage-9.2-official-protocol-documentation.md) — верифікація офіційної документації протоколу Deye та Ebyte NA111-E (етап 9.2)
 - [docs/stages/stage-9.3-network-topology-and-master-audit.md](docs/stages/stage-9.3-network-topology-and-master-audit.md) — статичний аудит топології Deye ↔ Ebyte NA111-E ↔ Home Assistant, ролі Modbus master (етап 9.3)
 - [docs/stages/stage-9.3.1-evidence-reconciliation.md](docs/stages/stage-9.3.1-evidence-reconciliation.md) — аудит доказательств, сверка топологии и восстановление документации (етап 9.3.1)
+- [docs/stages/stage-10-gateway-data-layer-integration.md](docs/stages/stage-10-gateway-data-layer-integration.md) — интеграция deye_gateway.py с Data Layer: read-only production API, нормализация, SQLite, новые endpoints (етап 10)
 
 ## Історія версій (коротко)
 
@@ -81,6 +82,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 | v2.20.0 | Екран «Відладка / Сирі дані» (5 с) |
 | v2.21.0 | Fallback на gateway `:8800`, парсинг вкладеного `/live` |
 | v2.22.0 | PV у Вт/кВт, плавніші потоки, імпорт/експорт мережі, фікси gateway/Modbus, `/api/live/raw` |
+| v2.23.0 | Етап 10: deye_gateway.py інтегровано з Data Layer — read-only production API, нормалізація через domain.normalizer, збереження в SQLite, endpoints /api/measurements/*, видалено запису Modbus |
 
 ## Відомі застереження
 - Карта регістрів/масштаби Deye можуть відрізнятися для конкретної моделі/прошивки (потрібна верифікація значень: напруга мережі, температури, лічильники енергії).

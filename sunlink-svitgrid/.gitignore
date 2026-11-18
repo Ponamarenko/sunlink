@@ -23,6 +23,9 @@ __pycache__/
 .venv/
 venv/
 
+# SQLite measurements database (created by deye_gateway.py at runtime)
+sunlink-svitgrid/server/storage/measurements.db
+
 # OS / misc
 .DS_Store
 Thumbs.db
