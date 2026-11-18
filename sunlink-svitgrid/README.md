@@ -62,12 +62,13 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [docs/readonly-driver.md](docs/readonly-driver.md) — read-only Modbus-драйвер DeyeReadonlyAdapter (тільки FC 03)
 - [docs/equipment.md](docs/equipment.md) — обладнання: інвертор, Ebyte NA111-E, мережа
 - [docs/architecture.md](docs/architecture.md) — архітектура read-only драйвера (доповнення до кореневого ARCHITECTURE.md)
-- [docs/stages/](docs/stages/) — звіти етапів розробки (стадія 2.5 аудит, стадія 3 перший опрос, стадія 7 Data Layer)
+- [docs/stages/](docs/stages/) — звіти етапів розробки (стадія 2.5 аудит read-only драйвера, стадія 3 перший реальний read-only опрос, стадія 4 верифікація дисплея, стадія 5 Sunsynk дослідження, стадія 6 HA перехресна перевірка, стадія 7 Data Layer, стадія 8 Modbus інтеграція, стадія 9.2 верифікація офіційного протоколу, стадія 9.3 аудит топології, стадія 9.3.1 сверка доказательств)
 - [docs/research/third-party-deye-mqtt-mcp-projects.md](docs/research/third-party-deye-mqtt-mcp-projects.md) — дослідження сторонніх Deye/MQTT/MCP проєктів (етап 3.5)
 - [docs/stages/stage-7-data-layer.md](docs/stages/stage-7-data-layer.md) — базовий Data Layer SunPortal: моделі, нормалізація, SQLite-х історію (етап 7)
 - [docs/stages/stage-8-modbus-integration.md](docs/stages/stage-8-modbus-integration.md) — Modbus опросчик та інтеграція Data Layer (етап 8)
 - [docs/stages/stage-9.2-official-protocol-documentation.md](docs/stages/stage-9.2-official-protocol-documentation.md) — верифікація офіційної документації протоколу Deye та Ebyte NA111-E (етап 9.2)
 - [docs/stages/stage-9.3-network-topology-and-master-audit.md](docs/stages/stage-9.3-network-topology-and-master-audit.md) — статичний аудит топології Deye ↔ Ebyte NA111-E ↔ Home Assistant, ролі Modbus master (етап 9.3)
+- [docs/stages/stage-9.3.1-evidence-reconciliation.md](docs/stages/stage-9.3.1-evidence-reconciliation.md) — аудит доказательств, сверка топологии и восстановление документации (етап 9.3.1)
 
 ## Історія версій (коротко)
 
