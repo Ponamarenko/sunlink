@@ -6,6 +6,7 @@
 
 ## Можливості
 - Дашборд з реальними даними (PV-рядки, батарея, мережа, навантаження) та відображенням `—` для відсутніх полів
+- Історія вимірювань з backend (`/api/measurements/history`), явне маркування DEMO-джерела, стани offline/stale
 - Визначення напрямку потоку мережі (імпорт/експорт/баланс) і анімовані потоки енергії
 - Екран **«Відладка / Сирі дані»** (автооновлення ~5 с)
 - Підтримка джерел: SvitGrid Server v2.0.0 (`/api/v1/*`, `:8000`) та `deye_gateway.py` (`/api/live/raw`, `/live`, `:8800`) з fallback-логікою
@@ -54,6 +55,14 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 ```
 У застосунку: **Налаштування → адреса `ha4a.pp.ua`, порт `8800`** (або локальна адреса).
 
+Для інтеграційних тестів — ізольований DEMO backend (окремий порт `8801`, тестова SQLite, без інвертора/HA/Redis):
+```bash
+cd sunlink-svitgrid/server
+python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
+# або повна перевірка цілого ланцюжка:
+./scripts/verify_stage12_integration.sh
+```
+
 ## Документація
 - [INSTALL.md](INSTALL.md) — вимоги, інвертор, gateway, MikroTik NAT, збірка, налаштування застосунку
 - [ARCHITECTURE.md](ARCHITECTURE.md) — схема, формат `/api/live/raw`, карта регістрів Deye, логіка fallback/парсингу/візуалізації
@@ -71,6 +80,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [docs/stages/stage-9.3.1-evidence-reconciliation.md](docs/stages/stage-9.3.1-evidence-reconciliation.md) — аудит доказательств, сверка топологии и восстановление документации (етап 9.3.1)
 - [docs/stages/stage-10-gateway-data-layer-integration.md](docs/stages/stage-10-gateway-data-layer-integration.md) — интеграция deye_gateway.py с Data Layer: read-only production API, нормализация, SQLite, новые endpoints (етап 10)
 - [docs/stages/stage-11-android-application.md](docs/stages/stage-11-android-application.md) — Android моніторинг-застосунок: Dashboard, History, Inverter Details, Diagnostics, Settings; виправлення контрактів, 32 тести, APK (етап 11)
+- [docs/stages/stage-12-backend-android-integration.md](docs/stages/stage-12-backend-android-integration.md) — інтеграція Backend ↔ Android: реальні API-контракти, DEMO backend, E2E-тести, offline/stale, 159+49 тестів, APK (етап 12)
 
 ## Історія версій (коротко)
 
@@ -86,6 +96,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 | v2.23.0 | Етап 10: deye_gateway.py інтегровано з Data Layer — read-only production API, нормалізація через domain.normalizer, збереження в SQLite, endpoints /api/measurements/*, видалено запису Modbus |
 | v2.23.0 | Етап 11: Android застосунок — Dashboard, History, Inverter Details, Diagnostics, Settings; тестування, APK, документування |
 | v2.30.0 | Етап 11 (продовження): виправлено тести, контракт History (реальні імена регістрів), дефолт backend `ha4a.pp.ua:8800`, 32 тести, робочий APK |
+| v2.30.0 | Етап 12: Backend ↔ Android інтеграція — реальні контракти, DEMO backend, 159 backend + 49 Android тестів, offline/recovery, APK |
 
 ## Відомі застереження
 - Карта регістрів/масштаби Deye можуть відрізнятися для конкретної моделі/прошивки (потрібна верифікація значень: напруга мережі, температури, лічильники енергії).

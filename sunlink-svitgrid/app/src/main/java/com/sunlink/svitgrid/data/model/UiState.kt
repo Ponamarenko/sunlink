@@ -5,8 +5,19 @@ package com.sunlink.svitgrid.data.model
  */
 sealed class InverterUiState {
     object Loading : InverterUiState()
-    data class Success(val data: InverterData, val status: InverterStatus) : InverterUiState()
-    data class Error(val message: String, val data: InverterData? = null) : InverterUiState()
+    data class Success(
+        val data: InverterData,
+        val status: InverterStatus,
+        /** Дані отримані, але timestamp старший за STALE_THRESHOLD_MS. */
+        val stale: Boolean = false
+    ) : InverterUiState()
+    data class Error(
+        val message: String,
+        /** Останні успішні дані — не підміняємо їх нулями при offline. */
+        val data: InverterData? = null,
+        val status: InverterStatus? = null,
+        val stale: Boolean = false
+    ) : InverterUiState()
 }
 
 /**

@@ -112,11 +112,19 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
         is InverterUiState.Error -> uiStateValue.message
         else -> null
     }
+    val isStale = when (uiStateValue) {
+        is InverterUiState.Success -> uiStateValue.stale
+        is InverterUiState.Error -> uiStateValue.stale
+        else -> false
+    }
 
+    // Повторний запит тільки при вході на екран (Unit), не при recomposition.
     LaunchedEffect(Unit) { vm.loadData() }
 
+    // При offline/error показуємо останні добрі дані, а не порожні/нульові.
     val d = when (uiStateValue) {
         is InverterUiState.Success -> uiStateValue.data
+        is InverterUiState.Error -> uiStateValue.data ?: InverterData()
         else -> InverterData()
     }
 
@@ -126,6 +134,24 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
             .background(BgDark)
     ) {
         HeaderSection(loading = loading, hasData = d.hasMeasurements, error = error, status = uiStateValue)
+        if (isStale || error != null) {
+            Text(
+                text = if (isStale) "⚠ Дані застарілі — backend недоступний" else "⚠ Немає зв'язку з backend",
+                color = AccentOrange,
+                fontFamily = Mono,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+            )
+        }
+        if (d.source == "demo_simulator") {
+            Text(
+                text = "DEMO • дані демонстраційного джерела, не реальний інвертор",
+                color = AccentOrange,
+                fontFamily = Mono,
+                fontSize = 11.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+            )
+        }
         BlackoutSection()
         TimelineSection()
         FlowSchemeSection(d.toMap() as Map<String, Any>, Modifier.weight(1f))

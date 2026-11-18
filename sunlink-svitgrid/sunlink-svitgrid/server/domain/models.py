@@ -41,6 +41,9 @@ class DataSource(str, Enum):
     MODBUS_REGISTER = "modbus_register"
     CALCULATED = "calculated"
     MANUAL = "manual"
+    # Изолированный DEMO-источник (этап 12) — не реальные показания инвертора.
+    # Значение передаётся в Android и должно явно отображаться как DEMO.
+    DEMO_SIMULATOR = "demo_simulator"
 
 
 @dataclass(frozen=True)

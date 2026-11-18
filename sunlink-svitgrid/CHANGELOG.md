@@ -2,6 +2,20 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.30.0] — 2026-11-18 (інтеграція Backend ↔ Android, етап 12)
+- **Етап 12:** backend і Android перевірені як єдина система на ізольованому DEMO-оточенні
+  - `sunlink-svitgrid/server/demo_backend.py` — окремий dev-порт 8801, тестова SQLite `/tmp/sunlink-stage12-demo.db`, джерело `demo_simulator`; без інвертора/Ebyte/HA/Redis/production .env
+  - `scripts/verify_stage12_integration.sh` — відтворювана E2E-перевірка: health, status, inverters, live, registers, latest, history, порожня історія, DEMO-маркування, `p_grid=null`, offline, recovery, історія після рестарту (14/14 PASS)
+  - `deye_gateway.py`: `_flat_live()` більше не підміняє відсутні регистри нулями; `p_sun` = сума PV; `p_load`/`p_grid` = null; додано `inverter_id`, `available_registers`, `source`; новий endpoint `/api/inverters`; `/live` fallback повертає null + error
+  - `domain/models.py` — додано `DataSource.DEMO_SIMULATOR`
+  - `storage/sqlite_repository.py` — потокобезпечність (`check_same_thread=False` + `RLock`), виправлено падіння при виклиці з іншого потоку
+  - Android: DTO розширено (`inverter_id`, `available_registers`, `source`, `InvertersDto`, `StatusDto.source`); Repository бере реальні значення замість хардкоду; ViewModel — єдина логіка `loadData`/`refresh`, збереження останніх даних при offline, прагці `stale`, завантаження списку інверторів; Dashboard показує DEMO-баннер, offline/stale та останні дані
+  - Тести: 159 backend (`python3 -m unittest discover -s tests`) + 49 Android (`./gradlew :app:testDebug`)
+  - `app/src/test/resources/demo/` — реальні JSON-відповіді DEMO backend для контрактних тестів Android
+  - APK: `./gradlew :app:testDebug assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk` (13 МБ, v2.30.0, versionCode 50)
+  - `docs/stages/stage-12-backend-android-integration.md` — звіт етапу 12
+  - Емулятор `emulator-5554` offline — встановлення/запуск на пристрої не перевірялись
+
 ## [v2.30.0] — 2026-11-18 (виправлення працездатності: тести, backend-контракт, History, налаштування)
 - **Етап 11 (продовження):** доведення застосунку до робочого стану
   - Відновлено збірку юніт-тестів: додано відсутній клас `Result` (`data/model/Result.kt`), виправлено посилання на неіснуючий `androidx.lifecycle.Result`, nullable-поля DTO у тестах

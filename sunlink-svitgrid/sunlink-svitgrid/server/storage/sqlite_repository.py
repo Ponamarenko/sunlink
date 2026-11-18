@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import threading
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -22,6 +23,18 @@ from domain.models import (
 from storage.repository import MeasurementRepository
 
 SCHEMA_VERSION = 1
+
+
+def _thread_safe(fn):
+    """Сериализует доступ к общему SQLite-соединению между потоками."""
+    from functools import wraps
+
+    @wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        with self._lock:
+            return fn(self, *args, **kwargs)
+
+    return wrapper
 
 _SCHEMA = f"""
 PRAGMA user_version = {SCHEMA_VERSION};
@@ -75,13 +88,16 @@ class SQLiteMeasurementRepository(MeasurementRepository):
         if parent and not os.path.exists(parent):
             os.makedirs(parent, exist_ok=True)
         self._conn: Optional[sqlite3.Connection] = None
+        # FastAPI/TestClient может вызывать репозиторий из другого потока.
+        # Одно соединение + блокировка делают репозиторий потокобезопасным.
+        self._lock = threading.RLock()
         self._connect()
         self._init_schema()
 
     def _connect(self) -> None:
         if self._conn is not None:
             return
-        self._conn = sqlite3.connect(self.db_path)
+        self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA foreign_keys = ON")
 
@@ -90,6 +106,7 @@ class SQLiteMeasurementRepository(MeasurementRepository):
         self._conn.executescript(_SCHEMA)
         self._conn.commit()
 
+    @_thread_safe
     def close(self) -> None:
         if self._conn is not None:
             self._conn.close()
@@ -106,9 +123,11 @@ class SQLiteMeasurementRepository(MeasurementRepository):
             raise RuntimeError("repository is closed")
         return self._conn
 
+    @_thread_safe
     def save_measurement(self, measurement: Measurement) -> None:
         self.save_measurements_batch([measurement])
 
+    @_thread_safe
     def save_measurements_batch(self, measurements: List[Measurement]) -> int:
         conn = self._ensure_open()
         if not measurements:
@@ -145,6 +164,7 @@ class SQLiteMeasurementRepository(MeasurementRepository):
             raise RuntimeError(f"failed to persist measurements: {exc}") from exc
         return len(measurements)
 
+    @_thread_safe
     def get_latest(
         self, inverter_id: str, parameter_name: str
     ) -> Optional[Measurement]:
@@ -166,6 +186,7 @@ class SQLiteMeasurementRepository(MeasurementRepository):
             raise RuntimeError(f"failed to read latest measurement: {exc}") from exc
         return _row_to_measurement(tuple(row)) if row else None
 
+    @_thread_safe
     def get_history(
         self,
         inverter_id: str,
@@ -196,6 +217,7 @@ class SQLiteMeasurementRepository(MeasurementRepository):
             raise RuntimeError(f"failed to read history: {exc}") from exc
         return [_row_to_measurement(tuple(r)) for r in rows]
 
+    @_thread_safe
     def get_all_latest(self, inverter_id: str) -> List[Measurement]:
         conn = self._ensure_open()
         try:

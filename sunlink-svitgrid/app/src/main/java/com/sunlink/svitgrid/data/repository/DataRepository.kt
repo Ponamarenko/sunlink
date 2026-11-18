@@ -42,6 +42,24 @@ open class DataRepository(private val apiService: ApiService? = null) {
         }
 
     /**
+     * Загружает список инверторов с /api/inverters (этап 12).
+     */
+    open suspend fun loadInverters(): Result<InvertersDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                val response: Response<InvertersDto> = apiService!!.getInvertersDto()
+                if (response.isSuccessful) {
+                    response.body()?.let { success(it) }
+                        ?: error(Exception("Пустой ответ сервера /api/inverters"))
+                } else {
+                    error(Exception("HTTP ${response.code()}"))
+                }
+            } catch (e: Exception) {
+                error(e)
+            }
+        }
+
+    /**
      * Загружает статус инвертора с endpoint /status.
      */
     open suspend fun loadStatus(): Result<InverterStatus> =
@@ -154,9 +172,13 @@ open class DataRepository(private val apiService: ApiService? = null) {
             acTemperature = dto.ac_temperature?.toFloat(),
             timestamp = dto.timestamp,
             connectionStatus = dto.connection_status ?: false,
-            source = "modbus_register",
+            // Реальный источник из backend: "modbus_register" или "demo_simulator".
+            // Никогда не подменяем DEMO на modbus_register.
+            source = dto.source ?: "unknown",
             quality = if (dto.connection_status == true) "valid" else "unavailable",
-            confidence = "corroborated"
+            // Плоский /api/live/raw не несёт confidence по каждому полю;
+            // консервативно не выдаём "corroborated" для DEMO-данных.
+            confidence = if (dto.source == "demo_simulator") "unverified" else "corroborated"
         )
     }
 
@@ -164,8 +186,9 @@ open class DataRepository(private val apiService: ApiService? = null) {
         return InverterStatus(
             online = dto.connection_status ?: false,
             lastUpdate = dto.timestamp,
-            inverterId = "deye_sg02lp1_am3",
-            availableRegisters = 9,
+            // Реальные значения из ответа backend, без хардкода.
+            inverterId = dto.inverter_id ?: "unknown",
+            availableRegisters = dto.available_registers ?: 0,
             error = dto.error
         )
     }

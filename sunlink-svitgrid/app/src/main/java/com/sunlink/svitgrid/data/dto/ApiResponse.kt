@@ -30,7 +30,11 @@ data class LiveRawDto(
     val grid_voltage: Double? = null,
     val timestamp: String? = null,
     val connection_status: Boolean? = null,
-    val error: String? = null
+    val error: String? = null,
+    // Этап 12: реальные поля ответа deye_gateway.py
+    val inverter_id: String? = null,
+    val available_registers: Int? = null,
+    val source: String? = null
 )
 
 /**
@@ -72,6 +76,23 @@ data class MeasurementsHistoryDto(
 )
 
 /**
+ * Ответ /api/inverters (этап 12).
+ * Gateway одноканальный — список содержит один реальный инвертор.
+ */
+data class InvertersDto(
+    val inverters: List<InverterDto> = emptyList(),
+    val count: Int = 0,
+    val source: String? = null
+)
+
+data class InverterDto(
+    val inverter_id: String? = null,
+    val online: Boolean? = null,
+    val available_registers: Int? = null,
+    val source: String? = null
+)
+
+/**
  * Ответ /status.
  */
 data class StatusDto(
@@ -79,7 +100,8 @@ data class StatusDto(
     val last_update: String? = null,
     val inverter_id: String? = null,
     val available_registers: Int = 0,
-    val registers: List<Int> = emptyList()
+    val registers: List<Int> = emptyList(),
+    val source: String? = null
 )
 
 /**

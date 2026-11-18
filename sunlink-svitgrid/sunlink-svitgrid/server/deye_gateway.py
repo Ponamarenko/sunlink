@@ -86,6 +86,9 @@ class DeyeGateway:
         self.last_data: Dict[str, Any] = {}
         self.connection_status = False
         self.repository = repository
+        # Источник данных. DEMO-окружение (этап 12) явно выставляет
+        # DataSource.DEMO_SIMULATOR, чтобы Android мог пометить данные как DEMO.
+        self.source: DataSource = DataSource.MODBUS_REGISTER
 
     # ------------------------------------------------------------------
     # Connection
@@ -168,7 +171,7 @@ class DeyeGateway:
                     timestamp=datetime.now(timezone.utc),
                     quality=norm_result.quality,
                     confidence=norm_result.confidence,
-                    source=DataSource.MODBUS_REGISTER,
+                    source=self.source,
                     description=metadata.description,
                 )
                 try:
@@ -228,6 +231,7 @@ class DeyeGateway:
             "inverter_id": INVERTER_ID,
             "available_registers": len(self.register_map),
             "registers": sorted(self.register_map.keys()),
+            "source": self.source.value,
         }
 
 
@@ -269,6 +273,28 @@ async def root():
 async def get_status():
     """Получение статуса системы."""
     return await gateway.get_system_status()
+
+
+@app.get("/api/inverters")
+async def get_inverters():
+    """Список инверторов, которые обслуживает этот gateway.
+
+    Gateway — одноканальный: он читает один сконфигурированный инвертор.
+    Возвращаем реальный inverter_id и статус, без выдуманных устройств.
+    """
+    status = await gateway.get_system_status()
+    return {
+        "inverters": [
+            {
+                "inverter_id": status["inverter_id"],
+                "online": status["connection_status"],
+                "available_registers": status["available_registers"],
+                "source": status["source"],
+            }
+        ],
+        "count": 1,
+        "source": status["source"],
+    }
 
 
 @app.get("/registers")
@@ -327,35 +353,43 @@ def _flat_live(data: Dict[str, Any], status: Dict[str, Any]) -> Dict[str, Any]:
     """Плоский JSON для Android (сумісність з SvitGrid-style полями).
 
     Берет normalized_value из нормализованных данных Data Layer.
+
+    ВАЖНО (этап 12): отсутствующий регистр НЕ подменяется нулём. Если
+    register_map не содержит параметра (например, p_grid/p_load), поле
+    возвращается как null — Android отображает «—». Ранее здесь были
+    заглушки 0.0 и p_load = battery_power, что меняло смысл показателя.
     """
 
-    def v(name: str, default=0.0):
+    def v(name: str) -> Optional[float]:
+        """Нормализованное значение или None, если регистра нет."""
         item = data.get(name)
         if isinstance(item, dict):
-            return item.get("normalized_value", default)
-        return item if item is not None else default
+            value = item.get("normalized_value")
+            return float(value) if value is not None else None
+        if isinstance(item, (int, float)) and not isinstance(item, bool):
+            return float(item)
+        return None
 
-    p_string1 = float(v("pv1_power", 0.0))
-    p_string2 = float(v("pv2_power", 0.0))
-    p_string3 = float(v("pv3_power", 0.0))
-    pv_sum = p_string1 + p_string2 + p_string3
-    p_sun = float(v("pv1_power", pv_sum))  # pv1_power как DC puissance
-    if p_sun == 0.0 and pv_sum > 0.0:
-        p_sun = pv_sum
-    p_load = float(v("battery_power", 0.0))  # заглушка — нет grid_power в этапе 7
-    p_batt = float(v("battery_power", 0.0))
-    p_grid = 0.0  # grid_power не в регистровой карте этапа 7
+    p_string1 = v("pv1_power")
+    p_string2 = v("pv2_power")
+    p_string3 = v("pv3_power")
+    pv_values = [p for p in (p_string1, p_string2, p_string3) if p is not None]
+    # p_sun = суммарная мощность PV; если нет ни одного PV-регистра — null.
+    p_sun = float(sum(pv_values)) if pv_values else None
+    # p_grid и p_load отсутствуют в register_map этапа 7 — честно null.
+    p_grid = None
+    p_load = None
 
     flat = {
         "p_sun": p_sun,
         "p_load": p_load,
-        "p_batt": p_batt,
+        "p_batt": v("battery_power"),
         "p_grid": p_grid,
-        "batt_soc": float(v("battery_soc", 0.0)),
-        "battery_voltage": float(v("battery_voltage", 0.0)),
-        "battery_current": float(v("battery_current", 0.0)),
-        "dc_temperature": float(v("dc_temperature", 0.0)),
-        "ac_temperature": float(v("ac_temperature", 0.0)),
+        "batt_soc": v("battery_soc"),
+        "battery_voltage": v("battery_voltage"),
+        "battery_current": v("battery_current"),
+        "dc_temperature": v("dc_temperature"),
+        "ac_temperature": v("ac_temperature"),
         "pv1_power": p_string1,
         "pv2_power": p_string2,
         "pv3_power": p_string3,
@@ -364,10 +398,14 @@ def _flat_live(data: Dict[str, Any], status: Dict[str, Any]) -> Dict[str, Any]:
         "p_string3": p_string3,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "connection_status": status.get("connection_status", False),
+        "inverter_id": status.get("inverter_id", INVERTER_ID),
+        "available_registers": status.get("available_registers", len(REGISTER_MAP)),
+        # Источник данных: Android должен явно помечать DEMO.
+        "source": status.get("source", DataSource.MODBUS_REGISTER.value),
     }
     # Добавляем все нормализованные значения плоско
     for name, item in data.items():
-        if name not in flat and isinstance(item, dict) and "normalized_value" in item:
+        if name not in flat and isinstance(item, dict) and item.get("normalized_value") is not None:
             flat[name] = item["normalized_value"]
     return flat
 
@@ -388,18 +426,23 @@ async def get_live_data():
             "p_load": flat["p_load"],
             "p_batt": flat["p_batt"],
             "p_grid": flat["p_grid"],
+            "inverter_id": flat["inverter_id"],
+            "source": flat["source"],
             "timestamp": flat["timestamp"],
         }
-    except Exception:
+    except Exception as exc:
+        # Нет данных — честно null + error, никаких выдуманных нулей.
         return {
             "data": {},
-            "status": {"connection_status": False},
-            "p_sun": 0.0,
-            "p_load": 0.0,
-            "p_batt": 0.0,
-            "p_grid": 0.0,
+            "status": {"connection_status": False, "source": gateway.source.value},
+            "p_sun": None,
+            "p_load": None,
+            "p_batt": None,
+            "p_grid": None,
+            "inverter_id": INVERTER_ID,
+            "source": gateway.source.value,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "error": "Modbus unavailable",
+            "error": f"Modbus unavailable: {exc}",
         }
 
 

@@ -1,6 +1,7 @@
 package com.sunlink.svitgrid.network
 
 import com.google.gson.JsonElement
+import com.sunlink.svitgrid.data.dto.InvertersDto
 import com.sunlink.svitgrid.data.dto.LiveRawDto
 import com.sunlink.svitgrid.data.dto.MeasurementDto
 import com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto
@@ -53,6 +54,9 @@ interface ApiService {
 
     @GET("status")
     suspend fun getStatusDto(): Response<StatusDto>
+
+    @GET("api/inverters")
+    suspend fun getInvertersDto(): Response<InvertersDto>
 
     @GET("registers")
     suspend fun getRegistersDto(): Response<RegistersDto>

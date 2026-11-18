@@ -3,8 +3,10 @@ package com.sunlink.svitgrid.data
 import android.content.Context
 import android.content.SharedPreferences
 
-class SettingsRepository(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences("sunlink_settings", Context.MODE_PRIVATE)
+class SettingsRepository(private val prefs: SharedPreferences) {
+    constructor(context: Context) : this(
+        context.getSharedPreferences("sunlink_settings", Context.MODE_PRIVATE)
+    )
 
     var serverAddress: String
         get() = prefs.getString("server_address", "ha4a.pp.ua") ?: "ha4a.pp.ua"

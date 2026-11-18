@@ -277,11 +277,39 @@ class TestGatewayAndroidCompatibility(unittest.TestCase):
         self.assertTrue(flat["connection_status"])
 
     def test_flat_live_modbus_unavailable(self):
-        """При недоступности Modbus — нулевые значения, не аварийный выход."""
+        """При недоступности Modbus отсутствующие поля = null, а не 0.0 (этап 12)."""
         flat = deye_gateway._flat_live({}, {"connection_status": False})
-        self.assertEqual(flat["p_sun"], 0.0)
-        self.assertEqual(flat["batt_soc"], 0.0)
+        self.assertIsNone(flat["p_sun"])
+        self.assertIsNone(flat["batt_soc"])
+        self.assertIsNone(flat["p_batt"])
+        self.assertIsNone(flat["p_grid"])
+        self.assertIsNone(flat["p_load"])
         self.assertFalse(flat["connection_status"])
+
+    def test_flat_live_never_aliases_load_to_battery(self):
+        """p_load не должен подменять battery_power (этап 12)."""
+        data = {"battery_power": {"normalized_value": -100.0}}
+        flat = deye_gateway._flat_live(data, {"connection_status": True})
+        self.assertEqual(flat["p_batt"], -100.0)
+        self.assertIsNone(flat["p_load"])
+
+    def test_flat_live_sums_all_pv_strings(self):
+        """p_sun — суммарная PV-мощность, а не только pv1."""
+        data = {
+            "pv1_power": {"normalized_value": 100.0},
+            "pv2_power": {"normalized_value": 200.0},
+            "pv3_power": {"normalized_value": 300.0},
+        }
+        flat = deye_gateway._flat_live(data, {"connection_status": True})
+        self.assertEqual(flat["p_sun"], 600.0)
+
+    def test_flat_live_provenance_fields(self):
+        """В плоском ответе есть inverter_id и source для Android."""
+        flat = deye_gateway._flat_live(
+            {}, {"connection_status": True, "inverter_id": "inv-1", "source": "demo_simulator"}
+        )
+        self.assertEqual(flat["inverter_id"], "inv-1")
+        self.assertEqual(flat["source"], "demo_simulator")
 
 
 class TestGatewayMeasurementsEndpoints(unittest.TestCase):
