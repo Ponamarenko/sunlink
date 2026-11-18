@@ -2,6 +2,16 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.23.0-prepare] — 2026-11-18 (верификация официальной документации протокола)
+- **Этап 9.2:** документальная верификация протокола Deye SUN-12K-SG02LP1-EU-AM3 и Ebyte NA111-E
+  - `docs/stages/stage-9.2-official-protocol-documentation.md` — отчёт этапа 9.2
+  - Официальный мануал Deye (BManualSUN-5-12K-SG02LP1-EU-AM3, 2026-05-19, 55 стр.) проанализирован: **нет карты регистров, нет протокола Modbus, нет FC03 для параметров инвертора** — только физический RS485 pinout (Приложение I, стр. 48) и интерфейсы RS232/RS485/CAN
+  - Официальный мануал Ebyte NA111-E (51 стр.) проанализирован: режимы TCPServer/Client/UDP/HTTPC/MQTTC, Modbus шлюзы (simple conversion, multi-host, storage, configurable), factory default IP 192.168.3.7:8887, baud 115200 8/None/1, до 6 клиентов, один Modbus master; FC03 разрешено, FC05/06/0F/10 — команды записи
+  - **Не подтверждено:** MBAP header, RTU CRC, Unit ID/Slave ID передача, текущие IP/порт/baud (192.168.25.15:502, 9600 — не заводские)
+  - Все 9 регистров проекта (90, 91, 183, 184, 186, 187, 188, 190, 191) имеют статус EXPERIMENTALLY_OBSERVED / PROVISIONAL — ни один не OFFICIAL_CONFIRMED
+  - Физический инвертор не опрашивался; Ebyte не подключался; HA не останавливался; production backend, Android, .env, Redis, firewall не изменялись
+  - Веб-поиск недоступен (auth 401); 분석 выполнен на основе двух официальных PDF
+
 ## [v2.23.0-prepare] — 2026-11-17 (подготовка, первый опрос, базовый Data Layer и Modbus интеграция)
 - **Этап 8:** реализован Modbus polling service с интеграцией Data Layer
   - `server/services/modbus_polling_service.py` — цикл последовательного опроса регистров этапа 7 (FC 03 только)

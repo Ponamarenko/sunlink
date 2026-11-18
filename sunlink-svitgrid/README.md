@@ -66,6 +66,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [docs/research/third-party-deye-mqtt-mcp-projects.md](docs/research/third-party-deye-mqtt-mcp-projects.md) — дослідження сторонніх Deye/MQTT/MCP проєктів (етап 3.5)
 - [docs/stages/stage-7-data-layer.md](docs/stages/stage-7-data-layer.md) — базовий Data Layer SunPortal: моделі, нормалізація, SQLite-х історію (етап 7)
 - [docs/stages/stage-8-modbus-integration.md](docs/stages/stage-8-modbus-integration.md) — Modbus опросчик та інтеграція Data Layer (етап 8)
+- [docs/stages/stage-9.2-official-protocol-documentation.md](docs/stages/stage-9.2-official-protocol-documentation.md) — верифікація офіційної документації протоколу Deye та Ebyte NA111-E (етап 9.2)
 
 ## Історія версій (коротко)
 
