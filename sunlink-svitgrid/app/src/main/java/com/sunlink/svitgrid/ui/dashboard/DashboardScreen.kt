@@ -64,6 +64,8 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.sunlink.svitgrid.R
 import com.sunlink.svitgrid.viewmodel.MainViewModel
+import com.sunlink.svitgrid.data.model.InverterData
+import com.sunlink.svitgrid.data.model.InverterUiState
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -102,30 +104,36 @@ private fun fmtInt(v: Float?, suffix: String = ""): String {
 
 @Composable
 fun DashboardScreen(vm: MainViewModel = viewModel()) {
-    val data by vm.data.collectAsState()
-    val loading by vm.loading.collectAsState()
-    val error by vm.error.collectAsState()
+    val uiState by vm.uiState.collectAsState()
+    val loading by vm.refreshing.collectAsState()
 
-    LaunchedEffect(Unit) { vm.loadLive() }
+    val uiStateValue = uiState
+    val error = when (uiStateValue) {
+        is InverterUiState.Error -> uiStateValue.message
+        else -> null
+    }
 
-    // Реальні дані з API (без testData). Порожня мапа, якщо даних ще немає.
-    val d = data ?: emptyMap()
+    LaunchedEffect(Unit) { vm.loadData() }
+
+    val d = when (uiStateValue) {
+        is InverterUiState.Success -> uiStateValue.data
+        else -> InverterData()
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(BgDark)
     ) {
-        HeaderSection(loading = loading, hasData = data != null, error = error)
+        HeaderSection(loading = loading, hasData = d.hasMeasurements, error = error, status = uiStateValue)
         BlackoutSection()
         TimelineSection()
-        FlowSchemeSection(d, Modifier.weight(1f))
-        // Нижню навігацію прибрано (сендвіч-меню / drawer)
+        FlowSchemeSection(d.toMap() as Map<String, Any>, Modifier.weight(1f))
     }
 }
 
 @Composable
-private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?) {
+private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?, status: InverterUiState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -140,15 +148,15 @@ private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?) {
                 color = Color.White,
                 fontSize = 22.sp
             )
-            val status = when {
+            val connStatus = when {
                 loading -> "Оновлення..."
-                hasData -> "Є зв'язок"
+                status is InverterUiState.Success && status.status.online -> "Є зв'язок"
                 error != null -> "Немає зв'язку"
                 else -> "Очікування..."
             }
-            val connected = hasData && !loading
+            val connected = hasData && !loading && (status is InverterUiState.Success && status.status.online)
             Text(
-                status,
+                text = connStatus,
                 color = if (connected) AccentGreen else if (error != null) Color(0xFFE57373) else Color.Gray,
                 fontFamily = Mono,
                 fontSize = 12.sp,

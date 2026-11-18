@@ -14,3 +14,4 @@ drawable svit_household_shop
 drawable svit_household_solar_array
 drawable svit_household_workshop
 drawable svit_panel
+xml file_paths

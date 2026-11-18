@@ -1,9 +1,20 @@
 -- Merging decision tree log ---
+provider#androidx.core.content.FileProvider
+INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:19:9-27:20
+	android:grantUriPermissions
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:23:13-47
+	android:authorities
+		INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:21:13-64
+	android:exported
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:22:13-37
+	android:name
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:20:13-62
 manifest
-ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:2:1-18:12
-INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:2:1-18:12
-INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:2:1-18:12
-INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:2:1-18:12
+ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:2:1-29:12
+INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:2:1-29:12
+INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:2:1-29:12
+INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:2:1-29:12
 MERGED from [com.airbnb.android:lottie-compose:6.1.0] /root/.gradle/caches/8.9/transforms/459927dffb2e1afc277b5d191aab2345/transformed/lottie-compose-6.1.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-common:2.7.7] /root/.gradle/caches/8.9/transforms/44582ebdfc05eedc035a468c293ebf2b/transformed/navigation-common-2.7.7/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-runtime:2.7.7] /root/.gradle/caches/8.9/transforms/72bf4c0236396b9252901ac7eb62384c/transformed/navigation-runtime-2.7.7/AndroidManifest.xml:17:1-22:12
@@ -84,9 +95,13 @@ uses-permission#android.permission.INTERNET
 ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:3:5-67
 	android:name
 		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:3:22-64
+uses-permission#android.permission.REQUEST_INSTALL_PACKAGES
+ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:4:5-83
+	android:name
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:4:22-80
 application
-ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:4:5-17:19
-INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:4:5-17:19
+ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:5:5-28:19
+INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:5:5-28:19
 MERGED from [com.airbnb.android:lottie:6.1.0] /root/.gradle/caches/8.9/transforms/98bc9bfd9123803278d1e101be168e06/transformed/lottie-6.1.0/AndroidManifest.xml:7:5-20
 MERGED from [com.airbnb.android:lottie:6.1.0] /root/.gradle/caches/8.9/transforms/98bc9bfd9123803278d1e101be168e06/transformed/lottie-6.1.0/AndroidManifest.xml:7:5-20
 MERGED from [androidx.compose.ui:ui-test-manifest:1.6.8] /root/.gradle/caches/8.9/transforms/d3e6a70b09722ae67d4ee68fd4918298/transformed/ui-test-manifest-1.6.8/AndroidManifest.xml:22:5-26:19
@@ -112,29 +127,35 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /root/.gradle/caches/8.9/tr
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.12.0] /root/.gradle/caches/8.9/transforms/82fcd6fab8ca1b56a6ab594eb0297c73/transformed/core-1.12.0/AndroidManifest.xml:28:18-86
 	android:label
-		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:6:9-32
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:7:9-32
 	android:theme
-		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:7:9-72
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:8:9-72
 	android:usesCleartextTraffic
-		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:5:9-44
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:6:9-44
 activity#com.sunlink.svitgrid.MainActivity
-ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:8:9-16:20
+ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:9:9-17:20
 	android:exported
-		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:10:13-36
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:11:13-36
 	android:theme
-		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:11:13-76
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:12:13-76
 	android:name
-		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:9:13-41
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:10:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:12:13-15:29
+ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:13:13-16:29
 action#android.intent.action.MAIN
-ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:13:17-69
+ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:14:17-69
 	android:name
-		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:13:25-66
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:14:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:14:17-77
+ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:15:17-77
 	android:name
-		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:14:27-74
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:15:27-74
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:24:13-26:54
+	android:resource
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:26:17-51
+	android:name
+		ADDED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml:25:17-67
 uses-sdk
 INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /root/opt/sunlink-svitgrid/app/src/main/AndroidManifest.xml

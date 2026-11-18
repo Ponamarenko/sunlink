@@ -668,6 +668,7 @@ com.sunlink.svitgrid:attr/actionBarTabStyle = 0x7f030008
 com.sunlink.svitgrid:dimen/abc_text_size_display_4_material = 0x7f060046
 com.sunlink.svitgrid:dimen/abc_text_size_display_3_material = 0x7f060045
 com.sunlink.svitgrid:dimen/abc_text_size_display_2_material = 0x7f060044
+com.sunlink.svitgrid:xml/file_paths = 0x7f0f0000
 com.sunlink.svitgrid:dimen/abc_text_size_display_1_material = 0x7f060043
 com.sunlink.svitgrid:dimen/abc_text_size_button_material = 0x7f060041
 com.sunlink.svitgrid:dimen/abc_switch_padding = 0x7f06003e

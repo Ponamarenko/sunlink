@@ -2,6 +2,18 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.23.0] — 2026-11-18 (полный Android мониторинг-приложение)
+- **Этап 11:** реализован полный Android мониторинг-приложение на базе существующего проекта
+  - `app/src/main/java/com/sunlink/svitgrid/` — полный рефакторинг: Repository pattern, ViewModel с StateFlow, UI screens (Dashboard, History, Inverter Details, Diagnostics, Settings)
+  - Интеграция с deye_gateway.py: все backend endpoints (`/api/live/raw`, `/live`, `/status`, `/registers`, `/api/measurements/latest`, `/api/measurements/latest/{parameter}`, `/api/measurements/history`)
+  - 9 registers этапа 7: 183 (V), 184 (%), 186/187/188 (W), 191 (A), 190 (W, provisional), 90/91 (°C, provisional)
+  - Архитектура: Repository + Result<> + ViewModel + StateFlow + Jetpack Compose
+  - Тестирование: 140 тестов (DTO parsing, Repository с MockWebServer, ViewModel, UI states)
+  - Сборка: `./gradlew :app:assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`
+  - Material3 дизайн, темная тема, иконки заменены на текст/эмодзи для избежания проблем компиляции
+  - `docs/stages/stage-11-android-application.md` — подробный отчёт этапа 11
+  - Физическое устройство не тестировалось (только сборка APK)
+
 ## [v2.23.0-prepare] — 2026-11-18 (интеграция deye_gateway.py с Data Layer, read-only production API)
 - **Этап 10:** deye_gateway.py интегрирован с Data Layer (этапы 7–8)
   - `sunlink-svitgrid/server/deye_gateway.py` — рефакторинг: использует `domain/register_metadata.py` (9 регистров этапа 7) вместо инлайновой карты; `domain/normalizer.py` для RAW → инж. величин; `storage/sqlite_repository.py` для сохранения в SQLite

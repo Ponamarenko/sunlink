@@ -25,11 +25,19 @@ import com.sunlink.svitgrid.update.UpdateInfo
 import com.sunlink.svitgrid.update.UpdateManager
 import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sunlink.svitgrid.data.repository.DataRepository
 import com.sunlink.svitgrid.viewmodel.MainViewModel
+import com.sunlink.svitgrid.viewmodel.MainViewModelFactory
+import com.sunlink.svitgrid.data.model.InverterData
+import com.sunlink.svitgrid.data.model.InverterUiState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
+import com.sunlink.svitgrid.ui.dashboard.DashboardScreen
+import com.sunlink.svitgrid.ui.history.HistoryScreen
+import com.sunlink.svitgrid.ui.inverters.InverterDetailsScreen
+import com.sunlink.svitgrid.ui.diagnostics.DiagnosticsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +68,9 @@ fun SvitGridApp() {
                 val currentRoute = navController.currentBackStackEntry?.destination?.route
                 listOf(
                     "dashboard" to ("Головна" to Icons.Default.Home),
+                    "history" to ("Історія" to Icons.Default.List),
+                    "inverter-details" to ("Інвертор" to Icons.Default.Info),
+                    "diagnostics" to ("Діагностика" to Icons.Default.Build),
                     "live" to ("Live моніторинг" to Icons.Default.Info),
                     "charts" to ("Графіки" to Icons.Default.List),
                     "battery" to ("Батарея" to Icons.Default.Favorite),
@@ -98,18 +109,26 @@ fun SvitGridApp() {
                 )
             }
         ) { innerPadding ->
+            val viewModel: MainViewModel = viewModel(
+                factory = MainViewModelFactory(
+                    repository = DataRepository(RetrofitClient.getApiService())
+                )
+            )
             NavHost(
                 navController = navController,
                 startDestination = "dashboard",
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable("dashboard") { com.sunlink.svitgrid.ui.dashboard.DashboardScreen() }
-                composable("live") { LiveScreen() }
+                composable("dashboard") { DashboardScreen(vm = viewModel) }
+                composable("history") { HistoryScreen(vm = viewModel) }
+                composable("inverter-details") { InverterDetailsScreen(vm = viewModel) }
+                composable("diagnostics") { DiagnosticsScreen(vm = viewModel) }
+                composable("live") { LiveScreen(vm = viewModel) }
                 composable("charts") { ChartsScreen() }
-                composable("battery") { BatteryScreen() }
+                composable("battery") { BatteryScreen(vm = viewModel) }
                 composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen() }
                 composable("debug") { DebugScreen() }
-                composable("settings") { SettingsScreen() }
+                composable("settings") { SettingsScreen(vm = viewModel) }
                 composable("about") { AboutScreen() }
             }
         }
@@ -119,17 +138,26 @@ fun SvitGridApp() {
 // Старий DashboardScreen видалено, використовується новий з пакета dashboard
 
 @Composable
-fun LiveScreen(vm: MainViewModel = viewModel()) {
-    val data by vm.data.collectAsState()
-    val loading by vm.loading.collectAsState()
-    val error by vm.error.collectAsState()
-    LaunchedEffect(Unit) { vm.loadLive() }
+fun LiveScreen(vm: MainViewModel = viewModel(factory = MainViewModelFactory(repository = DataRepository(RetrofitClient.getApiService())))) {
+    val uiState by vm.uiState.collectAsState()
+    val loading by vm.refreshing.collectAsState()
+
+    val uiStateValue = uiState
+    val error = when (uiStateValue) {
+        is InverterUiState.Error -> uiStateValue.message
+        else -> null
+    }
+    val data = when (uiStateValue) {
+        is InverterUiState.Success -> uiStateValue.data.toMap()
+        else -> emptyMap<String, Any?>()
+    }
+    LaunchedEffect(Unit) { vm.loadData() }
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Моніторинг в реальному часі", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         if (loading) CircularProgressIndicator()
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         val d = data
-        if (d != null) {
+        if (d.isNotEmpty()) {
             val items = listOf(
                 "Потужність AC" to "${d["power_ac"]} Вт",
                 "Потужність DC" to "${d["power_dc"]} Вт",
@@ -188,23 +216,31 @@ fun ChartsScreen() {
 
 @Composable
 fun BatteryScreen(vm: MainViewModel = viewModel()) {
-    val data by vm.data.collectAsState()
-    val loading by vm.loading.collectAsState()
-    val error by vm.error.collectAsState()
-    LaunchedEffect(Unit) { vm.loadLive() }
+    val uiState by vm.uiState.collectAsState()
+    val loading by vm.refreshing.collectAsState()
+
+    val uiStateValue = uiState
+    val error = when (uiStateValue) {
+        is InverterUiState.Error -> uiStateValue.message
+        else -> null
+    }
+    val d = when (uiStateValue) {
+        is InverterUiState.Success -> uiStateValue.data
+        else -> InverterData()
+    }
+    LaunchedEffect(Unit) { vm.loadData() }
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Батарея", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         if (loading) CircularProgressIndicator()
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        val d = data
-        if (d != null) {
+        if (d.hasMeasurements) {
             val items = listOf(
-                "Рівень заряду (SOC)" to "${d["battery_soc"]} %",
-                "Напруга батареї" to "${d["battery_voltage"]} В",
-                "Напруга мережі" to "${d["grid_voltage"]} В",
-                "Температура" to "${d["temperature"]} °C",
-                "Енергія сьогодні" to "${d["energy_today"]} кВт·год",
-                "Енергія всього" to "${d["energy_total"]} кВт·год"
+                "Рівень заряду (SOC)" to "${d.batterySoc?.let { it.toInt() } ?: "—"} %",
+                "Напруга батареї" to "${d.batteryVoltage?.let { String.format("%.1f", it) } ?: "—"} В",
+                "Напруга мережі" to "${d.gridVoltageL1?.let { String.format("%.1f", it) } ?: "—"} В",
+                "Температура" to "${d.acTemperature?.let { String.format("%.1f", it) } ?: "—"} °C",
+                "Енергія сьогодні" to "— кВт·год",
+                "Енергія всього" to "— кВт·год"
             )
             items.forEach { (label, value) ->
                 Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
@@ -244,6 +280,15 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
     var downloadProgress by remember { mutableStateOf(0) }
     var downloadError by remember { mutableStateOf<String?>(null) }
 
+    val uiState by vm.uiState.collectAsState()
+    val connectionLoading by vm.refreshing.collectAsState()
+
+    val uiStateValue = uiState
+    val connError = when (uiStateValue) {
+        is InverterUiState.Error -> uiStateValue.message
+        else -> null
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -258,7 +303,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     value = serverAddress,
                     onValueChange = { serverAddress = it },
                     label = { Text("Адреса сервера") },
-                    placeholder = { Text("sunline.pp.ua") },
+                    placeholder = { Text("ha4a.pp.ua") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -266,7 +311,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     value = serverPort,
                     onValueChange = { serverPort = it },
                     label = { Text("Порт") },
-                    placeholder = { Text("8000") },
+                    placeholder = { Text("8800") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -303,14 +348,12 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                 if (savedMessage.isNotEmpty()) {
                     Text(savedMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 }
-                val connStatus by vm.error.collectAsState()
-                val loading by vm.loading.collectAsState()
                 Button(
                     onClick = { vm.checkConnection() },
-                    enabled = !loading,
+                    enabled = !connectionLoading,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text(if (loading) "Перевірка..." else "Тест підключення") }
-                connStatus?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                ) { Text(if (connectionLoading) "Перевірка..." else "Тест підключення") }
+                connError?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
         }
 

@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sunlink.svitgrid.data.model.InverterUiState
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 
 /**
@@ -21,11 +22,10 @@ import com.sunlink.svitgrid.viewmodel.MainViewModel
  */
 @Composable
 fun ForecastScreen(vm: MainViewModel = viewModel()) {
-    val data by vm.data.collectAsState()
-    val loading by vm.loading.collectAsState()
-    val error by vm.error.collectAsState()
+    val uiState by vm.uiState.collectAsState()
+    val loading by vm.refreshing.collectAsState()
     
-    LaunchedEffect(Unit) { vm.loadLive() }
+    LaunchedEffect(Unit) { vm.loadData() }
     
     Column(
         modifier = Modifier
@@ -61,13 +61,13 @@ fun ForecastScreen(vm: MainViewModel = viewModel()) {
             return
         }
         
-        error?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
-            return
+        val uiStateValue = uiState
+        val d = when (uiStateValue) {
+            is InverterUiState.Success -> uiStateValue.data.toMap()
+            else -> emptyMap()
         }
         
-        val d = data
-        if (d != null) {
+        if (d.isNotEmpty()) {
             // Погода на сьогодні
             Card(
                 modifier = Modifier.fillMaxWidth(),

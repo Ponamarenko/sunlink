@@ -8,8 +8,8 @@
         "source": "/root/.gradle/daemon/8.9/com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_household_greenhouse.png"
     },
     {
-        "merged": "com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_grid.png.flat",
-        "source": "com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_grid.png"
+        "merged": "com.sunlink.svitgrid.app-debug-60:/xml_file_paths.xml.flat",
+        "source": "com.sunlink.svitgrid.app-main-62:/xml/file_paths.xml"
     },
     {
         "merged": "/root/.gradle/daemon/8.9/com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_cottage.png.flat",
@@ -26,6 +26,10 @@
     {
         "merged": "/root/.gradle/daemon/8.9/com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_device_ed1_rs485.png.flat",
         "source": "/root/.gradle/daemon/8.9/com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_device_ed1_rs485.png"
+    },
+    {
+        "merged": "/root/.gradle/daemon/8.9/com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_grid.png.flat",
+        "source": "/root/.gradle/daemon/8.9/com.sunlink.svitgrid.app-main-62:/drawable-nodpi/svit_grid.png"
     },
     {
         "merged": "/root/.gradle/daemon/8.9/com.sunlink.svitgrid.app-debug-60:/drawable-nodpi_svit_household_grid.png.flat",
