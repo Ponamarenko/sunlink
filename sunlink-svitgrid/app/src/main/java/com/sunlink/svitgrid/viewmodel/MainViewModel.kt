@@ -39,8 +39,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
             _uiState.value = InverterUiState.Loading
             try {
                 val result = repository.loadInverterData()
-                if (result.isSuccess) {
-                    val (data, status) = result.getOrThrow()
+                if (result is Result.Success) {
+                    val (data, status) = result.data
                     if (data.hasMeasurements || status.online) {
                         _uiState.value = InverterUiState.Success(data, status)
                     } else {
@@ -50,7 +50,7 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                         )
                     }
                 } else {
-                    val e = result.exceptionOrNull()
+                    val e = (result as? Result.Error)?.exception
                     Log.w(tag, "loadData failed", e)
                     _uiState.value = InverterUiState.Error(
                         message = "Помилка завантаження: ${e?.message}",
@@ -73,11 +73,11 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
             _refreshing.value = true
             try {
                 val result = repository.loadInverterData()
-                if (result.isSuccess) {
-                    val (data, status) = result.getOrThrow()
+                if (result is Result.Success) {
+                    val (data, status) = result.data
                     _uiState.value = InverterUiState.Success(data, status)
                 } else {
-                    val e = result.exceptionOrNull()
+                    val e = (result as? Result.Error)?.exception
                     _uiState.value = InverterUiState.Error(
                         message = "Помилка оновлення: ${e?.message}"
                     )
@@ -94,8 +94,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
             _refreshing.value = true
             try {
                 val result = repository.loadStatus()
-                if (result.isSuccess) {
-                    val status = result.getOrThrow()
+                if (result is Result.Success) {
+                    val status = result.data
                     _uiState.value = if (status.online) {
                         val current = _uiState.value
                         val data = if (current is InverterUiState.Success) current.data else InverterData()
@@ -104,7 +104,7 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                         InverterUiState.Error(message = "Сервер недоступний", data = null)
                     }
                 } else {
-                    val e = result.exceptionOrNull()
+                    val e = (result as? Result.Error)?.exception
                     _uiState.value = InverterUiState.Error(
                         message = "Помилка підключення: ${e?.message}"
                     )
@@ -121,8 +121,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
             _historyState.value = HistoryUiState.Loading
             try {
                 val result = repository.loadHistory(parameter, start, end)
-                if (result.isSuccess) {
-                    val dto = result.getOrThrow()
+                if (result is Result.Success) {
+                    val dto = result.data
                     if (dto.measurements.isNotEmpty()) {
                         val points = dto.measurements.mapNotNull { m ->
                             val v = m.normalized_value?.toFloat()
@@ -137,7 +137,7 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                         _historyState.value = HistoryUiState.Empty
                     }
                 } else {
-                    val e = result.exceptionOrNull()
+                    val e = (result as? Result.Error)?.exception
                     _historyState.value = HistoryUiState.Error(
                         message = e?.message ?: "Невідома помилка"
                     )

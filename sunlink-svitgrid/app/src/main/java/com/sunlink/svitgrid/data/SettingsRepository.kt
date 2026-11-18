@@ -17,7 +17,7 @@ class SettingsRepository(context: Context) {
         }
 
     var serverPort: String
-        get() = prefs.getString("server_port", "8000") ?: "8000"
+        get() = prefs.getString("server_port", "8800") ?: "8800"
         set(value) = prefs.edit().putString("server_port", value).apply()
 
     var username: String

@@ -399,7 +399,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Інформація", style = MaterialTheme.typography.titleMedium)
-                Text("Сервер за замовчуванням: sunline.pp.ua:8000", style = MaterialTheme.typography.bodySmall)
+                Text("Сервер за замовчуванням: ha4a.pp.ua:8800 (deye_gateway.py)", style = MaterialTheme.typography.bodySmall)
                 Text("Авторизація буде реалізована на сервері", style = MaterialTheme.typography.bodySmall)
             }
         }

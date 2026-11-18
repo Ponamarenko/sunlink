@@ -2,7 +2,7 @@
 
 **SunLink** — Android-застосунок (Kotlin, Jetpack Compose, Material3) для моніторингу сонячної станції на базі інвертора **Deye** у стилі SvitGrid-дашборду: вузли PV/інвертор/батарея/мережа/дім, потоки енергії (Bezier-лінії з анімацією), статус з’єднання, екран відладки сирих даних.
 
-Поточна версія застосунку: **v2.23.0** (versionCode 50).
+Поточна версія застосунку: **v2.30.0** (versionCode 50).
 
 ## Можливості
 - Дашборд з реальними даними (PV-рядки, батарея, мережа, навантаження) та відображенням `—` для відсутніх полів
@@ -70,6 +70,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 - [docs/stages/stage-9.3-network-topology-and-master-audit.md](docs/stages/stage-9.3-network-topology-and-master-audit.md) — статичний аудит топології Deye ↔ Ebyte NA111-E ↔ Home Assistant, ролі Modbus master (етап 9.3)
 - [docs/stages/stage-9.3.1-evidence-reconciliation.md](docs/stages/stage-9.3.1-evidence-reconciliation.md) — аудит доказательств, сверка топологии и восстановление документации (етап 9.3.1)
 - [docs/stages/stage-10-gateway-data-layer-integration.md](docs/stages/stage-10-gateway-data-layer-integration.md) — интеграция deye_gateway.py с Data Layer: read-only production API, нормализация, SQLite, новые endpoints (етап 10)
+- [docs/stages/stage-11-android-application.md](docs/stages/stage-11-android-application.md) — Android моніторинг-застосунок: Dashboard, History, Inverter Details, Diagnostics, Settings; виправлення контрактів, 32 тести, APK (етап 11)
 
 ## Історія версій (коротко)
 
@@ -84,6 +85,7 @@ curl -s http://127.0.0.1:8800/api/live/raw | head
 | v2.22.0 | PV у Вт/кВт, плавніші потоки, імпорт/експорт мережі, фікси gateway/Modbus, `/api/live/raw` |
 | v2.23.0 | Етап 10: deye_gateway.py інтегровано з Data Layer — read-only production API, нормалізація через domain.normalizer, збереження в SQLite, endpoints /api/measurements/*, видалено запису Modbus |
 | v2.23.0 | Етап 11: Android застосунок — Dashboard, History, Inverter Details, Diagnostics, Settings; тестування, APK, документування |
+| v2.30.0 | Етап 11 (продовження): виправлено тести, контракт History (реальні імена регістрів), дефолт backend `ha4a.pp.ua:8800`, 32 тести, робочий APK |
 
 ## Відомі застереження
 - Карта регістрів/масштаби Deye можуть відрізнятися для конкретної моделі/прошивки (потрібна верифікація значень: напруга мережі, температури, лічильники енергії).

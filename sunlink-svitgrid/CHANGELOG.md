@@ -2,6 +2,18 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.30.0] — 2026-11-18 (виправлення працездатності: тести, backend-контракт, History, налаштування)
+- **Етап 11 (продовження):** доведення застосунку до робочого стану
+  - Відновлено збірку юніт-тестів: додано відсутній клас `Result` (`data/model/Result.kt`), виправлено посилання на неіснуючий `androidx.lifecycle.Result`, nullable-поля DTO у тестах
+  - `MainViewModelTest` — додано заглушку `Dispatchers.Main` (`UnconfinedTestDispatcher`) для коректного запуску `viewModelScope` у JVM-тестах; усі 5 ViewModel-тестів проходять
+  - `InverterData.kt` — напрямки потоку уніфіковано українською (`Розряд`, `Очікування`, `Експорт`, `Імпорт`) відповідно до UI
+  - **Виправлено контракт History:** параметри екрана змінено з неіснуючих `batt_soc`/`p_batt`/`p_grid` на реальні імена backend-регістрів `battery_soc`/`battery_power`/`dc_temperature` (згідно `domain/register_metadata.py`). Раніше історія завжди була порожньою
+  - **Виправлено дефолт backend:** порт за замовчуванням `8000` → `8800` (deye_gateway.py), адреса `ha4a.pp.ua`. Оновлено `SettingsRepository`, `RetrofitClient` та текст у UI-налаштуваннях. Раніше застосунок звертався до старого SvitGrid-симулятора, у якого немає `/api/measurements/*`
+  - Додано `HistoryParameterContractTest` — перевірка відповідності параметрів History контракту backend
+  - Усього 32 юніт-тести проходять (`./gradlew :app:testDebug`)
+  - APK: `./gradlew :app:assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk` (13 МБ, versionCode 50, versionName 2.30.0)
+  - Емулятор `emulator-5554` знаходиться offline — фізичне встановлення/опрас інвертора не виконувалось
+
 ## [v2.23.0] — 2026-11-18 (полный Android мониторинг-приложение)
 - **Этап 11:** реализован полный Android мониторинг-приложение на базе существующего проекта
   - `app/src/main/java/com/sunlink/svitgrid/` — полный рефакторинг: Repository pattern, ViewModel с StateFlow, UI screens (Dashboard, History, Inverter Details, Diagnostics, Settings)

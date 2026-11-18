@@ -44,16 +44,16 @@ data class InverterData(
         get() = when {
             pBatt == null -> "—"
             pBatt > 5f -> "Заряд"
-            pBatt < -5f -> "Разряд"
-            else -> "Ожидание"
+            pBatt < -5f -> "Розряд"
+            else -> "Очікування"
         }
 
     /** Направление сети: экспорт, импорт или баланс. */
     val gridDirection: String
         get() = when {
             pGrid == null -> "—"
-            pGrid > 0.5f -> "Экспорт"
-            pGrid < -0.5f -> "Импорт"
+            pGrid > 0.5f -> "Експорт"
+            pGrid < -0.5f -> "Імпорт"
             else -> "Баланс"
         }
 

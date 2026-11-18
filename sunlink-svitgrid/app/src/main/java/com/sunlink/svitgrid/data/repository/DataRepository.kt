@@ -6,19 +6,21 @@ import com.sunlink.svitgrid.network.ApiService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
+import com.sunlink.svitgrid.data.model.success
+import com.sunlink.svitgrid.data.model.error
 
 /**
  * Репозиторий данных инвертора.
  * Оборачивает Retrofit API, преобразует DTO в доменные модели,
  * обрабатывает ошибки и отсутствующие поля.
  */
-class DataRepository(private val apiService: ApiService? = null) {
+open class DataRepository(private val apiService: ApiService? = null) {
 
     /**
      * Загружает текущие данные инвертора с endpoint /api/live/raw.
      * Возвращает InverterData и InverterStatus.
      */
-    suspend fun loadInverterData(): Result<Pair<InverterData, InverterStatus>> =
+    open suspend fun loadInverterData(): Result<Pair<InverterData, InverterStatus>> =
         withContext(Dispatchers.IO) {
             try {
                 val response: Response<LiveRawDto> = apiService!!.getLiveRawDto()
@@ -27,29 +29,29 @@ class DataRepository(private val apiService: ApiService? = null) {
                     if (dto != null) {
                         val data = dtoToInverterData(dto)
                         val status = dtoToStatus(dto)
-                        Result.success(Pair(data, status))
+                        success(Pair(data, status))
                     } else {
-                        Result.failure(Exception("Пустой ответ сервера /api/live/raw"))
+                        error(Exception("Пустой ответ сервера /api/live/raw"))
                     }
                 } else {
-                    Result.failure(Exception("HTTP ${response.code()}"))
+                    error(Exception("HTTP ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                error(e)
             }
         }
 
     /**
      * Загружает статус инвертора с endpoint /status.
      */
-    suspend fun loadStatus(): Result<InverterStatus> =
+    open suspend fun loadStatus(): Result<InverterStatus> =
         withContext(Dispatchers.IO) {
             try {
                 val response: Response<StatusDto> = apiService!!.getStatusDto()
                 if (response.isSuccessful) {
                     val dto = response.body()
                     if (dto != null) {
-                        Result.success(
+                        success(
                             InverterStatus(
                                 online = dto.connection_status ?: false,
                                 lastUpdate = dto.last_update,
@@ -59,13 +61,13 @@ class DataRepository(private val apiService: ApiService? = null) {
                             )
                         )
                     } else {
-                        Result.failure(Exception("Пустой ответ сервера /status"))
+                        error(Exception("Пустой ответ сервера /status"))
                     }
                 } else {
-                    Result.failure(Exception("HTTP ${response.code()}"))
+                    error(Exception("HTTP ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                error(e)
             }
         }
 
@@ -77,33 +79,33 @@ class DataRepository(private val apiService: ApiService? = null) {
             try {
                 val response: Response<MeasurementsLatestDto> = apiService!!.getLatestMeasurementsDto()
                 if (response.isSuccessful) {
-                    response.body()?.let { Result.success(it) }
-                        ?: Result.failure(Exception("Пустой ответ сервера /api/measurements/latest"))
+                    response.body()?.let { success(it) }
+                        ?: error(Exception("Пустой ответ сервера /api/measurements/latest"))
                 } else {
-                    Result.failure(Exception("HTTP ${response.code()}"))
+                    error(Exception("HTTP ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                error(e)
             }
         }
 
     /**
      * Загружает историю измерений с endpoint /api/measurements/history.
      */
-    suspend fun loadHistory(parameter: String, start: String, end: String): Result<MeasurementsHistoryDto> =
+    open suspend fun loadHistory(parameter: String, start: String, end: String): Result<MeasurementsHistoryDto> =
         withContext(Dispatchers.IO) {
             try {
                 val response: Response<MeasurementsHistoryDto> = apiService!!.getHistoryDto(
                     parameter = parameter, start = start, end = end
                 )
                 if (response.isSuccessful) {
-                    response.body()?.let { Result.success(it) }
-                        ?: Result.failure(Exception("Пустой ответ сервера /api/measurements/history"))
+                    response.body()?.let { success(it) }
+                        ?: error(Exception("Пустой ответ сервера /api/measurements/history"))
                 } else {
-                    Result.failure(Exception("HTTP ${response.code()}"))
+                    error(Exception("HTTP ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                error(e)
             }
         }
 
@@ -115,13 +117,13 @@ class DataRepository(private val apiService: ApiService? = null) {
             try {
                 val response: Response<RegistersDto> = apiService!!.getRegistersDto()
                 if (response.isSuccessful) {
-                    response.body()?.let { Result.success(it) }
-                        ?: Result.failure(Exception("Пустой ответ сервера /registers"))
+                    response.body()?.let { success(it) }
+                        ?: error(Exception("Пустой ответ сервера /registers"))
                 } else {
-                    Result.failure(Exception("HTTP ${response.code()}"))
+                    error(Exception("HTTP ${response.code()}"))
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                error(e)
             }
         }
 

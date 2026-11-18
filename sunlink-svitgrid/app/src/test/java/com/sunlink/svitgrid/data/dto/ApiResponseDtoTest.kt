@@ -37,10 +37,10 @@ class ApiResponseDtoTest {
         }"""
         val dto = gson.fromJson(json, LiveRawDto::class.java)
         assertNotNull(dto)
-        assertEquals(1500.5, dto.p_sun, 0.001)
-        assertEquals(86.0, dto.batt_soc, 0.001)
-        assertEquals(52.5, dto.battery_voltage, 0.001)
-        assertEquals(true, dto.connection_status)
+        assertEquals(1500.5, dto.p_sun!!, 0.001)
+        assertEquals(86.0, dto.batt_soc!!, 0.001)
+        assertEquals(52.5, dto.battery_voltage!!, 0.001)
+        assertEquals(true, dto.connection_status!!)
         assertNull(dto.error)
     }
 
@@ -54,8 +54,8 @@ class ApiResponseDtoTest {
         }"""
         val dto = gson.fromJson(json, LiveRawDto::class.java)
         assertNotNull(dto)
-        assertEquals(1200.0, dto.p_sun, 0.001)
-        assertEquals(88.0, dto.batt_soc, 0.001)
+        assertEquals(1200.0, dto.p_sun!!, 0.001)
+        assertEquals(88.0, dto.batt_soc!!, 0.001)
         assertNull(dto.p_load)  // відсутнє поле = null
         assertNull(dto.error)
     }
@@ -117,7 +117,7 @@ class ApiResponseDtoTest {
         assertEquals(2, dto.count)
         assertEquals(2, dto.measurements.size)
         assertEquals("battery_soc", dto.measurements[0].parameter_name)
-        assertEquals(86.0, dto.measurements[0].normalized_value, 0.001)
+        assertEquals(86.0, dto.measurements[0].normalized_value!!, 0.001)
         assertEquals("valid", dto.measurements[0].quality)
         assertEquals("corroborated", dto.measurements[0].confidence)
     }
@@ -141,7 +141,7 @@ class ApiResponseDtoTest {
         assertNotNull(dto)
         assertEquals("pv1_power", dto.parameter_name)
         assertEquals(1500, dto.raw_value)
-        assertEquals(1500.0, dto.normalized_value, 0.001)
+        assertEquals(1500.0, dto.normalized_value!!, 0.001)
         assertEquals("W", dto.unit)
         assertEquals("provisional", dto.confidence)
     }
@@ -221,7 +221,7 @@ class ApiResponseDtoTest {
         assertEquals("batt_soc", dto.parameter)
         assertEquals(3, dto.count)
         assertEquals(3, dto.measurements.size)
-        assertEquals(80.0, dto.measurements[0].normalized_value, 0.001)
-        assertEquals(86.0, dto.measurements[2].normalized_value, 0.001)
+        assertEquals(80.0, dto.measurements[0].normalized_value!!, 0.001)
+        assertEquals(86.0, dto.measurements[2].normalized_value!!, 0.001)
     }
 }

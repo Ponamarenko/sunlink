@@ -113,28 +113,40 @@ Successfully implemented a complete Android monitoring application for SunLink u
 
 ### Gradle Configuration
 - Application ID: `com.sunlink.svitgrid`
-- Version Name: `2.23.0`
+- Version Name: `2.30.0`
 - Version Code: `50`
-- Kotlin version: `1.9.10`
-- Compose version: `1.5.4`
+- Compile SDK: 34 / minSdk 26
+- Compose Compiler: 1.5.8
 
 ### Build Output
 - APK Path: `app/build/outputs/apk/debug/app-debug.apk`
-- Build Time: Successfully compiled
+- Size: ~13 MB
+- Build command: `./gradlew :app:assembleDebug` → BUILD SUCCESSFUL
 - Warnings: Minor deprecation warnings (non-breaking)
 
 ## Testing Results
 
-### Unit Tests
+### Unit Tests — 32 tests, all passing (`./gradlew :app:testDebug`)
 - DTO parsing tests: ✓ Passed
-- Repository tests: ✓ Passed (with MockWebServer)
-- ViewModel tests: ✓ Passed
-- UI state tests: ✓ Passed
+- Repository tests: ✓ Passed (with MockWebServer, no production calls)
+- ViewModel tests: ✓ Passed (Dispatchers.Main stubbed via UnconfinedTestDispatcher)
+- UI state / domain model tests: ✓ Passed
+- History parameter contract tests: ✓ Passed
 
 ### Integration Tests
-- Backend connectivity: ✓ Tested with mock data
-- Navigation flow: ✓ Verified
+- Backend connectivity: ✓ Tested with mock HTTP (MockWebServer), not production
+- Navigation flow: ✓ Verified by code review
 - State management: ✓ Confirmed
+
+## Functional fixes (continuation of stage 11)
+
+These were real defects found when continuing from `origin/main` — not cosmetic changes:
+
+1. **Missing `Result` class.** The repository and ViewModel referenced `Result.success/failure` and `androidx.lifecycle.Result`, but no such class existed in the project and the unit tests did not even compile. Added `data/model/Result.kt` and migrated all call sites.
+2. **History returned nothing.** The screen requested parameters `batt_soc`, `p_batt`, `p_grid`, which do not exist in the backend. Changed to the actual register names from `domain/register_metadata.py`: `battery_soc`, `battery_power`, `dc_temperature` (plus the existing PV/current/voltage ones).
+3. **Wrong default backend.** Default address/port was the legacy SvitGrid simulator `sunline.pp.ua:8000`, which has no `/api/measurements/*` endpoints. Changed to `ha4a.pp.ua:8800` (deye_gateway.py) in `SettingsRepository`, `RetrofitClient` and the Settings UI text.
+4. **Flow direction language.** Unified the domain model strings to Ukrainian to match the UI (`Розряд`, `Очікування`, `Експорт`, `Імпорт`).
+5. **ViewModel test harness.** Fixed `viewModelScope` tests by stubbing `Dispatchers.Main`.
 
 ## Known Issues
 
@@ -142,6 +154,7 @@ Successfully implemented a complete Android monitoring application for SunLink u
 2. **Divider Deprecation**: Minor warnings using deprecated Divider component
 3. **Forecast Screen**: Uses mock data (no real weather API integration)
 4. **History Display**: List format instead of Canvas graphs (simplified for stability)
+5. **Physical device**: No device/emulator available (`emulator-5554` offline). Only build + unit tests verified; no installation or inverter polling was performed.
 
 ## Future Enhancements
 
@@ -171,6 +184,6 @@ Stage 11 successfully delivered a complete, functional Android monitoring applic
 
 ---
 
-*Status: ✅ Completed*
+*Status: ✅ Completed (build + 32 unit tests verified; no physical device)*
 *Date: 2026-11-18*
-*Build: v2.23.0 (50)*
+*Build: v2.30.0 (50)*

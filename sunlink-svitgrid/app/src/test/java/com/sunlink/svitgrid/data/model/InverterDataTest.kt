@@ -21,28 +21,28 @@ class InverterDataTest {
     }
 
     @Test
-    fun `batteryDirection charge when pBatt > 5`() {
+    fun `batteryDirection charge when pBatt positive`() {
         assertEquals("Заряд", InverterData(pBatt = 10f).batteryDirection)
     }
 
     @Test
-    fun `batteryDirection discharge when pBatt < -5`() {
-        assertEquals("Разряд", InverterData(pBatt = -10f).batteryDirection)
+    fun `batteryDirection discharge when pBatt negative`() {
+        assertEquals("Розряд", InverterData(pBatt = -10f).batteryDirection)
     }
 
     @Test
     fun `batteryDirection waiting when pBatt near zero`() {
         assertEquals("Очікування", InverterData(pBatt = 0f).batteryDirection)
-        assertEquals("Очікування", InverterData(pBatt = null).batteryDirection)
+        assertEquals("—", InverterData(pBatt = null).batteryDirection)
     }
 
     @Test
-    fun `gridDirection export when pGrid > 0.5`() {
+    fun `gridDirection export when pGrid positive`() {
         assertEquals("Експорт", InverterData(pGrid = 100f).gridDirection)
     }
 
     @Test
-    fun `gridDirection import when pGrid < -0.5`() {
+    fun `gridDirection import when pGrid negative`() {
         assertEquals("Імпорт", InverterData(pGrid = -100f).gridDirection)
     }
 
@@ -56,7 +56,7 @@ class InverterDataTest {
     fun `toMap contains all fields`() {
         val data = InverterData(
             pSun = 1000f,
-            battSoc = 85f,
+            batterySoc = 85f,
             pGrid = 200f,
             timestamp = "2026-11-18T10:00:00Z",
             connectionStatus = true,

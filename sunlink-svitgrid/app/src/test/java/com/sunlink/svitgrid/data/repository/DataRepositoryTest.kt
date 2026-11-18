@@ -2,6 +2,7 @@ package com.sunlink.svitgrid.data.repository
 
 import com.sunlink.svitgrid.data.dto.*
 import com.sunlink.svitgrid.network.ApiService
+import com.sunlink.svitgrid.data.model.Result
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
@@ -68,10 +69,10 @@ class DataRepositoryTest {
                 .addHeader("Content-Type", "application/json"))
 
             val result = repository.loadInverterData()
-            assertTrue(result is androidx.lifecycle.Result.Success)
-            val (data, status) = (result as androidx.lifecycle.Result.Success).data
-            assertEquals(1500.0f, data.pSun, 0.001f)
-            assertEquals(86.0f, data.batterySoc, 0.001f)
+            assertTrue(result is Result.Success)
+            val (data, status) = (result as Result.Success).data
+            assertEquals(1500.0f, data.pSun!!, 0.001f)
+            assertEquals(86.0f, data.batterySoc!!, 0.001f)
             assertTrue(status.online)
             assertTrue(data.hasMeasurements)
         }
@@ -85,7 +86,7 @@ class DataRepositoryTest {
                 .setBody("Internal Server Error"))
 
             val result = repository.loadInverterData()
-            assertTrue(result is androidx.lifecycle.Result.Failure)
+            assertTrue(result is Result.Error)
         }
     }
 
@@ -105,8 +106,8 @@ class DataRepositoryTest {
                 .addHeader("Content-Type", "application/json"))
 
             val result = repository.loadStatus()
-            assertTrue(result is androidx.lifecycle.Result.Success)
-            val status = (result as androidx.lifecycle.Result.Success).data
+            assertTrue(result is Result.Success)
+            val status = (result as Result.Success).data
             assertTrue(status.online)
             assertEquals("deye_sg02lp1_am3", status.inverterId)
             assertEquals(9, status.availableRegisters)
@@ -138,11 +139,11 @@ class DataRepositoryTest {
                 .addHeader("Content-Type", "application/json"))
 
             val result = repository.loadLatestMeasurements()
-            assertTrue(result is androidx.lifecycle.Result.Success)
-            val dto = (result as androidx.lifecycle.Result.Success).data
+            assertTrue(result is Result.Success)
+            val dto = (result as Result.Success).data
             assertEquals(1, dto.count)
             assertEquals("battery_soc", dto.measurements[0].parameter_name)
-            assertEquals(86.0, dto.measurements[0].normalized_value, 0.001)
+            assertEquals(86.0, dto.measurements[0].normalized_value!!, 0.001)
         }
     }
 
@@ -166,11 +167,11 @@ class DataRepositoryTest {
                 .addHeader("Content-Type", "application/json"))
 
             val result = repository.loadHistory("batt_soc", "2026-11-01T00:00:00Z", "2026-11-18T23:59:59Z")
-            assertTrue(result is androidx.lifecycle.Result.Success)
-            val dto = (result as androidx.lifecycle.Result.Success).data
+            assertTrue(result is Result.Success)
+            val dto = (result as Result.Success).data
             assertEquals(2, dto.count)
-            assertEquals(80.0, dto.measurements[0].normalized_value, 0.001)
-            assertEquals(86.0, dto.measurements[1].normalized_value, 0.001)
+            assertEquals(80.0, dto.measurements[0].normalized_value!!, 0.001)
+            assertEquals(86.0, dto.measurements[1].normalized_value!!, 0.001)
         }
     }
 
@@ -190,8 +191,8 @@ class DataRepositoryTest {
                 .addHeader("Content-Type", "application/json"))
 
             val result = repository.loadRegisters()
-            assertTrue(result is androidx.lifecycle.Result.Success)
-            val dto = (result as androidx.lifecycle.Result.Success).data
+            assertTrue(result is Result.Success)
+            val dto = (result as Result.Success).data
             assertEquals(1, dto.count)
             assertEquals(183, dto.registers[0].address)
             assertEquals("corroborated", dto.registers[0].confidence)

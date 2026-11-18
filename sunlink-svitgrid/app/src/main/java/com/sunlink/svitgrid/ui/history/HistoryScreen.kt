@@ -31,7 +31,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
     }
     val historyStateValue = historyState
 
-    var selectedParameter by remember { mutableStateOf("batt_soc") }
+    var selectedParameter by remember { mutableStateOf("battery_soc") }
 
     LaunchedEffect(Unit) {
         vm.loadData()
@@ -119,7 +119,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            listOf("batt_soc", "pv1_power", "pv2_power", "pv3_power", "p_batt", "p_grid", "battery_voltage", "battery_current").forEach { param ->
+            listOf("battery_soc", "pv1_power", "pv2_power", "pv3_power", "battery_power", "battery_voltage", "battery_current", "dc_temperature").forEach { param ->
                 Button(
                     onClick = { selectedParameter = param },
                     modifier = Modifier.weight(1f)
@@ -242,52 +242,53 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
 
 private fun currentParameterValue(data: InverterData, parameter: String): String {
     return when (parameter) {
-        "batt_soc" -> data.batterySoc?.let { "${it.toInt()}%" } ?: "—"
+        "battery_soc" -> data.batterySoc?.let { "${it.toInt()}%" } ?: "—"
         "pv1_power" -> data.pv1Power?.let { "${it.toInt()} Вт" } ?: "—"
         "pv2_power" -> data.pv2Power?.let { "${it.toInt()} Вт" } ?: "—"
         "pv3_power" -> data.pv3Power?.let { "${it.toInt()} Вт" } ?: "—"
-        "p_batt" -> data.pBatt?.let { "${it.toInt()} Вт" } ?: "—"
-        "p_grid" -> data.pGrid?.let { "${it.toInt()} Вт" } ?: "—"
+        "battery_power" -> data.pBatt?.let { "${it.toInt()} Вт" } ?: "—"
         "battery_voltage" -> data.batteryVoltage?.let { String.format("%.1f", it) } ?: "—"
         "battery_current" -> data.batteryCurrent?.let { String.format("%.2f", it) } ?: "—"
+        "dc_temperature" -> data.dcTemperature?.let { String.format("%.1f", it) } ?: "—"
         else -> "—"
     }
 }
 
 private fun parameterLabel(parameter: String): String {
     return when (parameter) {
-        "batt_soc" -> "Заряд батареї (SOC)"
+        "battery_soc" -> "Заряд батареї (SOC)"
         "pv1_power" -> "Потужність PV1"
         "pv2_power" -> "Потужність PV2"
         "pv3_power" -> "Потужність PV3"
-        "p_batt" -> "Потужність батареї"
-        "p_grid" -> "Потужність мережі"
+        "battery_power" -> "Потужність батареї"
         "battery_voltage" -> "Напруга батареї"
         "battery_current" -> "Ток батареї"
+        "dc_temperature" -> "Температура DC"
         else -> parameter
     }
 }
 
 private fun parameterShortLabel(parameter: String): String {
     return when (parameter) {
-        "batt_soc" -> "SOC"
+        "battery_soc" -> "SOC"
         "pv1_power" -> "PV1"
         "pv2_power" -> "PV2"
         "pv3_power" -> "PV3"
-        "p_batt" -> "Batt"
-        "p_grid" -> "Grid"
+        "battery_power" -> "Batt"
         "battery_voltage" -> "Batt V"
         "battery_current" -> "Batt I"
+        "dc_temperature" -> "Темп."
         else -> parameter
     }
 }
 
 private fun parameterUnit(parameter: String): String {
     return when (parameter) {
-        "batt_soc" -> "%"
-        "pv1_power", "pv2_power", "pv3_power", "p_batt", "p_grid" -> "Вт"
+        "battery_soc" -> "%"
+        "pv1_power", "pv2_power", "pv3_power", "battery_power" -> "Вт"
         "battery_voltage" -> "В"
         "battery_current" -> "А"
+        "dc_temperature" -> "°C"
         else -> ""
     }
 }

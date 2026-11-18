@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private var baseUrl = "http://sunline.pp.ua:8000/"
+    private var baseUrl = "http://ha4a.pp.ua:8800/"
     private var client: OkHttpClient? = null
     private var retrofit: Retrofit? = null
     private var apiService: ApiService? = null

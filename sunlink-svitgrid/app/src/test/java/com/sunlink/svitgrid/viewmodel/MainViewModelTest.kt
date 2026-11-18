@@ -2,25 +2,44 @@ package com.sunlink.svitgrid.viewmodel
 
 import com.sunlink.svitgrid.data.model.*
 import com.sunlink.svitgrid.data.repository.DataRepository
+import com.sunlink.svitgrid.data.model.Result
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
-
-import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Тести MainViewModel з фейковим репозиторієм.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModelTest {
+
+    private val testDispatcher = UnconfinedTestDispatcher()
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     private class FakeRepository : DataRepository(null) {
         // Перевизначаємо поведінку через mutable стан
-        var loadDataResult: androidx.lifecycle.Result<Pair<InverterData, InverterStatus>> =
-            androidx.lifecycle.Result.success(
+        var loadDataResult: Result<Pair<InverterData, InverterStatus>> =
+            success(
                 Pair(
                     InverterData(
                         pSun = 1000f,
-                        battSoc = 85f,
+                        batterySoc = 85f,
                         pGrid = 200f,
                         pLoad = 800f,
                         connectionStatus = true,
@@ -31,14 +50,14 @@ class MainViewModelTest {
                     InverterStatus(online = true, availableRegisters = 9)
                 )
             )
-        var loadStatusResult: androidx.lifecycle.Result<InverterStatus> =
-            androidx.lifecycle.Result.success(InverterStatus(online = true, availableRegisters = 9))
-        var loadHistoryResult: androidx.lifecycle.Result<com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto> =
-            androidx.lifecycle.Result.success(
+        var loadStatusResult: Result<InverterStatus> =
+            success(InverterStatus(online = true, availableRegisters = 9))
+        var loadHistoryResult: Result<com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto> =
+            success(
                 com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto(
                     measurements = listOf(
                         com.sunlink.svitgrid.data.dto.MeasurementDto(
-                            parameter_name = "batt_soc",
+                            parameter_name = "battery_soc",
                             normalized_value = 85.0,
                             unit = "%",
                             timestamp = "2026-11-18T10:00:00Z"
@@ -47,10 +66,10 @@ class MainViewModelTest {
                 )
             )
 
-        override suspend fun loadInverterData(): androidx.lifecycle.Result<Pair<InverterData, InverterStatus>> = loadDataResult
-        override suspend fun loadStatus(): androidx.lifecycle.Result<InverterStatus> = loadStatusResult
+        override suspend fun loadInverterData(): Result<Pair<InverterData, InverterStatus>> = loadDataResult
+        override suspend fun loadStatus(): Result<InverterStatus> = loadStatusResult
         override suspend fun loadHistory(parameter: String, start: String, end: String):
-            androidx.lifecycle.Result<com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto> = loadHistoryResult
+            Result<com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto> = loadHistoryResult
     }
 
     private fun createViewModel(): MainViewModel {
@@ -69,8 +88,8 @@ class MainViewModelTest {
             val state = vm.uiState.value
             assertTrue(state is InverterUiState.Success)
             val success = state as InverterUiState.Success
-            assertEquals(1000f, success.data.pSun, 0.001f)
-            assertEquals(85f, success.data.batterySoc, 0.001f)
+            assertEquals(1000f, success.data.pSun!!, 0.001f)
+            assertEquals(85f, success.data.batterySoc!!, 0.001f)
             assertTrue(success.status.online)
         }
     }
@@ -79,7 +98,7 @@ class MainViewModelTest {
     fun `loadData with no measurements sets Error`() {
         runBlocking {
             val repo = FakeRepository()
-            repo.loadDataResult = androidx.lifecycle.Result.success(
+            repo.loadDataResult = success(
                 Pair(
                     InverterData(connectionStatus = false),
                     InverterStatus(online = false)
@@ -134,7 +153,7 @@ class MainViewModelTest {
             assertTrue(state is HistoryUiState.Success)
             val success = state as HistoryUiState.Success
             assertEquals(1, success.points.size)
-            assertEquals(85.0f, success.points[0].value, 0.001f)
+            assertEquals(85.0f, success.points[0].value!!, 0.001f)
         }
     }
 
