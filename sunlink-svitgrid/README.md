@@ -90,6 +90,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-20-read-only-modbus-polling-engine.md](docs/stages/stage-20-read-only-modbus-polling-engine.md) — read-only Modbus TCP engine, лише reg 184, 212 backend-тестів, фізичний polling не запускався (етап 20)
 - [docs/stages/stage-21-controlled-physical-polling-test.md](docs/stages/stage-21-controlled-physical-polling-test.md) — 3 контрольовані FC03-запити до reg 184: стабільні 95 % SOC (етап 21)
 - [docs/stages/stage-22-real-telemetry-register-validation.md](docs/stages/stage-22-real-telemetry-register-validation.md) — повна карта телеметрії, рівні достовірності, план наступного фізичного тесту (етап 22)
+- [docs/stages/stage-23-controlled-register-validation.md](docs/stages/stage-23-controlled-register-validation.md) — 5 контрольованих FC03: PV, V/I/P батареї, температури; гіпотеза scale reg 190 ×0.1 (етап 23)
 
 ## Перевірка релізу
 
