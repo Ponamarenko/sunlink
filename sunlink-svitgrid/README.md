@@ -84,6 +84,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-13-git-security-and-release-verification.md](docs/stages/stage-13-git-security-and-release-verification.md) — очищення Git remote від PAT, безпечний SSH, release verification script (етап 13)
 - [docs/stages/stage-14-android-apk-validation.md](docs/stages/stage-14-android-apk-validation.md) — аудит Android, виправлення налаштування backend, 62 тести, збірка APK, підготовка до встановлення (етап 14)
 - [docs/stages/stage-16-real-data-pipeline.md](docs/stages/stage-16-real-data-pipeline.md) — єдиний інтерфейс джерел demo/mock/modbus, read-only FC03, карта регістрів, підготовка до фізичного тесту (етап 16)
+- [docs/stages/stage-17-rs485-topology-safety-audit.md](docs/stages/stage-17-rs485-topology-safety-audit.md) — аудит топології RS485, статуси HA/Ebyte/Unit ID, безпечний план фізичного тесту (етап 17)
 
 ## Перевірка релізу
 
