@@ -15,7 +15,10 @@ import os
 from dataclasses import dataclass
 from typing import Mapping, Optional
 
-VALID_SOURCES = ("demo", "mock", "modbus")
+# "deye_modbus" — явная метка физического источника (этап 20);
+# "modbus" оставлен как обратно совместимый алиас.
+VALID_SOURCES = ("demo", "mock", "modbus", "deye_modbus")
+PHYSICAL_SOURCES = ("modbus", "deye_modbus")
 ENV_SOURCE = "SUNLINK_DATA_SOURCE"
 ENV_ENABLE_MODBUS = "SUNLINK_ENABLE_MODBUS"
 
@@ -33,6 +36,8 @@ class DataSourceConfig:
     unit_id: int = 1
     timeout_seconds: float = 2.0
     poll_interval_seconds: float = 5.0
+    # Консервативный интервал для физического источника (этап 20).
+    physical_poll_interval_seconds: float = 30.0
     register_profile: str = "stage7"
 
     @classmethod
@@ -47,7 +52,7 @@ class DataSourceConfig:
             )
 
         enable = env.get(ENV_ENABLE_MODBUS, "").strip().lower() in ("1", "true", "yes")
-        if source == "modbus" and not enable:
+        if source in PHYSICAL_SOURCES and not enable:
             raise DataSourceConfigError(
                 "Физический Modbus-источник требует явного включения: "
                 f"установите {ENV_ENABLE_MODBUS}=1. "
@@ -59,6 +64,7 @@ class DataSourceConfig:
             unit_id = int(env.get("SUNLINK_MODBUS_UNIT_ID", "1"))
             timeout = float(env.get("SUNLINK_MODBUS_TIMEOUT", "2.0"))
             interval = float(env.get("SUNLINK_POLL_INTERVAL", "5.0"))
+            physical_interval = float(env.get("SUNLINK_PHYSICAL_POLL_INTERVAL", "30.0"))
         except (TypeError, ValueError) as exc:
             raise DataSourceConfigError(f"Некорректное числовое значение конфигурации: {exc}") from exc
 
@@ -66,7 +72,7 @@ class DataSourceConfig:
             raise DataSourceConfigError("SUNLINK_MODBUS_PORT должен быть 1..65535")
         if not (1 <= unit_id <= 247):
             raise DataSourceConfigError("SUNLINK_MODBUS_UNIT_ID должен быть 1..247")
-        if timeout <= 0 or interval <= 0:
+        if timeout <= 0 or interval <= 0 or physical_interval <= 0:
             raise DataSourceConfigError("timeout и poll interval должны быть положительными")
 
         return cls(
@@ -77,8 +83,11 @@ class DataSourceConfig:
             unit_id=unit_id,
             timeout_seconds=timeout,
             poll_interval_seconds=interval,
+            physical_poll_interval_seconds=physical_interval,
             register_profile=env.get("SUNLINK_REGISTER_PROFILE", "stage7"),
         )
 
 
-__all__ = ["DataSourceConfig", "DataSourceConfigError", "VALID_SOURCES"]
+__all__ = [
+    "DataSourceConfig", "DataSourceConfigError", "VALID_SOURCES", "PHYSICAL_SOURCES"
+]

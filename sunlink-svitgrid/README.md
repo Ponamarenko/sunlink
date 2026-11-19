@@ -87,6 +87,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-17-rs485-topology-safety-audit.md](docs/stages/stage-17-rs485-topology-safety-audit.md) — аудит топології RS485, статуси HA/Ebyte/Unit ID, безпечний план фізичного тесту (етап 17)
 - [docs/stages/stage-18-single-fc03-test.md](docs/stages/stage-18-single-fc03-test.md) — статус BLOCKED: один FC03-запит не відправлено без підтвердження ексклюзивності RS485 Master (етап 18)
 - [docs/stages/stage-19-github-history-and-single-fc03.md](docs/stages/stage-19-github-history-and-single-fc03.md) — історія обох репозитаріїв, один FC03 до reg 184: raw 0x0063 = 99 % SOC (етап 19)
+- [docs/stages/stage-20-read-only-modbus-polling-engine.md](docs/stages/stage-20-read-only-modbus-polling-engine.md) — read-only Modbus TCP engine, лише reg 184, 212 backend-тестів, фізичний polling не запускався (етап 20)
 
 ## Перевірка релізу
 

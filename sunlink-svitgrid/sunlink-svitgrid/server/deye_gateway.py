@@ -213,7 +213,11 @@ class DeyeGateway:
             self._last_snapshot = snapshot
 
             # Сохранение в Data Layer с меткой ИСТОЧНИКА (без смешивания).
-            if self.repository is not None and snapshot.present_values():
+            if (
+                self.repository is not None
+                and snapshot.present_values()
+                and not getattr(self.telemetry_source, "persists_itself", False)
+            ):
                 try:
                     rows = [
                         Measurement(

@@ -165,4 +165,15 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
 #     (load frequency), 194 (grid connected), 76–84 (energy counters),
 #     248–279 (TOU). None of these are added without a separate decision.
 
-__all__ = ["RegisterMetadata", "REGISTER_MAP"]
+# Этап 20: активный map физического polling содержит ТОЛЬКО регистр,
+# подтверждённый реальным FC03-ответом Stage 19 (raw 0x0063 -> 99 %).
+# Остальные регистры остаются в REGISTER_MAP со своими уровнями достоверности,
+# но НЕ опрашиваются физически без отдельного разрешения.
+ACTIVE_POLL_REGISTERS: dict[int, RegisterMetadata] = {184: REGISTER_MAP[184]}
+
+
+__all__ = [
+    "RegisterMetadata",
+    "REGISTER_MAP",
+    "ACTIVE_POLL_REGISTERS",
+]

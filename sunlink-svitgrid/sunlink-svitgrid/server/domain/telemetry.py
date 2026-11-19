@@ -60,6 +60,8 @@ class TelemetrySnapshot:
     connection_ok: bool
     values: Dict[str, TelemetryValue]
     error: Optional[str] = None
+    # Последние достоверные данные, показанные после потери связи (этап 20).
+    stale: bool = False
 
     def to_read_all_dict(self) -> Dict[str, Any]:
         """Формат совместим с deye_gateway.read_all_registers() и Android DTO."""
@@ -91,6 +93,9 @@ class TelemetrySource(ABC):
     @property
     def connection_ok(self) -> bool:
         return False
+
+    # Если источник сам пишет в Data Layer, gateway не должен дублировать запись.
+    persists_itself: bool = False
 
 
 __all__ = [
