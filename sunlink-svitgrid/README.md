@@ -89,6 +89,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-19-github-history-and-single-fc03.md](docs/stages/stage-19-github-history-and-single-fc03.md) — історія обох репозитаріїв, один FC03 до reg 184: raw 0x0063 = 99 % SOC (етап 19)
 - [docs/stages/stage-20-read-only-modbus-polling-engine.md](docs/stages/stage-20-read-only-modbus-polling-engine.md) — read-only Modbus TCP engine, лише reg 184, 212 backend-тестів, фізичний polling не запускався (етап 20)
 - [docs/stages/stage-21-controlled-physical-polling-test.md](docs/stages/stage-21-controlled-physical-polling-test.md) — 3 контрольовані FC03-запити до reg 184: стабільні 95 % SOC (етап 21)
+- [docs/stages/stage-22-real-telemetry-register-validation.md](docs/stages/stage-22-real-telemetry-register-validation.md) — повна карта телеметрії, рівні достовірності, план наступного фізичного тесту (етап 22)
 
 ## Перевірка релізу
 
