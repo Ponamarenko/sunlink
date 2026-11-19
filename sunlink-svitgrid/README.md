@@ -92,6 +92,21 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 
 Скрипт запускає backend та Android тести, збирає debug APK і перевіряє package/version/розмір.
 
+## Завантаження APK
+
+Кожен зібраний APK публікується в [GitHub Releases](https://github.com/Ponamarenko/sunlink/releases).
+Поточний debug-реліз Stage 14 (prerelease):
+https://github.com/Ponamarenko/sunlink/releases/tag/android-v2.30.0-stage14
+
+Повторна публікація нової збірки:
+
+```bash
+./scripts/publish_android_release.sh
+```
+
+Докладніше — [docs/stages/stage-15-android-acceptance-and-github-releases.md](docs/stages/stage-15-android-acceptance-and-github-releases.md).
+Дані демо-backend симулюються; встановлення на реальний пристрій не перевірялось.
+
 ## Історія версій (коротко)
 
 | Версія | Основне |
