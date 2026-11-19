@@ -205,10 +205,52 @@ class ModbusTelemetrySource(_Fc03TelemetrySource):
         super().__init__(transport, DataSource.DEYE_MODBUS, unit_id=unit_id)
 
 
+# Этап 24: реалистичные DEMO-сценарии для проверки Android без инвертора.
+# Все значения явно помечены demo_simulator; это НЕ реальные измерения.
+DEMO_SCENARIOS: Dict[str, Dict[int, Optional[int]]] = {
+    "charging": dict(DEFAULT_DEMO_REGISTERS),
+    "discharging": {
+        90: 1410,    # 41 C с candidate offset
+        91: 1482,    # 48 C
+        183: 5353,   # 53.53 V
+        184: 95,
+        186: 1519,
+        187: 796,
+        188: 123,
+        190: 0xF8C3,  # -1853 raw -> -185.3 W (provisional)
+        191: 0xFEA1,  # -351 raw -> -3.51 A
+    },
+    "no_pv": {
+        183: 5322,
+        184: 70,
+        186: 0,
+        187: 0,
+        188: 0,
+        190: 1000,
+        191: 100,
+    },
+    "partial": {
+        183: 5322,
+        184: 70,
+        # PV и ток отсутствуют — остаются null, не 0.0
+    },
+}
+
+
+def demo_source_for(scenario: str) -> DemoTelemetrySource:
+    """DEMO-источник для заданного сценария; unknown → ValueError."""
+    if scenario not in DEMO_SCENARIOS:
+        raise ValueError(f"unknown demo scenario: {scenario}")
+    registers = {k: v for k, v in DEMO_SCENARIOS[scenario].items() if v is not None}
+    return DemoTelemetrySource(registers)
+
+
 __all__ = [
     "DemoTelemetrySource",
     "MockTelemetrySource",
     "ModbusTelemetrySource",
     "DEFAULT_DEMO_REGISTERS",
+    "DEMO_SCENARIOS",
+    "demo_source_for",
     "INVERTER_ID",
 ]

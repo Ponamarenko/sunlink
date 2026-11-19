@@ -154,7 +154,76 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
         }
         BlackoutSection()
         TimelineSection()
+        RealTelemetrySection(data = d)
         FlowSchemeSection(d.toMap() as Map<String, Any>, Modifier.weight(1f))
+    }
+}
+
+/**
+ * Стисла картка реальної телеметрії (етап 24).
+ * Відсутні значення — «—», від'ємні — зі знаком, provisional — з позначкою.
+ */
+@Composable
+private fun RealTelemetrySection(data: InverterData) {
+    val provisional = data.provisionalParameters
+    val pv = listOf(data.pv1Power, data.pv2Power, data.pv3Power)
+    val pvTotal = if (pv.all { it != null }) pv.sumOf { it!!.toDouble() }.toFloat() else null
+
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(containerColor = BgCard),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            Text(
+                text = "РЕАЛЬНА ТЕЛЕМЕТРІЯ",
+                fontFamily = Mono,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = AccentBlue
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Column {
+                    Text("PV1 ${fmt(data.pv1Power, 0, " Вт")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
+                    Text("PV2 ${fmt(data.pv2Power, 0, " Вт")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
+                    Text("PV3 ${fmt(data.pv3Power, 0, " Вт")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
+                }
+                Column {
+                    Text("ΣPV ${fmt(pvTotal, 0, " Вт")}", fontFamily = Mono, fontSize = 11.sp, color = AccentGreen)
+                    Text("SOC ${fmt(data.batterySoc, 0, "%")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
+                    Text("Vbat ${fmt(data.batteryVoltage, 2, " В")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
+                }
+                Column {
+                    Text("Ibat ${fmt(data.batteryCurrent, 2, " А")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
+                    Text(
+                        "Pbat ${fmt(data.pBatt, 1, " Вт")}" +
+                            if ("battery_power" in provisional) " *" else "",
+                        fontFamily = Mono, fontSize = 11.sp, color = Color.White
+                    )
+                    Text(
+                        "T90 ${fmt(data.dcTemperature, 1, " °C")}" +
+                            if ("dc_temperature" in provisional) " *" else "",
+                        fontFamily = Mono, fontSize = 11.sp, color = Color.White
+                    )
+                    Text(
+                        "T91 ${fmt(data.acTemperature, 1, " °C")}" +
+                            if ("ac_temperature" in provisional) " *" else "",
+                        fontFamily = Mono, fontSize = 11.sp, color = Color.White
+                    )
+                }
+            }
+            if (provisional.isNotEmpty()) {
+                Text(
+                    text = "* provisional — масштаб/зсув потребують верифікації на дисплеї",
+                    fontFamily = Mono,
+                    fontSize = 10.sp,
+                    color = AccentOrange
+                )
+            }
+        }
     }
 }
 

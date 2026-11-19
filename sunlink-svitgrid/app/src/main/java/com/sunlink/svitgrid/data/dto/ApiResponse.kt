@@ -34,7 +34,9 @@ data class LiveRawDto(
     // Этап 12: реальные поля ответа deye_gateway.py
     val inverter_id: String? = null,
     val available_registers: Int? = null,
-    val source: String? = null
+    val source: String? = null,
+    // Этап 24: параметры с PROVISIONAL достоверностью (для маркировки в UI)
+    val provisional_parameters: List<String> = emptyList()
 )
 
 /**

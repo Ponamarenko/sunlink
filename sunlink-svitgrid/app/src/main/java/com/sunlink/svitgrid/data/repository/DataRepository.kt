@@ -178,7 +178,8 @@ open class DataRepository(private val apiService: ApiService? = null) {
             quality = if (dto.connection_status == true) "valid" else "unavailable",
             // Плоский /api/live/raw не несёт confidence по каждому полю;
             // консервативно не выдаём "corroborated" для DEMO-данных.
-            confidence = if (dto.source == "demo_simulator") "unverified" else "corroborated"
+            confidence = if (dto.source == "demo_simulator") "unverified" else "corroborated",
+            provisionalParameters = dto.provisional_parameters.toSet()
         )
     }
 

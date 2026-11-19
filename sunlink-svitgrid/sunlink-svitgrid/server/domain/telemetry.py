@@ -70,6 +70,52 @@ class TelemetrySnapshot:
     def present_values(self) -> Dict[str, TelemetryValue]:
         return {k: v for k, v in self.values.items() if v.present}
 
+    def value_of(self, parameter_name: str) -> Optional[float]:
+        """Единый доступ к значению параметра; None — отсутствует (не 0.0)."""
+        value = self.values.get(parameter_name)
+        return value.normalized_value if value is not None else None
+
+    # Явные accessors для новых реальных параметров (этап 24).
+    @property
+    def pv1_power(self) -> Optional[float]:
+        return self.value_of("pv1_power")
+
+    @property
+    def pv2_power(self) -> Optional[float]:
+        return self.value_of("pv2_power")
+
+    @property
+    def pv3_power(self) -> Optional[float]:
+        return self.value_of("pv3_power")
+
+    @property
+    def battery_voltage(self) -> Optional[float]:
+        return self.value_of("battery_voltage")
+
+    @property
+    def battery_current(self) -> Optional[float]:
+        return self.value_of("battery_current")
+
+    @property
+    def battery_power(self) -> Optional[float]:
+        return self.value_of("battery_power")
+
+    @property
+    def temperature_90(self) -> Optional[float]:
+        return self.value_of("dc_temperature")
+
+    @property
+    def temperature_91(self) -> Optional[float]:
+        return self.value_of("ac_temperature")
+
+    @property
+    def provisional_parameters(self) -> list[str]:
+        """Имена параметров с PROVISIONAL confidence — для UI-маркировки."""
+        return sorted(
+            name for name, value in self.values.items()
+            if value.confidence == "provisional"
+        )
+
 
 class TelemetrySource(ABC):
     """Общий интерфейс источника телеметрии.

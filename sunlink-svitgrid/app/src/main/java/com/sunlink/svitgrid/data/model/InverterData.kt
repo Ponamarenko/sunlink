@@ -29,7 +29,9 @@ data class InverterData(
     val connectionStatus: Boolean = false,
     val source: String = "unknown",    // "modbus_register" | "api_fallback" | "demo"
     val quality: String = "unverified", // "valid" | "unavailable" | "stale" | "error" | "unverified"
-    val confidence: String = "unverified" // "corroborated" | "provisional" | "verified" | "unverified"
+    val confidence: String = "unverified", // "corroborated" | "provisional" | "verified" | "unverified"
+    // Этап 24: имена параметров с PROVISIONAL достоверностью
+    val provisionalParameters: Set<String> = emptySet()
 ) {
     /** Есть ли хотя бы одно не-null значение измерения. */
     val hasMeasurements: Boolean
@@ -83,7 +85,8 @@ data class InverterData(
         "connection_status" to connectionStatus,
         "source" to source,
         "quality" to quality,
-        "confidence" to confidence
+        "confidence" to confidence,
+        "provisional_parameters" to provisionalParameters.toList()
     )
 }
 

@@ -2,6 +2,16 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.31.0] — 2026-11-19 (розширення реальної телеметрії, етап 24)
+- **Етап 24:** повний програмний шлях «регістр → API → Android» для нових параметрів
+  - `domain/register_decoder.py` — єдиний декодер U_WORD/S_WORD з scale/offset, діапазонами, raw/decoded/confidence/physical_status; від'ємні значення збережені
+  - REGISTER_MAP: PHYSICALLY_READ для 184/183/186–188/191, PROVISIONAL + candidate_scale 0.1 для 190, candidate offset для 90/91 (за Stage 23)
+  - `CANDIDATE_REGISTERS` окремо від активного `{184}` — фізичний polling не розширювався
+  - `TelemetrySnapshot`: явні accessors і `provisional_parameters`; API `/api/live/raw` маркує provisional-параметри
+  - Android: нові поля DTO/моделі, картка «РЕАЛЬНА ТЕЛЕМЕТРІЯ» з PV/SOC/V/I/P/температурами, DEMO-сценарії charge/discharge/no_pv/partial
+  - Тести: backend **246 PASS**, Android **67 PASS**; APK v2.31.0 (51) опубліковано як prerelease `android-v2.31.0-stage24`, SHA-256 перевірено після завантаження
+  - Фізичних Modbus-запитів у етапі 24 **0**; production/HA/Redis/systemd/firewall/Ebyte/інвертор не змінювались
+
 ## [v2.30.0] — 2026-11-19 (безпека Git та перевірка релізу, етап 13)
 - **Етап 13:** усунено риск витоку облікових даних і додано відтворювану перевірку релізу
   - Локальний remote `origin` містив GitHub PAT у URL — переключено на SSH `git@github.com:Ponamarenko/sunlink.git`; доступ підтверджено (`ssh -T`, без розкриття ключа), `origin/main` доступний; значення токена ніде не виводилось

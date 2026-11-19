@@ -1,0 +1,29 @@
+{
+  "p_sun": 2438.0,
+  "p_load": null,
+  "p_batt": -1853.0,
+  "p_grid": null,
+  "batt_soc": 95.0,
+  "battery_voltage": 53.53,
+  "battery_current": -3.5100000000000002,
+  "dc_temperature": 41.0,
+  "ac_temperature": 48.20000000000002,
+  "pv1_power": 1519.0,
+  "pv2_power": 796.0,
+  "pv3_power": 123.0,
+  "p_string1": 1519.0,
+  "p_string2": 796.0,
+  "p_string3": 123.0,
+  "provisional_parameters": [
+    "ac_temperature",
+    "battery_power",
+    "dc_temperature"
+  ],
+  "timestamp": "2026-11-19T13:34:08.567108+00:00",
+  "connection_status": true,
+  "inverter_id": "deye_sg02lp1_am3",
+  "available_registers": 9,
+  "source": "demo_simulator",
+  "battery_soc": 95.0,
+  "battery_power": -1853.0
+}

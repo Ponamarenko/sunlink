@@ -447,6 +447,11 @@ def _flat_live(data: Dict[str, Any], status: Dict[str, Any]) -> Dict[str, Any]:
         "p_string1": p_string1,
         "p_string2": p_string2,
         "p_string3": p_string3,
+        # Этап 24: явная маркировка PROVISIONAL-параметров для Android UI.
+        "provisional_parameters": sorted(
+            name for name, item in data.items()
+            if isinstance(item, dict) and item.get("confidence") == "provisional"
+        ),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "connection_status": status.get("connection_status", False),
         "inverter_id": status.get("inverter_id", INVERTER_ID),
