@@ -81,6 +81,15 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-10-gateway-data-layer-integration.md](docs/stages/stage-10-gateway-data-layer-integration.md) — интеграция deye_gateway.py с Data Layer: read-only production API, нормализация, SQLite, новые endpoints (етап 10)
 - [docs/stages/stage-11-android-application.md](docs/stages/stage-11-android-application.md) — Android моніторинг-застосунок: Dashboard, History, Inverter Details, Diagnostics, Settings; виправлення контрактів, 32 тести, APK (етап 11)
 - [docs/stages/stage-12-backend-android-integration.md](docs/stages/stage-12-backend-android-integration.md) — інтеграція Backend ↔ Android: реальні API-контракти, DEMO backend, E2E-тести, offline/stale, 159+49 тестів, APK (етап 12)
+- [docs/stages/stage-13-git-security-and-release-verification.md](docs/stages/stage-13-git-security-and-release-verification.md) — очищення Git remote від PAT, безпечний SSH, release verification script (етап 13)
+
+## Перевірка релізу
+
+```bash
+./scripts/verify_sunlink_release.sh
+```
+
+Скрипт запускає backend та Android тести, збирає debug APK і перевіряє package/version/розмір.
 
 ## Історія версій (коротко)
 

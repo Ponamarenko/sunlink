@@ -2,6 +2,15 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.30.0] — 2026-11-19 (безпека Git та перевірка релізу, етап 13)
+- **Етап 13:** усунено риск витоку облікових даних і додано відтворювану перевірку релізу
+  - Локальний remote `origin` містив GitHub PAT у URL — переключено на SSH `git@github.com:Ponamarenko/sunlink.git`; доступ підтверджено (`ssh -T`, без розкриття ключа), `origin/main` доступний; значення токена ніде не виводилось
+  - Старий PAT **не відкликано** — користувач має самостійно зробити це в GitHub Settings → Developer settings → Personal access tokens і підтвердити
+  - `scripts/verify_sunlink_release.sh` — реально працююча перевірка: компоненти, 159 backend-тестів, 49 Android-тестів, `assembleDebug`, наявність/розмір APK, package `com.sunlink.svitgrid`, versionName/versionCode через `apkanalyzer` звірку з `output-metadata.json`, ненульовий exit code при помилці
+  - Фактичний запуск: **RELEASE VERIFICATION: PASS**, APK 12 896 126 bytes, `2.30.0` (50)
+  - `docs/stages/stage-13-git-security-and-release-verification.md` — звіт етапу 13
+  - Production, HA, Redis, systemd, firewall, Ebyte, інвертор — не змінювались
+
 ## [v2.30.0] — 2026-11-18 (інтеграція Backend ↔ Android, етап 12)
 - **Етап 12:** backend і Android перевірені як єдина система на ізольованому DEMO-оточенні
   - `sunlink-svitgrid/server/demo_backend.py` — окремий dev-порт 8801, тестова SQLite `/tmp/sunlink-stage12-demo.db`, джерело `demo_simulator`; без інвертора/Ebyte/HA/Redis/production .env
