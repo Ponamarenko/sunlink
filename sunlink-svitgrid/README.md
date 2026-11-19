@@ -83,6 +83,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-12-backend-android-integration.md](docs/stages/stage-12-backend-android-integration.md) — інтеграція Backend ↔ Android: реальні API-контракти, DEMO backend, E2E-тести, offline/stale, 159+49 тестів, APK (етап 12)
 - [docs/stages/stage-13-git-security-and-release-verification.md](docs/stages/stage-13-git-security-and-release-verification.md) — очищення Git remote від PAT, безпечний SSH, release verification script (етап 13)
 - [docs/stages/stage-14-android-apk-validation.md](docs/stages/stage-14-android-apk-validation.md) — аудит Android, виправлення налаштування backend, 62 тести, збірка APK, підготовка до встановлення (етап 14)
+- [docs/stages/stage-16-real-data-pipeline.md](docs/stages/stage-16-real-data-pipeline.md) — єдиний інтерфейс джерел demo/mock/modbus, read-only FC03, карта регістрів, підготовка до фізичного тесту (етап 16)
 
 ## Перевірка релізу
 

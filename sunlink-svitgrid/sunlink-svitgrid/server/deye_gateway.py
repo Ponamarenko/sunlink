@@ -79,6 +79,7 @@ class DeyeGateway:
         self,
         config: Dict,
         repository: Optional[SQLiteMeasurementRepository] = None,
+        telemetry_source=None,  # Optional[TelemetrySource] — этап 16
     ) -> None:
         self.config = config
         self.register_map = REGISTER_MAP  # из Data Layer, не инлайновый
@@ -86,9 +87,14 @@ class DeyeGateway:
         self.last_data: Dict[str, Any] = {}
         self.connection_status = False
         self.repository = repository
-        # Источник данных. DEMO-окружение (этап 12) явно выставляет
-        # DataSource.DEMO_SIMULATOR, чтобы Android мог пометить данные как DEMO.
-        self.source: DataSource = DataSource.MODBUS_REGISTER
+        # Единый источник телеметрии (этап 16). Если задан, read_all_registers()
+        # и get_system_status() используют его вместо прямого Modbus-клиента.
+        self.telemetry_source = telemetry_source
+        self._last_snapshot = None
+        self.source: DataSource = (
+            telemetry_source.source if telemetry_source is not None
+            else DataSource.MODBUS_REGISTER
+        )
 
     # ------------------------------------------------------------------
     # Connection
@@ -198,6 +204,38 @@ class DeyeGateway:
         """
 
         data: Dict[str, Any] = {}
+        if self.telemetry_source is not None:
+            # Единый pipeline: источник сам нормализует и помечает данные.
+            snapshot = self.telemetry_source.read()
+            self.connection_status = snapshot.connection_ok
+            data = snapshot.to_read_all_dict()
+            self.last_data = data
+            self._last_snapshot = snapshot
+
+            # Сохранение в Data Layer с меткой ИСТОЧНИКА (без смешивания).
+            if self.repository is not None and snapshot.present_values():
+                try:
+                    rows = [
+                        Measurement(
+                            inverter_id=snapshot.inverter_id,
+                            register_address=value.register_address,
+                            parameter_name=name,
+                            raw_value=value.raw_value,
+                            normalized_value=value.normalized_value,
+                            unit=value.unit,
+                            timestamp=datetime.fromisoformat(value.timestamp),
+                            quality=MeasurementQuality(value.quality),
+                            confidence=ConfidenceLevel(value.confidence),
+                            source=self.source,
+                            description=f"{self.source.value} telemetry (stage 16)",
+                        )
+                        for name, value in snapshot.present_values().items()
+                    ]
+                    self.repository.save_measurements_batch(rows)
+                except Exception as exc:
+                    logger.warning(f"Failed to persist telemetry snapshot: {exc}")
+            return data
+
         if not self.connection_status:
             ok = await self.connect()
             if not ok:
@@ -225,10 +263,19 @@ class DeyeGateway:
 
     async def get_system_status(self) -> Dict[str, Any]:
         """Получение статуса системы."""
+        snapshot = self._last_snapshot
+        last_update = snapshot.timestamp if snapshot is not None else datetime.now(timezone.utc).isoformat()
+        inverter_id = snapshot.inverter_id if snapshot is not None else INVERTER_ID
+        if snapshot is not None:
+            connection_status = snapshot.connection_ok
+        elif self.telemetry_source is not None:
+            connection_status = self.telemetry_source.connection_ok
+        else:
+            connection_status = self.connection_status
         return {
-            "connection_status": self.connection_status,
-            "last_update": datetime.now(timezone.utc).isoformat(),
-            "inverter_id": INVERTER_ID,
+            "connection_status": connection_status,
+            "last_update": last_update,
+            "inverter_id": inverter_id,
             "available_registers": len(self.register_map),
             "registers": sorted(self.register_map.keys()),
             "source": self.source.value,

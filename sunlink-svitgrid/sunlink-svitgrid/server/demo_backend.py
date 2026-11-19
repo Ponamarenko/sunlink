@@ -52,56 +52,6 @@ DEMO_SAMPLES = 4
 DEMO_SAMPLE_INTERVAL_MINUTES = 15
 
 
-class _DemoModbusResult:
-    """Минимальный аналог результата read_holding_registers."""
-
-    def __init__(self, registers) -> None:
-        self.registers = registers
-        self._error = not registers
-
-    def isError(self) -> bool:  # noqa: N802 — pymodbus API
-        return self._error
-
-
-class _DemoModbusClient:
-    """DEMO-клиент с интерфейсом pymodbus, но без сети."""
-
-    def __init__(self, registers: Dict[int, int]) -> None:
-        self._registers = registers
-        self._connected = False
-
-    def connect(self) -> bool:
-        self._connected = True
-        return True
-
-    def close(self) -> None:
-        self._connected = False
-
-    def read_holding_registers(self, address, count=1, device_id=1):
-        if not self._connected:
-            return _DemoModbusResult([])
-        raw = self._registers.get(address)
-        return _DemoModbusResult([raw] if raw is not None else [])
-
-
-def _install_demo_client(gateway: DeyeGateway) -> None:
-    """Заменяет ModbusTcpClient DEMO-клиентом. Сетевых подключений нет."""
-
-    async def demo_connect() -> bool:
-        client = _DemoModbusClient(DEMO_REGISTERS)
-        client.connect()
-        gateway.client = client
-        gateway.connection_status = True
-        return True
-
-    gateway.connect = demo_connect  # type: ignore[method-assign]
-    _initial = _DemoModbusClient(DEMO_REGISTERS)
-    _initial.connect()
-    gateway.client = _initial
-    gateway.connection_status = True
-    gateway.source = DataSource.DEMO_SIMULATOR
-
-
 def seed_demo_history(repo: SQLiteMeasurementRepository) -> int:
     """Записывает DEMO-измерения в тестовую SQLite (несколько точек)."""
     now = datetime.now(timezone.utc)
@@ -130,10 +80,16 @@ def seed_demo_history(repo: SQLiteMeasurementRepository) -> int:
 
 
 def configure(db_path: str) -> SQLiteMeasurementRepository:
-    """Устанавливает DEMO-окружение в глобальные переменные FastAPI app."""
+    """Устанавливает ЯВНОЕ DEMO-окружение в глобальные переменные FastAPI app.
+
+    DEMO-режим выбирается только здесь — по умолчанию gateway остаётся
+    read-only, но без физического подключения, пока не выбран режим modbus.
+    """
+    from services.telemetry_sources import DEFAULT_DEMO_REGISTERS, DemoTelemetrySource
+
     repo = SQLiteMeasurementRepository(db_path)
-    gateway = DeyeGateway(CONFIG, repository=repo)
-    _install_demo_client(gateway)
+    demo_source = DemoTelemetrySource(DEFAULT_DEMO_REGISTERS)
+    gateway = DeyeGateway(CONFIG, repository=repo, telemetry_source=demo_source)
     deye_gateway.gateway = gateway
     deye_gateway._repository = repo
     return repo

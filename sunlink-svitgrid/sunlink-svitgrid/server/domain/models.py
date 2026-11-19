@@ -44,6 +44,9 @@ class DataSource(str, Enum):
     # Изолированный DEMO-источник (этап 12) — не реальные показания инвертора.
     # Значение передаётся в Android и должно явно отображаться как DEMO.
     DEMO_SIMULATOR = "demo_simulator"
+    # Этап 16: единые метки трёх режимов источника телеметрии.
+    MOCK = "mock"
+    DEYE_MODBUS = "deye_modbus"
 
 
 @dataclass(frozen=True)
