@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Безопасная конфигурация по умолчанию (release):
+  - HTTPS разрешён для всех доменов (системные корневые сертификаты).
+  - HTTP разрешён только для локального/демо окружения.
+  Debug-сборка дополнительно разрешает HTTP для любого тестового backend
+  через app/src/debug/AndroidManifest.xml.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <!-- Существующий deployment по HTTP (не HTTPS) -->
+        <domain includeSubdomains="true">ha4a.pp.ua</domain>
+    </domain-config>
+</network-security-config>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only: разрешаем HTTP для любого изолированного тестового backend
+  (например, 192.168.25.20:8801). Release использует безопасную конфигурацию
+  из app/src/main/res/xml/network_security_config.xml.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:usesCleartextTraffic="true"
+        tools:replace="android:usesCleartextTraffic" />
+</manifest>

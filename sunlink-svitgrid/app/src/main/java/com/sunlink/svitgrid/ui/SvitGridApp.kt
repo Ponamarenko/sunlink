@@ -12,7 +12,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import android.content.Context
 import android.widget.Toast
@@ -72,7 +71,6 @@ fun SvitGridApp() {
                     "inverter-details" to ("Інвертор" to Icons.Default.Info),
                     "diagnostics" to ("Діагностика" to Icons.Default.Build),
                     "live" to ("Live моніторинг" to Icons.Default.Info),
-                    "charts" to ("Графіки" to Icons.Default.List),
                     "battery" to ("Батарея" to Icons.Default.Favorite),
                     "forecast" to ("Прогноз" to Icons.Default.DateRange),
                     "debug" to ("Відладка / Сирі дані" to Icons.Default.Info),
@@ -124,9 +122,8 @@ fun SvitGridApp() {
                 composable("inverter-details") { InverterDetailsScreen(vm = viewModel) }
                 composable("diagnostics") { DiagnosticsScreen(vm = viewModel) }
                 composable("live") { LiveScreen(vm = viewModel) }
-                composable("charts") { ChartsScreen() }
                 composable("battery") { BatteryScreen(vm = viewModel) }
-                composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen() }
+                composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen(vm = viewModel) }
                 composable("debug") { DebugScreen() }
                 composable("settings") { SettingsScreen(vm = viewModel) }
                 composable("about") { AboutScreen() }
@@ -196,25 +193,6 @@ fun LiveScreen(vm: MainViewModel = viewModel(factory = MainViewModelFactory(repo
 
 
 @Composable
-fun ChartsScreen() {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Графіки та аналітика", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Графік потужності", style = MaterialTheme.typography.titleMedium)
-                Text("За останні 24 години", style = MaterialTheme.typography.bodyLarge)
-            }
-        }
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Графік ефективності", style = MaterialTheme.typography.titleMedium)
-                Text("Ефективність системи з часом", style = MaterialTheme.typography.bodyLarge)
-            }
-        }
-    }
-}
-
-@Composable
 fun BatteryScreen(vm: MainViewModel = viewModel()) {
     val uiState by vm.uiState.collectAsState()
     val loading by vm.refreshing.collectAsState()
@@ -269,9 +247,9 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
     val scope = rememberCoroutineScope()
     var serverAddress by remember { mutableStateOf(repo.serverAddress) }
     var serverPort by remember { mutableStateOf(repo.serverPort) }
-    var username by remember { mutableStateOf(repo.username) }
-    var password by remember { mutableStateOf(repo.password) }
+    var useHttps by remember { mutableStateOf(repo.useHttps) }
     var savedMessage by remember { mutableStateOf("") }
+    var settingsError by remember { mutableStateOf<String?>(null) }
 
     var checkingUpdate by remember { mutableStateOf(false) }
     var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
@@ -301,53 +279,72 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
 
                 OutlinedTextField(
                     value = serverAddress,
-                    onValueChange = { serverAddress = it },
+                    onValueChange = { serverAddress = it; settingsError = null },
                     label = { Text("Адреса сервера") },
-                    placeholder = { Text("ha4a.pp.ua") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text(com.sunlink.svitgrid.data.BackendDefaults.HOST) },
+                    supportingText = { Text("Хост або повний URL, напр. 127.0.0.1:8801") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = settingsError != null
                 )
 
                 OutlinedTextField(
                     value = serverPort,
-                    onValueChange = { serverPort = it },
+                    onValueChange = { serverPort = it; settingsError = null },
                     label = { Text("Порт") },
-                    placeholder = { Text("8800") },
-                    modifier = Modifier.fillMaxWidth()
+                    placeholder = { Text(com.sunlink.svitgrid.data.BackendDefaults.PORT.toString()) },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = settingsError != null
                 )
 
-                OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    label = { Text("Логін") },
-                    placeholder = { Text("admin") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Пароль") },
-                    visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = useHttps, onCheckedChange = { useHttps = it })
+                    Text("Використовувати HTTPS")
+                }
 
                 Button(
                     onClick = {
-                        repo.serverAddress = serverAddress
-                        repo.serverPort = serverPort
-                        repo.username = username
-                        repo.password = password
-                        RetrofitClient.setBaseUrl(repo.getBaseUrl())
-                        savedMessage = "Налаштування збережено: $serverAddress:$serverPort"
+                        val endpoint = SettingsRepository.parseEndpoint(serverAddress)
+                        if (endpoint == null) {
+                            settingsError = "Некоректна адреса сервера"
+                            return@Button
+                        }
+                        val finalPort = endpoint.port?.toString() ?: serverPort
+                        val error = SettingsRepository.validate(endpoint.host, finalPort)
+                        if (error != null) {
+                            settingsError = error
+                            return@Button
+                        }
+                        val explicitScheme = serverAddress.contains("://")
+                        repo.useHttps = if (explicitScheme) SettingsRepository.isHttpsInput(serverAddress) else useHttps
+                        repo.serverAddress = endpoint.host
+                        repo.serverPort = finalPort
+                        val baseUrl = repo.getBaseUrl()
+                        if (!RetrofitClient.setBaseUrl(baseUrl)) {
+                            settingsError = "Не вдалося застосувати адресу: $baseUrl"
+                            return@Button
+                        }
+                        serverAddress = endpoint.host
+                        serverPort = finalPort
+                        useHttps = repo.useHttps
+                        settingsError = null
+                        savedMessage = "Backend: $baseUrl (Перевірте підключення)"
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Зберегти")
+                    Text("Зберегти та застосувати")
                 }
 
+                settingsError?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
                 if (savedMessage.isNotEmpty()) {
                     Text(savedMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 }
+                Text(
+                    "Поточний backend: ${RetrofitClient.getBaseUrl()}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Button(
                     onClick = { vm.checkConnection() },
                     enabled = !connectionLoading,
@@ -399,7 +396,10 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Інформація", style = MaterialTheme.typography.titleMedium)
-                Text("Сервер за замовчуванням: ha4a.pp.ua:8800 (deye_gateway.py)", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "Сервер за замовчуванням: ${com.sunlink.svitgrid.data.BackendDefaults.HOST}:${com.sunlink.svitgrid.data.BackendDefaults.PORT} (deye_gateway.py)",
+                    style = MaterialTheme.typography.bodySmall
+                )
                 Text("Авторизація буде реалізована на сервері", style = MaterialTheme.typography.bodySmall)
             }
         }
