@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Безопасная конфигурация по умолчанию (release):
-  - HTTPS разрешён для всех доменов (системные корневые сертификаты).
-  - HTTP разрешён только для локального/демо окружения.
-  Debug-сборка дополнительно разрешает HTTP для любого тестового backend
-  через app/src/debug/AndroidManifest.xml.
+  Stage 25B: публичный backend работает только по HTTPS (sunlink.pp.ua:8443).
+  Cleartext разрешён исключительно для локального/isolated разработки.
+  Проверка сертификатов НЕ отключается, TrustAll не используется.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false">
@@ -17,7 +15,7 @@
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
         <domain includeSubdomains="true">10.0.2.2</domain>
-        <!-- Существующий deployment по HTTP (не HTTPS) -->
-        <domain includeSubdomains="true">ha4a.pp.ua</domain>
+        <!-- Локальний dev-сервер у LAN (не публічний endpoint) -->
+        <domain includeSubdomains="true">192.168.25.20</domain>
     </domain-config>
 </network-security-config>

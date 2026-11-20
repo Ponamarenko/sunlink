@@ -7,10 +7,12 @@ import com.sunlink.svitgrid.data.dto.InvertersDto
 import com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto
 import com.sunlink.svitgrid.data.model.*
 import com.sunlink.svitgrid.data.repository.DataRepository
+import com.sunlink.svitgrid.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+import java.net.URI
 import java.time.Instant
 
 class MainViewModel(private val repository: DataRepository) : ViewModel() {
@@ -33,6 +35,9 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
 
     private val _inverters = MutableStateFlow<InvertersDto?>(null)
     val inverters: StateFlow<InvertersDto?> = _inverters
+
+    private val _connectionDiagnostic = MutableStateFlow<ConnectionDiagnostic?>(null)
+    val connectionDiagnostic: StateFlow<ConnectionDiagnostic?> = _connectionDiagnostic
 
     /** Последние успешные данные — сохраняются при потере связи (offline/stale). */
     private var lastGood: Pair<InverterData, InverterStatus>? = null
@@ -98,10 +103,17 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     fun checkConnection() {
         viewModelScope.launch {
             _refreshing.value = true
+            val started = System.currentTimeMillis()
+            val url = RetrofitClient.getBaseUrl()
             try {
                 val result = repository.loadStatus()
+                val elapsed = System.currentTimeMillis() - started
                 if (result is Result.Success) {
                     val status = result.data
+                    _connectionDiagnostic.value = connectionDiagnostic(
+                        url, "OK",
+                        "З'єднання встановлено", elapsed, status.lastUpdate
+                    )
                     if (status.online) {
                         val data = lastGood?.first ?: InverterData()
                         applySuccess(data, status)
@@ -110,11 +122,68 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                     }
                 } else {
                     val e = (result as? Result.Error)?.exception
-                    applyError("Помилка підключення: ${e?.message}")
+                    val kind = classifyConnectionError(e)
+                    _connectionDiagnostic.value = connectionDiagnostic(
+                        url, kind.first, kind.second, elapsed, null
+                    )
+                    applyError("Помилка підключення: ${kind.second}")
                 }
+            } catch (e: Exception) {
+                val kind = classifyConnectionError(e)
+                _connectionDiagnostic.value = connectionDiagnostic(
+                    RetrofitClient.getBaseUrl(), kind.first, kind.second,
+                    System.currentTimeMillis() - started, null
+                )
+                applyError("Помилка підключення: ${kind.second}")
             } finally {
                 _refreshing.value = false
             }
+        }
+    }
+
+    private fun connectionDiagnostic(
+        url: String,
+        state: String,
+        message: String,
+        elapsedMs: Long,
+        lastSuccess: String?
+    ): ConnectionDiagnostic = try {
+        val uri = URI.create(url)
+        ConnectionDiagnostic(
+            url = url,
+            host = uri.host ?: "—",
+            port = if (uri.port > 0) uri.port else null,
+            https = uri.scheme.equals("https", ignoreCase = true),
+            state = state,
+            message = message,
+            responseTimeMs = elapsedMs,
+            lastSuccessUtc = lastSuccess,
+            checkedAtUtc = Instant.now().toString()
+        )
+    } catch (e: Exception) {
+        ConnectionDiagnostic(
+            url = url, host = "—", port = null, https = false,
+            state = "INVALID_URL", message = "Некоректна адреса backend",
+            responseTimeMs = elapsedMs, checkedAtUtc = Instant.now().toString()
+        )
+    }
+
+    /** Класифікація помилки без виведення стек-трейсів і секретів. */
+    private fun classifyConnectionError(e: Exception?): Pair<String, String> {
+        val text = e?.javaClass?.name.orEmpty() + " " + e?.message.orEmpty()
+        return when {
+            text.contains("UnknownHost", true) || text.contains("resolve host", true) ->
+                "DNS_FAILURE" to "Не вдалося визначити IP-адресу сервера (DNS)"
+            text.contains("SSLHandshake", true) || text.contains("certificate", true) ||
+                text.contains("CertPath", true) || text.contains("TrustAnchor", true) ->
+                "TLS_ERROR" to "Помилка TLS: сертифікат не підтверджено або ім'я хоста не збігається"
+            text.contains("timeout", true) || text.contains("Timeout", true) ->
+                "TIMEOUT" to "Сервер не відповів у часі очікування"
+            text.contains("ConnectException", true) || text.contains("Failed to connect", true) ->
+                "CONNECTION_REFUSED" to "Підключення відхилено (порт закритий або недоступний)"
+            text.contains("HTTP ", true) ->
+                "HTTP_ERROR" to "Сервер відповів помилкою HTTP"
+            else -> "OFFLINE" to "Backend недоступний"
         }
     }
 
@@ -208,6 +277,19 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
         viewModelScope.coroutineContext[Job]?.cancel()
     }
 }
+
+/** Діагностика останньої перевірки з'єднання (Stage 25B). */
+data class ConnectionDiagnostic(
+    val url: String,
+    val host: String,
+    val port: Int?,
+    val https: Boolean,
+    val state: String,
+    val message: String,
+    val responseTimeMs: Long? = null,
+    val lastSuccessUtc: String? = null,
+    val checkedAtUtc: String = ""
+)
 
 /** Стан історії вимірювань. */
 sealed class HistoryUiState {

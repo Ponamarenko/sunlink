@@ -282,7 +282,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     onValueChange = { serverAddress = it; settingsError = null },
                     label = { Text("Адреса сервера") },
                     placeholder = { Text(com.sunlink.svitgrid.data.BackendDefaults.HOST) },
-                    supportingText = { Text("Хост або повний URL, напр. 127.0.0.1:8801") },
+                    supportingText = { Text("Публічний backend: https://sunlink.pp.ua:8443/") },
                     modifier = Modifier.fillMaxWidth(),
                     isError = settingsError != null
                 )
@@ -309,13 +309,14 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                             return@Button
                         }
                         val finalPort = endpoint.port?.toString() ?: serverPort
-                        val error = SettingsRepository.validate(endpoint.host, finalPort)
+                        val explicitScheme = serverAddress.contains("://")
+                        val finalHttps = if (explicitScheme) SettingsRepository.isHttpsInput(serverAddress) else useHttps
+                        val error = SettingsRepository.validate(endpoint.host, finalPort, finalHttps)
                         if (error != null) {
                             settingsError = error
                             return@Button
                         }
-                        val explicitScheme = serverAddress.contains("://")
-                        repo.useHttps = if (explicitScheme) SettingsRepository.isHttpsInput(serverAddress) else useHttps
+                        repo.useHttps = finalHttps
                         repo.serverAddress = endpoint.host
                         repo.serverPort = finalPort
                         val baseUrl = repo.getBaseUrl()
@@ -349,8 +350,24 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     onClick = { vm.checkConnection() },
                     enabled = !connectionLoading,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text(if (connectionLoading) "Перевірка..." else "Тест підключення") }
+                ) { Text(if (connectionLoading) "Перевірка..." else "Перевірити з'єднання") }
                 connError?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                val diag by vm.connectionDiagnostic.collectAsState()
+                diag?.let { d ->
+                    Divider()
+                    Text("Діагностика з'єднання", style = MaterialTheme.typography.titleSmall)
+                    Text("URL: ${d.url}", style = MaterialTheme.typography.bodySmall)
+                    Text("Хост: ${d.host} • порт: ${d.port ?: "—"} • HTTPS: ${if (d.https) "так" else "ні"}",
+                        style = MaterialTheme.typography.bodySmall)
+                    Text("Стан: ${d.state} • час відповіді: ${d.responseTimeMs ?: "—"} мс",
+                        style = MaterialTheme.typography.bodySmall)
+                    Text(d.message, style = MaterialTheme.typography.bodySmall,
+                        color = if (d.state == "OK") MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.error)
+                    d.lastSuccessUtc?.let {
+                        Text("Останній успішний запит: $it", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
             }
         }
 

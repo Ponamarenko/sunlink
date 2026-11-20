@@ -2,6 +2,16 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.32.0] — 2026-11-20 (прямий HTTPS та міграція Android, етап 25B)
+- **Етап 25B:** підготовка безпечного публічного доступу без Reverse Proxy
+  - Android default: `https://sunlink.pp.ua:8443/`; міграція `ha4a/k4a/sunline.pp.ua` (версія 2, ідемпотентно, кастомні адреси зберігаються)
+  - Строга валідація URL: HTTPS для публічних хостів, HTTP тільки для local/LAN; cleartext не глобальний; TrustAll відсутній
+  - Діагностика підключення в Settings (host/port/HTTPS/стан/час/останній успіх, зрозумілі помилки DNS/TLS/timeout/HTTP)
+  - Backend: `tls_config.py` зі штатною підтримкою Uvicorn `--ssl-certfile/--ssl-keyfile`, port 8443 за замовчуванням, reverse proxy не використовується
+  - Deployment package: `deploy/https`, `deploy/systemd`, `deploy/scripts` (лише приклади та перевірки, без секретів)
+  - Тести: backend **256 PASS**, Android **72 PASS**; APK v2.32.0 (52) публікується як prerelease
+  - Production backend/systemd/TLS/HA/MikroTik/Cloudflare/firewall не змінювались; фізичних Modbus-запитів не було
+
 ## [v2.31.0] — 2026-11-19 (розширення реальної телеметрії, етап 24)
 - **Етап 24:** повний програмний шлях «регістр → API → Android» для нових параметрів
   - `domain/register_decoder.py` — єдиний декодер U_WORD/S_WORD з scale/offset, діапазонами, raw/decoded/confidence/physical_status; від'ємні значення збережені

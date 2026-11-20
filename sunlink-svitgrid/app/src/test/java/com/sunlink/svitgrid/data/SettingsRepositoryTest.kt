@@ -5,15 +5,10 @@ import org.junit.Assert.*
 import org.junit.Test
 
 /**
- * Этап 12 — проверка адреса backend и сохранения настройки.
- *
- * Использует in-memory SharedPreferences: никакого Android-эмулятора.
- * Два разных репозитория поверх одного хранилища имитируют перезапуск
- * приложения (SharedPreferences переживают перезапуск процесса).
+ * Stage 25B — nouvelle конфигурация backend, миграция старых URL и валидация.
  */
 class SettingsRepositoryTest {
 
-    /** Минимальная реализация SharedPreferences для JVM-тестов. */
     private class FakePrefs : SharedPreferences {
         private val map = mutableMapOf<String, Any?>()
 
@@ -55,22 +50,23 @@ class SettingsRepositoryTest {
     }
 
     @Test
-    fun `default backend is deye gateway address`() {
+    fun `default backend is direct HTTPS endpoint`() {
         val repo = SettingsRepository(FakePrefs())
-        assertEquals("ha4a.pp.ua", repo.serverAddress)
-        assertEquals("8800", repo.serverPort)
-        assertEquals("http://ha4a.pp.ua:8800/", repo.getBaseUrl())
+        assertEquals("sunlink.pp.ua", repo.serverAddress)
+        assertEquals("8443", repo.serverPort)
+        assertTrue(repo.useHttps)
+        assertEquals("https://sunlink.pp.ua:8443/", repo.getBaseUrl())
     }
 
     @Test
-    fun `backend url survives application restart`() {
+    fun `custom local URL survives restart`() {
         val prefs = FakePrefs()
         val first = SettingsRepository(prefs)
         first.serverAddress = "http://192.168.1.50:8801/path"
         first.serverPort = "8801"
+        first.useHttps = false
         assertEquals("http://192.168.1.50:8801/", first.getBaseUrl())
 
-        // Новый экземпляр = новый запуск приложения, то же хранилище
         val afterRestart = SettingsRepository(prefs)
         assertEquals("192.168.1.50", afterRestart.serverAddress)
         assertEquals("8801", afterRestart.serverPort)
@@ -78,53 +74,86 @@ class SettingsRepositoryTest {
     }
 
     @Test
-    fun `backend url normalizes scheme and path`() {
+    fun `full https URL is parsed and stored`() {
         val repo = SettingsRepository(FakePrefs())
+        val endpoint = SettingsRepository.parseEndpoint("https://example.com/some/path")
+        assertNotNull(endpoint)
+        assertEquals("example.com", endpoint!!.host)
+        assertEquals(true, endpoint.https)
         repo.serverAddress = "https://example.com/some/path"
         repo.serverPort = "9999"
         assertEquals("example.com", repo.serverAddress)
-        assertEquals("http://example.com:9999/", repo.getBaseUrl())
     }
 
     @Test
-    fun `parseEndpoint extracts host and port from full url`() {
+    fun `parseEndpoint extracts host and port and rejects invalid input`() {
         val endpoint = SettingsRepository.parseEndpoint("http://127.0.0.1:8801/path")
         assertNotNull(endpoint)
         assertEquals("127.0.0.1", endpoint!!.host)
         assertEquals(8801, endpoint.port)
-        assertTrue(SettingsRepository.isHttpsInput("https://example.com"))
-        assertFalse(SettingsRepository.isHttpsInput("http://example.com"))
-    }
-
-    @Test
-    fun `parseEndpoint accepts plain host and rejects invalid input`() {
+        assertEquals(false, endpoint.https)
         assertEquals("192.168.25.20", SettingsRepository.parseEndpoint("192.168.25.20")?.host)
         assertNull(SettingsRepository.parseEndpoint(""))
         assertNull(SettingsRepository.parseEndpoint("bad host name"))
         assertNull(SettingsRepository.parseEndpoint("host:notaport"))
         assertNull(SettingsRepository.parseEndpoint("host:70000"))
+        assertNull(SettingsRepository.parseEndpoint("999.1.1.1"))
+        assertTrue(SettingsRepository.isHttpsInput("https://example.com"))
+        assertFalse(SettingsRepository.isHttpsInput("http://example.com"))
     }
 
     @Test
-    fun `validate reports clear error and port range`() {
-        assertNull(SettingsRepository.validate("127.0.0.1", "8801"))
-        assertNotNull(SettingsRepository.validate("", "8801"))
-        assertNotNull(SettingsRepository.validate("bad host", "8801"))
-        assertNotNull(SettingsRepository.validate("127.0.0.1", "0"))
-        assertNotNull(SettingsRepository.validate("127.0.0.1", "70000"))
+    fun `validation requires HTTPS for public hosts`() {
+        assertNull(SettingsRepository.validate("sunlink.pp.ua", "8443", true))
+        assertNull(SettingsRepository.validate("127.0.0.1", "8801", false))
+        assertNotNull(SettingsRepository.validate("sunlink.pp.ua", "8443", false))
+        assertNotNull(SettingsRepository.validate("91.226.253.235", "8443", true))
+        assertNotNull(SettingsRepository.validate("", "8443", true))
+        assertNotNull(SettingsRepository.validate("bad host", "8443", true))
+        assertNotNull(SettingsRepository.validate("sunlink.pp.ua", "0", true))
+        assertNotNull(SettingsRepository.validate("sunlink.pp.ua", "70000", true))
     }
 
     @Test
-    fun `https setting is persisted and used in base url`() {
+    fun `migration replaces all known legacy public hosts`() {
+        for (old in listOf("ha4a.pp.ua", "k4a.pp.ua", "sunline.pp.ua")) {
+            val prefs = FakePrefs()
+            prefs.edit()
+                .putString("server_address", old)
+                .putString("server_port", "8800")
+                .putBoolean("server_https", false)
+                .commit()
+
+            val repo = SettingsRepository(prefs)
+            assertEquals("sunlink.pp.ua", repo.serverAddress)
+            assertEquals("8443", repo.serverPort)
+            assertTrue(repo.useHttps)
+            assertEquals("https://sunlink.pp.ua:8443/", repo.getBaseUrl())
+            assertEquals(
+                SettingsRepository.CURRENT_MIGRATION_VERSION,
+                prefs.getInt("settings_migration_version", 0)
+            )
+        }
+    }
+
+    @Test
+    fun `migration preserves custom host and is idempotent`() {
         val prefs = FakePrefs()
-        val repo = SettingsRepository(prefs)
-        repo.serverAddress = "example.com"
-        repo.serverPort = "443"
-        repo.useHttps = true
+        prefs.edit()
+            .putString("server_address", "custom.example.net")
+            .putString("server_port", "9443")
+            .putBoolean("server_https", true)
+            .commit()
 
-        val afterRestart = SettingsRepository(prefs)
-        assertTrue(afterRestart.useHttps)
-        assertEquals("https://example.com:443/", afterRestart.getBaseUrl())
+        val first = SettingsRepository(prefs)
+        assertEquals("custom.example.net", first.serverAddress)
+        assertEquals("https://custom.example.net:9443/", first.getBaseUrl())
+
+        // Повторная миграция не меняет корректные настройки
+        val second = SettingsRepository(prefs)
+        assertEquals("custom.example.net", second.serverAddress)
+        assertEquals("9443", second.serverPort)
+        assertEquals("https://custom.example.net:9443/", second.getBaseUrl())
     }
 
     @Test
@@ -132,12 +161,12 @@ class SettingsRepositoryTest {
         val prefs = FakePrefs()
         val repo = SettingsRepository(prefs)
         repo.serverAddress = "good.host"
-        repo.serverPort = "8800"
+        repo.serverPort = "8443"
 
         repo.serverAddress = "bad host"
         repo.serverPort = "not-a-port"
 
         assertEquals("good.host", repo.serverAddress)
-        assertEquals("8800", repo.serverPort)
+        assertEquals("8443", repo.serverPort)
     }
 }

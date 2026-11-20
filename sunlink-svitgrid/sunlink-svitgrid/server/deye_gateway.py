@@ -720,10 +720,22 @@ async def shutdown_event():
 
 
 if __name__ == "__main__":
+    # Stage 25B: прямой HTTPS через штатную TLS-поддержку Uvicorn.
+    # Reverse Proxy не используется. Конфигурация читается из окружения,
+    # production-файлы этим блоком не изменяются.
+    from tls_config import TlsConfig, TlsConfigError
+
+    try:
+        tls = TlsConfig.from_env()
+    except TlsConfigError as exc:
+        logger.error("Invalid TLS configuration: %s", exc)
+        raise SystemExit(2) from exc
+
     uvicorn.run(
         "deye_gateway:app",
         host=CONFIG["server"]["host"],
-        port=CONFIG["server"]["port"],
+        port=tls.port,
         reload=False,
-        log_level="info"
+        log_level="info",
+        **tls.uvicorn_kwargs(),
     )

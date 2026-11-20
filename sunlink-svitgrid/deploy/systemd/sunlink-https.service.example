@@ -1,0 +1,44 @@
+# SunLink direct HTTPS systemd unit —-example only (Stage 25B)
+# НЕ копировать в /etc/systemd/system без отдельного согласования.
+# Проверить User/WorkingDirectory/EnvironmentFile под фактический сервер.
+
+[Unit]
+Description=SunLink backend (direct HTTPS, no reverse proxy)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sunlink
+Group=sunlink
+WorkingDirectory=/opt/sunlink/backend
+EnvironmentFile=/etc/sunlink/sunlink-https.env
+ExecStart=/opt/sunlink/venv/bin/python -m uvicorn deye_gateway:app \
+  --host 0.0.0.0 \
+  --port 8443 \
+  --ssl-certfile /etc/letsencrypt/live/sunlink.pp.ua/fullchain.pem \
+  --ssl-keyfile /etc/letsencrypt/live/sunlink.pp.ua/privkey.pem \
+  --no-server-header \
+  --log-level info
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+KillSignal=SIGTERM
+
+# Безопасность: не ломаем SQLite, сеть и TLS
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target
+
+# ПРИМЕЧАНИЯ:
+# - Порт задаётся и в EnvironmentFile (SUNLINK_HTTPS_PORT), и в ExecStart.
+#   Оставить один источник: при использовании `python deye_gateway.py`
+#   порт читается из SUNLINK_HTTPS_PORT; при прямом uvicorn — из --port.
+# - PrivateUsers/ProtectKernel* не включаем без проверки совместимости.
+# - Логи не содержат секретов; freebytes key доступен только пользователю sunlink.
