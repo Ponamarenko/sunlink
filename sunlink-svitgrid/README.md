@@ -2,7 +2,7 @@
 
 **SunLink** — Android-застосунок (Kotlin, Jetpack Compose, Material3) для моніторингу сонячної станції на базі інвертора **Deye** у стилі SvitGrid-дашборду: вузли PV/інвертор/батарея/мережа/дім, потоки енергії (Bezier-лінії з анімацією), статус з’єднання, екран відладки сирих даних.
 
-Поточна версія застосунку: **v2.32.0** (versionCode 52).
+Поточна версія застосунку: **v2.32.1** (versionCode 53).
 
 ## Можливості
 - Дашборд з реальними даними (PV-рядки, батарея, мережа, навантаження) та відображенням `—` для відсутніх полів
@@ -94,6 +94,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-24-real-telemetry-expansion.md](docs/stages/stage-24-real-telemetry-expansion.md) — розширення телеметрії: backend/API/Android, 246 backend + 67 Android тестів, APK v2.31.0 (етап 24)
 - [docs/stages/stage-25a-connectivity-diagnostic.md](docs/stages/stage-25a-connectivity-diagnostic.md) — діагностика DNS/TCP/HTTPS: причина CLEARTEXT-помилки, сертифікат, топологія (етап 25A)
 - [docs/stages/stage-25b-direct-https.md](docs/stages/stage-25b-direct-https.md) — прямий HTTPS на backend, міграція URL Android, deployment package, реліз v2.32.0 (етап 25B)
+- [docs/stages/stage-25b1-direct-https-9443.md](docs/stages/stage-25b1-direct-https-9443.md) — два listener: HTTP 8800 (LAN) + HTTPS 9443 (публічний), міграція 8443→9443 (етап 25B.1)
 
 ## Перевірка релізу
 
@@ -106,8 +107,8 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 ## Завантаження APK
 
 Кожен зібраний APK публікується в [GitHub Releases](https://github.com/Ponamarenko/sunlink/releases).
-Поточний debug-реліз Stage 25B (prerelease):
-https://github.com/Ponamarenko/sunlink/releases/tag/android-v2.32.0-stage25b
+Поточний debug-реліз Stage 25B.1 (prerelease):
+https://github.com/Ponamarenko/sunlink/releases/tag/android-v2.32.1-stage25b1
 
 Повторна публікація нової збірки:
 
@@ -135,6 +136,7 @@ https://github.com/Ponamarenko/sunlink/releases/tag/android-v2.32.0-stage25b
 | v2.30.0 | Етап 12: Backend ↔ Android інтеграція — реальні контракти, DEMO backend, 159 backend + 49 Android тестів, offline/recovery, APK |
 | v2.31.0 | Етап 24: розширення реальної телеметрії (PV, V/I/P батареї, температури), кандидатські декодери, API/Android, 246 backend + 67 Android тестів, APK |
 | v2.32.0 | Етап 25B: прямий HTTPS `https://sunlink.pp.ua:8443/`, міграція старих URL, діагностика з'єднання, backend TLS config, deployment package, 256 backend + 72 Android тестів |
+| v2.32.1 | Етап 25B.1: HTTP 8800 (LAN) + HTTPS 9443 (публічний), міграція 8443→9443, два listener одного FastAPI app, 258 backend + Android тести, APK |
 
 ## Відомі застереження
 - Карта регістрів/масштаби Deye можуть відрізнятися для конкретної моделі/прошивки (потрібна верифікація значень: напруга мережі, температури, лічильники енергії).

@@ -82,7 +82,7 @@ class Stage14IntegrationTest {
     @Test
     fun `first launch has valid default settings`() {
         assertNull(SettingsRepository.validate(BackendDefaults.HOST, BackendDefaults.PORT.toString(), BackendDefaults.USE_HTTPS))
-        assertEquals("https://sunlink.pp.ua:8443/", BackendDefaults.BASE_URL)
+        assertEquals("https://sunlink.pp.ua:9443/", BackendDefaults.BASE_URL)
     }
 
     // --- Сценарий 2: смена адреса фактически меняет endpoint ---

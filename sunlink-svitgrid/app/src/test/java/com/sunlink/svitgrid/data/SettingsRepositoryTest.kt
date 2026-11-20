@@ -53,9 +53,9 @@ class SettingsRepositoryTest {
     fun `default backend is direct HTTPS endpoint`() {
         val repo = SettingsRepository(FakePrefs())
         assertEquals("sunlink.pp.ua", repo.serverAddress)
-        assertEquals("8443", repo.serverPort)
+        assertEquals("9443", repo.serverPort)
         assertTrue(repo.useHttps)
-        assertEquals("https://sunlink.pp.ua:8443/", repo.getBaseUrl())
+        assertEquals("https://sunlink.pp.ua:9443/", repo.getBaseUrl())
     }
 
     @Test
@@ -104,12 +104,12 @@ class SettingsRepositoryTest {
 
     @Test
     fun `validation requires HTTPS for public hosts`() {
-        assertNull(SettingsRepository.validate("sunlink.pp.ua", "8443", true))
+        assertNull(SettingsRepository.validate("sunlink.pp.ua", "9443", true))
         assertNull(SettingsRepository.validate("127.0.0.1", "8801", false))
-        assertNotNull(SettingsRepository.validate("sunlink.pp.ua", "8443", false))
-        assertNotNull(SettingsRepository.validate("91.226.253.235", "8443", true))
-        assertNotNull(SettingsRepository.validate("", "8443", true))
-        assertNotNull(SettingsRepository.validate("bad host", "8443", true))
+        assertNotNull(SettingsRepository.validate("sunlink.pp.ua", "9443", false))
+        assertNotNull(SettingsRepository.validate("91.226.253.235", "9443", true))
+        assertNotNull(SettingsRepository.validate("", "9443", true))
+        assertNotNull(SettingsRepository.validate("bad host", "9443", true))
         assertNotNull(SettingsRepository.validate("sunlink.pp.ua", "0", true))
         assertNotNull(SettingsRepository.validate("sunlink.pp.ua", "70000", true))
     }
@@ -126,9 +126,9 @@ class SettingsRepositoryTest {
 
             val repo = SettingsRepository(prefs)
             assertEquals("sunlink.pp.ua", repo.serverAddress)
-            assertEquals("8443", repo.serverPort)
+            assertEquals("9443", repo.serverPort)
             assertTrue(repo.useHttps)
-            assertEquals("https://sunlink.pp.ua:8443/", repo.getBaseUrl())
+            assertEquals("https://sunlink.pp.ua:9443/", repo.getBaseUrl())
             assertEquals(
                 SettingsRepository.CURRENT_MIGRATION_VERSION,
                 prefs.getInt("settings_migration_version", 0)
@@ -157,16 +157,47 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun `migration replaces legacy default port 8443 with 9443`() {
+        val prefs = FakePrefs()
+        prefs.edit()
+            .putString("server_address", "sunlink.pp.ua")
+            .putString("server_port", com.sunlink.svitgrid.data.BackendDefaults.LEGACY_HTTPS_PORT.toString())
+            .putBoolean("server_https", true)
+            .putInt("settings_migration_version", 2)
+            .commit()
+
+        val repo = SettingsRepository(prefs)
+        assertEquals("sunlink.pp.ua", repo.serverAddress)
+        assertEquals("9443", repo.serverPort)
+        assertTrue(repo.useHttps)
+        assertEquals("https://sunlink.pp.ua:9443/", repo.getBaseUrl())
+        // Повторная миграция ничего не меняет
+        assertEquals("https://sunlink.pp.ua:9443/", SettingsRepository(prefs).getBaseUrl())
+    }
+
+    @Test
+    fun `LAN private ranges allow HTTP while public hosts require HTTPS`() {
+        for (host in listOf("192.168.25.20", "10.0.0.5", "172.16.0.1", "172.31.255.1", "127.0.0.1")) {
+            val result = SettingsRepository.validate(host, "8800", false)
+            assertTrue("validate($host) = $result", result == null)
+        }
+        assertNotNull(SettingsRepository.validate("172.32.0.1", "8800", false))
+        assertNotNull(SettingsRepository.validate("sunlink.pp.ua", "8800", false))
+        // HTTPS на IP без сертификата с SAN запрещён — используется имя хоста.
+        assertNotNull(SettingsRepository.validate("192.168.25.20", "8800", true))
+    }
+
+    @Test
     fun `invalid values do not overwrite valid saved config`() {
         val prefs = FakePrefs()
         val repo = SettingsRepository(prefs)
         repo.serverAddress = "good.host"
-        repo.serverPort = "8443"
+        repo.serverPort = "9443"
 
         repo.serverAddress = "bad host"
         repo.serverPort = "not-a-port"
 
         assertEquals("good.host", repo.serverAddress)
-        assertEquals("8443", repo.serverPort)
+        assertEquals("9443", repo.serverPort)
     }
 }

@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 /**
  * Настройки подключения к backend (Stage 25B).
  *
- * Дефолт: https://sunlink.pp.ua:8443/ . Пользовательский адрес сохраняется,
+ * Дефолт: https://sunlink.pp.ua:9443/ . Пользовательский адрес сохраняется,
  * но известные устаревшие ПУБЛИЧНЫЕ хосты мигрируются один раз и идемпотентно.
  * Публичный HTTP запрещён; HTTP разрешён только для локальных dev-хостов.
  */
@@ -27,7 +27,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val KEY_PORT = "server_port"
         const val KEY_HTTPS = "server_https"
         const val KEY_MIGRATION_VERSION = "settings_migration_version"
-        const val CURRENT_MIGRATION_VERSION = 2
+        const val CURRENT_MIGRATION_VERSION = 3
 
         private val HOST_REGEX = Regex("^[A-Za-z0-9._-]+$")
         private val IPV4_REGEX = Regex("^\\d{1,3}(\\.\\d{1,3}){3}$")
@@ -101,7 +101,13 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         if (version >= CURRENT_MIGRATION_VERSION) return
 
         val savedHost = prefs.getString(KEY_HOST, null)?.trim()
-        if (savedHost != null && savedHost.lowercase() in BackendDefaults.LEGACY_PUBLIC_HOSTS) {
+        val savedPort = prefs.getString(KEY_PORT, null)?.trim()
+        val legacyHost = savedHost != null &&
+            savedHost.lowercase() in BackendDefaults.LEGACY_PUBLIC_HOSTS
+        val oldDefaultPort = savedHost?.equals(BackendDefaults.HOST, ignoreCase = true) == true &&
+            savedPort == BackendDefaults.LEGACY_HTTPS_PORT.toString()
+
+        if (legacyHost || oldDefaultPort) {
             prefs.edit()
                 .putString(KEY_HOST, BackendDefaults.HOST)
                 .putString(KEY_PORT, BackendDefaults.PORT.toString())

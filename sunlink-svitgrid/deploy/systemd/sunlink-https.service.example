@@ -1,9 +1,10 @@
-# SunLink direct HTTPS systemd unit —-example only (Stage 25B)
+# SunLink two-listener service — example only (Stage 25B.1)
 # НЕ копировать в /etc/systemd/system без отдельного согласования.
-# Проверить User/WorkingDirectory/EnvironmentFile под фактический сервер.
+# Один процесс = один FastAPI app = один startup/shutdown = один poller.
+# HTTP 8800 (LAN) + HTTPS 9443 (TLS в Uvicorn, без reverse proxy).
 
 [Unit]
-Description=SunLink backend (direct HTTPS, no reverse proxy)
+Description=SunLink backend (local HTTP 8800 + direct HTTPS 9443)
 After=network-online.target
 Wants=network-online.target
 
@@ -13,19 +14,12 @@ User=sunlink
 Group=sunlink
 WorkingDirectory=/opt/sunlink/backend
 EnvironmentFile=/etc/sunlink/sunlink-https.env
-ExecStart=/opt/sunlink/venv/bin/python -m uvicorn deye_gateway:app \
-  --host 0.0.0.0 \
-  --port 8443 \
-  --ssl-certfile /etc/letsencrypt/live/sunlink.pp.ua/fullchain.pem \
-  --ssl-keyfile /etc/letsencrypt/live/sunlink.pp.ua/privkey.pem \
-  --no-server-header \
-  --log-level info
+ExecStart=/opt/sunlink/venv/bin/python deye_gateway.py
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=15
 KillSignal=SIGTERM
 
-# Безопасность: не ломаем SQLite, сеть и TLS
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
@@ -36,9 +30,7 @@ CapabilityBoundingSet=
 [Install]
 WantedBy=multi-user.target
 
-# ПРИМЕЧАНИЯ:
-# - Порт задаётся и в EnvironmentFile (SUNLINK_HTTPS_PORT), и в ExecStart.
-#   Оставить один источник: при использовании `python deye_gateway.py`
-#   порт читается из SUNLINK_HTTPS_PORT; при прямом uvicorn — из --port.
-# - PrivateUsers/ProtectKernel* не включаем без проверки совместимости.
-# - Логи не содержат секретов; freebytes key доступен только пользователю sunlink.
+# Порты/хост читаются из EnvironmentFile (tls_config.py).
+# Приватный ключ: root:sunlink 0640 либо sunlink:sunlink 0600.
+# Не использовать 777 и не делать ключ доступным всем пользователям.
+# Не запускать второй экземпляр сервиса — это приведёт к двойному polling.

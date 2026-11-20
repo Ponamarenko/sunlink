@@ -282,7 +282,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     onValueChange = { serverAddress = it; settingsError = null },
                     label = { Text("Адреса сервера") },
                     placeholder = { Text(com.sunlink.svitgrid.data.BackendDefaults.HOST) },
-                    supportingText = { Text("Публічний backend: https://sunlink.pp.ua:8443/") },
+                    supportingText = { Text("Публічний: https://sunlink.pp.ua:9443/ • LAN: http://192.168.25.20:8800/") },
                     modifier = Modifier.fillMaxWidth(),
                     isError = settingsError != null
                 )

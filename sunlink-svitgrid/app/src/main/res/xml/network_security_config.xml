@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Stage 25B: публичный backend работает только по HTTPS (sunlink.pp.ua:8443).
+  Stage 25B.1: публичный backend — HTTPS sunlink.pp.ua:9443; локальный HTTP 8800 только в LAN.
   Cleartext разрешён исключительно для локального/isolated разработки.
   Проверка сертификатов НЕ отключается, TrustAll не используется.
 -->

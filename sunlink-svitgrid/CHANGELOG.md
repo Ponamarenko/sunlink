@@ -2,6 +2,14 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.32.1] — 2026-11-20 (порт 9443 + локальний HTTP 8800, етап 25B.1)
+- **Етап 25B.1:** два listener одного FastAPI application без Reverse Proxy
+  - Backend: `tls_config.py` (HTTP default 8800, HTTPS default 9443, валідація TLS-пари/портів/host) та `listener_config.py` (HTTP lifespan on, HTTPS lifespan off — один startup/shutdown, один poller); відсутність сертифіката не блокує локальний HTTP
+  - Android default `https://sunlink.pp.ua:9443/`, міграція версії 3 (ha4a/k4a/sunline та старий 8443 → 9443, кастомні адреси зберігаються), LAN HTTP 192.168.x/10.x/172.16–31.x дозволено
+  - Оновлено deploy templates (systemd/env/check-скрипти) та рекомендовану NAT-схему 9443/8800 без застосування на MikroTik
+  - Тести: backend **258 PASS**, Android full suite PASS; APK v2.32.1 (53) публікується як prerelease `android-v2.32.1-stage25b1`
+  - Production backend/systemd/сертифікати/Cloudflare/MikroTik/firewall/HA не змінювались; фізичний Modbus не використовувався
+
 ## [v2.32.0] — 2026-11-20 (прямий HTTPS та міграція Android, етап 25B)
 - **Етап 25B:** підготовка безпечного публічного доступу без Reverse Proxy
   - Android default: `https://sunlink.pp.ua:8443/`; міграція `ha4a/k4a/sunline.pp.ua` (версія 2, ідемпотентно, кастомні адреси зберігаються)

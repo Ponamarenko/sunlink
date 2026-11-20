@@ -720,22 +720,15 @@ async def shutdown_event():
 
 
 if __name__ == "__main__":
-    # Stage 25B: прямой HTTPS через штатную TLS-поддержку Uvicorn.
-    # Reverse Proxy не используется. Конфигурация читается из окружения,
-    # production-файлы этим блоком не изменяются.
+    # Stage 25B.1: один FastAPI app, два listener (HTTP 8800 + HTTPS 9443).
+    # TLS завершается в Uvicorn; Reverse Proxy не используется.
     from tls_config import TlsConfig, TlsConfigError
+    from listener_config import run_listeners
 
     try:
-        tls = TlsConfig.from_env()
+        cfg = TlsConfig.from_env()
     except TlsConfigError as exc:
-        logger.error("Invalid TLS configuration: %s", exc)
+        logger.error("Invalid listener configuration: %s", exc)
         raise SystemExit(2) from exc
 
-    uvicorn.run(
-        "deye_gateway:app",
-        host=CONFIG["server"]["host"],
-        port=tls.port,
-        reload=False,
-        log_level="info",
-        **tls.uvicorn_kwargs(),
-    )
+    asyncio.run(run_listeners(app, cfg))
