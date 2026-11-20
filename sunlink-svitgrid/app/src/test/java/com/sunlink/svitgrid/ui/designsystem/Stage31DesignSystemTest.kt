@@ -52,7 +52,7 @@ class Stage31DesignSystemTest {
 
     @Test
     fun `state mapper distinguishes loading online offline stale error connecting`() {
-        
+
         assertEquals(
             DashboardState.LOADING,
             DashboardStateMapper.map(InverterUiState.Loading, true, com.sunlink.svitgrid.network.TelemetryWebSocketClient.WsTransportState.CLOSED)
