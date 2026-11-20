@@ -2,6 +2,17 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.34.0] — 2026-11-20 (Premium Design System та дашборд, етап 31)
+- **Етап 31:** цілісна візуальна система без зміни production/телеметрії
+  - Design System: централізована семантична палітра Dark/Light, типографіка з tabular figures, єдині відступи/радіуси/іконки
+  - 17 переиспользуемых компонентів (SunLinkBackground/TopBar, EnergyMetricCard, PowerValue, EnergyFlowDiagram/Node/Connection, BatterySOCIndicator, стани тощо)
+  - Dashboard повністю перероблено: 6 станів, огляд системи, адаптивна схема потоків, карточки PV/Battery/Grid/Load, реальні значення або «—»
+  - Напрямок потоку не вгадується: анімація вимикається при невідомій семантиці/нулі/Reduce Motion/offline/stale
+  - Dark/Light/System зі збереженням у налаштуваннях; нижня навігація з 4 вкладками; localization uk/en через string resources
+  - Backend **276 PASS**, Android **105 PASS** (12 нових Stage 31 тестів); 6 Compose Preview з ізольованими даними
+  - APK v2.34.0 (55), debug prerelease; production, MikroTik, сертифікати, Ebyte й Modbus не змінювались
+
+
 ## [v2.33.0] — 2026-11-20 (дашборд + реальна телеметрія, етап 30)
 - **Етап 30:** Android WebSocket + оновлений дашборд
   - `TelemetryWebSocketClient`: один WS-клієнт, ws/wss з поточного backend URL, bounded reconnect 1→30 с, коректне закриття, реакція на зміну адреси

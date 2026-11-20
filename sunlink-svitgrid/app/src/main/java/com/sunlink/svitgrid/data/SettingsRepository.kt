@@ -27,6 +27,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val KEY_PORT = "server_port"
         const val KEY_HTTPS = "server_https"
         const val KEY_MIGRATION_VERSION = "settings_migration_version"
+        const val KEY_THEME_MODE = "theme_mode"
         const val CURRENT_MIGRATION_VERSION = 3
 
         private val HOST_REGEX = Regex("^[A-Za-z0-9._-]+$")
@@ -144,4 +145,9 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         serverPort.toIntOrNull() ?: BackendDefaults.PORT,
         useHttps
     )
+
+    /** Stage 31: SYSTEM / LIGHT / DARK. Значение сохраняется в тех же SharedPreferences. */
+    var themeModeName: String
+        get() = prefs.getString(KEY_THEME_MODE, "SYSTEM") ?: "SYSTEM"
+        set(value) { prefs.edit().putString(KEY_THEME_MODE, value).apply() }
 }

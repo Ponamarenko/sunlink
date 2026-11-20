@@ -200,4 +200,14 @@ class SettingsRepositoryTest {
         assertEquals("good.host", repo.serverAddress)
         assertEquals("9443", repo.serverPort)
     }
+
+    @Test
+    fun `theme mode is persisted and defaults to system`() {
+        val repo = SettingsRepository(FakePrefs())
+        assertEquals("SYSTEM", repo.themeModeName)
+        repo.themeModeName = "DARK"
+        assertEquals("DARK", repo.themeModeName)
+        repo.themeModeName = "LIGHT"
+        assertEquals("LIGHT", repo.themeModeName)
+    }
 }

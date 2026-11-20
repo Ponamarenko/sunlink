@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SunLink</string>
+
+    <!-- Navigation -->
+    <string name="nav_now">Now</string>
+    <string name="nav_statistics">Statistics</string>
+    <string name="nav_control">Control</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Connection states -->
+    <string name="state_loading">Loading</string>
+    <string name="state_online">Online</string>
+    <string name="state_offline">Offline</string>
+    <string name="state_stale">Stale data</string>
+    <string name="state_connecting">Connecting</string>
+    <string name="state_error">Connection error</string>
+    <string name="state_unknown">Unknown</string>
+
+    <!-- Dashboard -->
+    <string name="dash_telemetry_title">REAL TELEMETRY</string>
+    <string name="dash_flow_title">ENERGY FLOW</string>
+    <string name="dash_overview_title">SYSTEM STATUS</string>
+    <string name="dash_no_data">No data</string>
+    <string name="dash_no_data_hint">— no confirmed readings</string>
+    <string name="dash_last_update">Updated: %1$s</string>
+    <string name="dash_source">Source: %1$s</string>
+    <string name="dash_inverter_online">Inverter: online</string>
+    <string name="dash_inverter_offline">Inverter: offline</string>
+    <string name="dash_inverter_waiting">Inverter: waiting</string>
+    <string name="dash_inverter_no_data">Inverter: no data</string>
+    <string name="dash_demo_warning">DEMO • demo data source, not a real inverter</string>
+    <string name="dash_stale_banner">Data is stale — no fresh exchange with backend confirmed</string>
+    <string name="dash_error_banner">No connection to backend</string>
+    <string name="dash_provisional_note">* provisional — scale/offset need display verification</string>
+
+    <!-- Energy nodes and metrics -->
+    <string name="node_solar">Solar</string>
+    <string name="node_inverter">Inverter</string>
+    <string name="node_battery">Battery</string>
+    <string name="node_grid">Grid</string>
+    <string name="node_home">Home</string>
+    <string name="metric_pv">PV</string>
+    <string name="metric_battery">Battery</string>
+    <string name="metric_grid">Grid</string>
+    <string name="metric_load">Load</string>
+    <string name="metric_soc">SOC</string>
+    <string name="metric_voltage">Voltage</string>
+    <string name="metric_current">Current</string>
+    <string name="metric_power">Power</string>
+    <string name="battery_charging">Charging</string>
+    <string name="battery_discharging">Discharging</string>
+    <string name="battery_idle">Idle</string>
+    <string name="flow_unknown">Direction unknown</string>
+
+    <!-- Units -->
+    <string name="unit_watt">W</string>
+    <string name="unit_kw">kW</string>
+    <string name="unit_volt">V</string>
+    <string name="unit_amp">A</string>
+    <string name="unit_celsius">°C</string>
+    <string name="unit_percent">%</string>
+
+    <!-- Theme -->
+    <string name="theme_title">App theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+</resources>

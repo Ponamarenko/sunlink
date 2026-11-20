@@ -16,7 +16,9 @@ import androidx.compose.ui.unit.dp
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.sunlink.svitgrid.BuildConfig
+import com.sunlink.svitgrid.R
 import com.sunlink.svitgrid.data.SettingsRepository
 import com.sunlink.svitgrid.network.RetrofitClient
 import com.sunlink.svitgrid.ui.debug.DebugScreen
@@ -27,6 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.data.repository.DataRepository
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 import com.sunlink.svitgrid.viewmodel.MainViewModelFactory
+import com.sunlink.svitgrid.ui.theme.LocalThemeController
+import com.sunlink.svitgrid.ui.theme.ThemeMode
 import com.sunlink.svitgrid.data.model.InverterData
 import com.sunlink.svitgrid.data.model.InverterUiState
 import androidx.navigation.compose.NavHost
@@ -93,6 +97,32 @@ fun SvitGridApp() {
         }
     ) {
         Scaffold(
+            bottomBar = {
+                val currentRoute = navController.currentBackStackEntry?.destination?.route
+                val tabs = listOf(
+                    "dashboard" to (R.string.nav_now to Icons.Default.Home),
+                    "history" to (R.string.nav_statistics to Icons.Default.DateRange),
+                    "inverter-details" to (R.string.nav_control to Icons.Default.Build),
+                    "settings" to (R.string.nav_settings to Icons.Default.Settings)
+                )
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                    tabs.forEach { (route, pair) ->
+                        NavigationBarItem(
+                            selected = currentRoute == route,
+                            onClick = {
+                                navController.navigate(route) {
+                                    popUpTo("dashboard") { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Icon(pair.second, contentDescription = null) },
+                            label = { Text(stringResource(pair.first)) },
+                            alwaysShowLabel = true
+                        )
+                    }
+                }
+            },
             topBar = {
                 TopAppBar(
                     title = { Text("SunLink") },
@@ -276,7 +306,29 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Налаштування", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Text(stringResource(R.string.nav_settings), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+
+        // Stage 31: System / Light / Dark — застосовується без перезапуску.
+        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.theme_title), style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val themeController = LocalThemeController.current
+                    listOf(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK).forEach { mode ->
+                        val label = when (mode) {
+                            ThemeMode.SYSTEM -> R.string.theme_system
+                            ThemeMode.LIGHT -> R.string.theme_light
+                            ThemeMode.DARK -> R.string.theme_dark
+                        }
+                        FilterChip(
+                            selected = themeController.mode == mode,
+                            onClick = { themeController.setMode(mode) },
+                            label = { Text(stringResource(label)) }
+                        )
+                    }
+                }
+            }
+        }
 
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {

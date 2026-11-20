@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SunLink</string>
+
+    <!-- Навігація -->
+    <string name="nav_now">Зараз</string>
+    <string name="nav_statistics">Статистика</string>
+    <string name="nav_control">Керування</string>
+    <string name="nav_settings">Налаштування</string>
+
+    <!-- Стани з\'єднання -->
+    <string name="state_loading">Завантаження</string>
+    <string name="state_online">Онлайн</string>
+    <string name="state_offline">Офлайн</string>
+    <string name="state_stale">Застарілі дані</string>
+    <string name="state_connecting">Підключення</string>
+    <string name="state_error">Помилка з\'єднання</string>
+    <string name="state_unknown">Невідомо</string>
+
+    <!-- Dashboard -->
+    <string name="dash_telemetry_title">РЕАЛЬНА ТЕЛЕМЕТРІЯ</string>
+    <string name="dash_flow_title">ПОТІК ЕНЕРГІЇ</string>
+    <string name="dash_overview_title">СТАН СИСТЕМИ</string>
+    <string name="dash_no_data">Немає даних</string>
+    <string name="dash_no_data_hint">— відсутні підтверджені показання</string>
+    <string name="dash_last_update">Оновлено: %1$s</string>
+    <string name="dash_source">Джерело: %1$s</string>
+    <string name="dash_inverter_online">Інвертор: онлайн</string>
+    <string name="dash_inverter_offline">Інвертор: офлайн</string>
+    <string name="dash_inverter_waiting">Інвертор: очікування</string>
+    <string name="dash_inverter_no_data">Інвертор: немає даних</string>
+    <string name="dash_demo_warning">DEMO • дані демонстраційного джерела, не реальний інвертор</string>
+    <string name="dash_stale_banner">Дані застарілі — свіжий обмін з backend не підтверджено</string>
+    <string name="dash_error_banner">Немає зв\'язку з backend</string>
+    <string name="dash_provisional_note">* provisional — масштаб/зсув потребують верифікації на дисплеї</string>
+
+    <!-- Енергетичні вузли та показники -->
+    <string name="node_solar">Сонце</string>
+    <string name="node_inverter">Інвертор</string>
+    <string name="node_battery">Батарея</string>
+    <string name="node_grid">Мережа</string>
+    <string name="node_home">Дім</string>
+    <string name="metric_pv">PV</string>
+    <string name="metric_battery">Battery</string>
+    <string name="metric_grid">Grid</string>
+    <string name="metric_load">Load</string>
+    <string name="metric_soc">SOC</string>
+    <string name="metric_voltage">Напруга</string>
+    <string name="metric_current">Струм</string>
+    <string name="metric_power">Потужність</string>
+    <string name="battery_charging">Заряд</string>
+    <string name="battery_discharging">Розряд</string>
+    <string name="battery_idle">Очікування</string>
+    <string name="flow_unknown">Напрямок невідомий</string>
+
+    <!-- Одиниці -->
+    <string name="unit_watt">Вт</string>
+    <string name="unit_kw">кВт</string>
+    <string name="unit_volt">В</string>
+    <string name="unit_amp">А</string>
+    <string name="unit_celsius">°C</string>
+    <string name="unit_percent">%</string>
+
+    <!-- Тема -->
+    <string name="theme_title">Тема оформлення</string>
+    <string name="theme_system">Системна</string>
+    <string name="theme_light">Світла</string>
+    <string name="theme_dark">Темна</string>
+</resources>

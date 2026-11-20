@@ -1,843 +1,282 @@
 package com.sunlink.svitgrid.ui.dashboard
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathMeasure
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.sunlink.svitgrid.R
-import com.sunlink.svitgrid.viewmodel.MainViewModel
 import com.sunlink.svitgrid.data.model.InverterData
 import com.sunlink.svitgrid.data.model.InverterUiState
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import kotlin.math.abs
-import kotlin.math.max
-
-private val BgDark = Color(0xFF0A0D12)
-private val BgCard = Color(0xFF131A24)
-private val AccentBlue = Color(0xFF2196F3)
-private val AccentOrange = Color(0xFFFF9800)
-private val AccentGreen = Color(0xFF66BB6A)
-private val Mono = FontFamily.Monospace
-private val GlassCard = Color.White.copy(alpha = 0.14f)
-private val GlassBorder = Color.White.copy(alpha = 0.2f)
-private val GlassShape = RoundedCornerShape(16.dp)
-
-private fun num(data: Map<String, Any>, key: String): Float? = when (val v = data[key]) {
-    is Number -> v.toFloat()
-    is String -> v.toFloatOrNull()
-    is Map<*, *> -> (v["value"] as? Number)?.toFloat()
-        ?: (v["value"] as? String)?.toFloatOrNull()
-    else -> null
-}
-
-private fun firstNum(data: Map<String, Any>, vararg keys: String): Float? {
-    for (k in keys) num(data, k)?.let { return it }
-    return null
-}
-
-private fun fmt(v: Float?, decimals: Int = 1, suffix: String = ""): String {
-    if (v == null) return "—"
-    return "%.${decimals}f%s".format(v, suffix)
-}
-
-private fun fmtInt(v: Float?, suffix: String = ""): String {
-    if (v == null) return "—"
-    return "${v.toInt()}$suffix"
-}
-
-/** Зображення з каталогу Icon/ — без розтягування, зі збереженням пропорцій. */
-@Composable
-private fun IconImage(resId: Int, description: String, modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(id = resId),
-        contentDescription = description,
-        modifier = modifier,
-        contentScale = ContentScale.Fit
-    )
-}
-
-private val timeFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("dd.MM HH:mm:ss").withZone(ZoneId.systemDefault())
-
-private fun formatUpdateTime(timestamp: String?): String {
-    if (timestamp.isNullOrBlank()) return "—"
-    return try {
-        val normalized = if (timestamp.endsWith("Z")) timestamp else timestamp.replace("+00:00", "Z")
-        timeFormatter.format(Instant.parse(normalized))
-    } catch (e: Exception) {
-        timestamp.take(19)
-    }
-}
-
-private enum class ConnectionPresentation {
-    LOADING, ONLINE, OFFLINE, STALE, ERROR
-}
-
-private fun connectionPresentation(state: InverterUiState, loading: Boolean): ConnectionPresentation =
-    when {
-        loading -> ConnectionPresentation.LOADING
-        state is InverterUiState.Success && state.stale -> ConnectionPresentation.STALE
-        state is InverterUiState.Success && state.status.online -> ConnectionPresentation.ONLINE
-        state is InverterUiState.Error && state.data != null -> ConnectionPresentation.STALE
-        state is InverterUiState.Error -> ConnectionPresentation.ERROR
-        else -> ConnectionPresentation.OFFLINE
-    }
-
-private fun ConnectionPresentation.label(): String = when (this) {
-    ConnectionPresentation.LOADING -> "Завантаження"
-    ConnectionPresentation.ONLINE -> "Онлайн"
-    ConnectionPresentation.OFFLINE -> "Офлайн"
-    ConnectionPresentation.STALE -> "Застарілі дані"
-    ConnectionPresentation.ERROR -> "Помилка з'єднання"
-}
-
-private fun ConnectionPresentation.color(): Color = when (this) {
-    ConnectionPresentation.LOADING -> AccentBlue
-    ConnectionPresentation.ONLINE -> AccentGreen
-    ConnectionPresentation.OFFLINE -> Color(0xFFE57373)
-    ConnectionPresentation.STALE -> AccentOrange
-    ConnectionPresentation.ERROR -> Color(0xFFE57373)
-}
+import com.sunlink.svitgrid.ui.designsystem.BatterySOCIndicator
+import com.sunlink.svitgrid.ui.designsystem.ConnectionStatusBadge
+import com.sunlink.svitgrid.ui.designsystem.DashboardState
+import com.sunlink.svitgrid.ui.designsystem.DashboardStateMapper
+import com.sunlink.svitgrid.ui.designsystem.EnergyFlowDiagram
+import com.sunlink.svitgrid.ui.designsystem.EnergyMetricCard
+import com.sunlink.svitgrid.ui.designsystem.ErrorState
+import com.sunlink.svitgrid.ui.designsystem.LastUpdatedLabel
+import com.sunlink.svitgrid.ui.designsystem.LoadingState
+import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
+import com.sunlink.svitgrid.ui.designsystem.OfflineState
+import com.sunlink.svitgrid.ui.designsystem.PowerValue
+import com.sunlink.svitgrid.ui.designsystem.SectionHeader
+import com.sunlink.svitgrid.ui.designsystem.SunLinkBackground
+import com.sunlink.svitgrid.ui.designsystem.SunLinkDimensions
+import com.sunlink.svitgrid.ui.designsystem.SunLinkTopBar
+import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.designsystem.TelemetryValue
+import com.sunlink.svitgrid.viewmodel.MainViewModel
 
 @Composable
 fun DashboardScreen(vm: MainViewModel = viewModel()) {
     val uiState by vm.uiState.collectAsState()
-    val loading by vm.refreshing.collectAsState()
+    val refreshing by vm.refreshing.collectAsState()
+    val transport by vm.liveTransport.collectAsState()
+    DashboardContent(
+        uiState = uiState,
+        refreshing = refreshing,
+        transport = transport,
+        onRefresh = { vm.refresh() }
+    )
+}
 
-    val uiStateValue = uiState
-    val error = when (uiStateValue) {
-        is InverterUiState.Error -> uiStateValue.message
-        else -> null
-    }
-    val isStale = when (uiStateValue) {
-        is InverterUiState.Success -> uiStateValue.stale
-        is InverterUiState.Error -> uiStateValue.stale
-        else -> false
-    }
+@Composable
+internal fun DashboardContent(
+    uiState: InverterUiState,
+    refreshing: Boolean,
+    transport: com.sunlink.svitgrid.network.TelemetryWebSocketClient.WsTransportState,
+    onRefresh: () -> Unit
+) {
+    val state = DashboardStateMapper.map(uiState, refreshing, transport)
+    val colors = LocalSunLinkColors.current
 
-    // Повторний запит тільки при вході на екран (Unit), не при recomposition.
-    LaunchedEffect(Unit) { vm.loadData() }
-
-    // При offline/error показуємо останні добрі дані, а не порожні/нульові.
-    val d = when (uiStateValue) {
-        is InverterUiState.Success -> uiStateValue.data
-        is InverterUiState.Error -> uiStateValue.data ?: InverterData()
+    val data: InverterData = when (uiState) {
+        is InverterUiState.Success -> (uiState as InverterUiState.Success).data
+        is InverterUiState.Error -> (uiState as InverterUiState.Error).data ?: InverterData()
         else -> InverterData()
     }
+    val errorMessage = (uiState as? InverterUiState.Error)?.message
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BgDark)
-    ) {
-        HeaderSection(
-            loading = loading,
-            hasData = d.hasMeasurements,
-            error = error,
-            status = uiStateValue,
-            data = d
-        )
-        if (isStale || error != null) {
-            Text(
-                text = if (isStale) "⚠ Дані застарілі — свіжий обмін з backend не підтверджено"
-                       else "⚠ Немає зв'язку з backend",
-                color = AccentOrange,
-                fontFamily = Mono,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
-            )
-        }
-        if (d.source == "demo_simulator" || d.source == "mock") {
-            Text(
-                text = "DEMO • дані демонстраційного джерела, не реальний інвертор",
-                color = AccentOrange,
-                fontFamily = Mono,
-                fontSize = 11.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
-            )
-        }
-        PowerFlowCardsSection(data = d)
-        RealTelemetrySection(data = d)
-        FlowSchemeSection(d.toMap() as Map<String, Any>, Modifier.weight(1f))
-    }
-}
-
-/**
- * Стисла картка реальної телеметрії (етап 24).
- * Відсутні значення — «—», від'ємні — зі знаком, provisional — з позначкою.
- */
-@Composable
-private fun RealTelemetrySection(data: InverterData) {
-    val provisional = data.provisionalParameters
-    val pv = listOf(data.pv1Power, data.pv2Power, data.pv3Power)
-    val pvTotal = if (pv.all { it != null }) pv.sumOf { it!!.toDouble() }.toFloat() else null
-
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = BgCard),
-        shape = RoundedCornerShape(12.dp)
-    ) {
+    SunLinkBackground {
         Column(
-            modifier = Modifier.padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-            Text(
-                text = "РЕАЛЬНА ТЕЛЕМЕТРІЯ",
-                fontFamily = Mono,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = AccentBlue
-            )
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
-                    Text("PV1 ${fmt(data.pv1Power, 0, " Вт")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
-                    Text("PV2 ${fmt(data.pv2Power, 0, " Вт")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
-                    Text("PV3 ${fmt(data.pv3Power, 0, " Вт")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
-                }
-                Column {
-                    Text("ΣPV ${fmt(pvTotal, 0, " Вт")}", fontFamily = Mono, fontSize = 11.sp, color = AccentGreen)
-                    Text("SOC ${fmt(data.batterySoc, 0, "%")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
-                    Text("Vbat ${fmt(data.batteryVoltage, 2, " В")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
-                }
-                Column {
-                    Text("Ibat ${fmt(data.batteryCurrent, 2, " А")}", fontFamily = Mono, fontSize = 11.sp, color = Color.White)
-                    Text(
-                        "Pbat ${fmt(data.pBatt, 1, " Вт")}" +
-                            if ("battery_power" in provisional) " *" else "",
-                        fontFamily = Mono, fontSize = 11.sp, color = Color.White
-                    )
-                    Text(
-                        "T90 ${fmt(data.dcTemperature, 1, " °C")}" +
-                            if ("dc_temperature" in provisional) " *" else "",
-                        fontFamily = Mono, fontSize = 11.sp, color = Color.White
-                    )
-                    Text(
-                        "T91 ${fmt(data.acTemperature, 1, " °C")}" +
-                            if ("ac_temperature" in provisional) " *" else "",
-                        fontFamily = Mono, fontSize = 11.sp, color = Color.White
-                    )
-                }
-            }
-            Text(
-                text = "Джерело: ${data.source} · «—» = Немає даних",
-                fontFamily = Mono,
-                fontSize = 9.sp,
-                color = Color.Gray
-            )
-            if (provisional.isNotEmpty()) {
-                Text(
-                    text = "* provisional — масштаб/зсув потребують верифікації на дисплеї",
-                    fontFamily = Mono,
-                    fontSize = 10.sp,
-                    color = AccentOrange
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun HeaderSection(
-    loading: Boolean,
-    hasData: Boolean,
-    error: String?,
-    status: InverterUiState,
-    data: InverterData
-) {
-    val presentation = connectionPresentation(status, loading)
-    val inverterOnline = when (status) {
-        is InverterUiState.Success -> status.status.online
-        is InverterUiState.Error -> status.status?.online == true
-        else -> false
-    }
-    Column {
-        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = SunLinkDimensions.spaceXl),
+            verticalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceMd)
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconImage(R.drawable.sunlink_inverter, "SunLink", Modifier.size(36.dp))
-                Column {
-                    Text(
-                        text = "SunLink",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontFamily = Mono, fontWeight = FontWeight.Bold
-                        ),
-                        color = Color.White,
-                        fontSize = 20.sp
-                    )
-                    Text(
-                        text = "Deye SUN-12K-SG02LP1-EU-AM3",
-                        fontFamily = Mono, fontSize = 9.sp, color = Color.Gray
-                    )
-                }
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                if (loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = AccentBlue
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(9.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(presentation.color())
-                )
-                Text(
-                    text = presentation.label(),
-                    color = presentation.color(),
-                    fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold
-                )
-            }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            val inverterState = when {
-                !hasData && error != null -> "Інвертор: немає даних"
-                inverterOnline -> "Інвертор: онлайн"
-                data.timestamp == null -> "Інвертор: очікування"
-                else -> "Інвертор: офлайн"
-            }
-            Text(inverterState, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp)
-            Text(
-                text = "Оновлено: ${formatUpdateTime(data.timestamp)}",
-                color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp
+            SunLinkTopBar(
+                title = stringResource(R.string.app_name),
+                subtitle = "Deye SUN-12K-SG02LP1-EU-AM3",
+                state = state,
+                lastUpdate = data.timestamp
             )
-        }
-        if (!hasData && error != null) {
-            Text(
-                text = error.take(90),
-                color = Color(0xFFEF9A9A),
-                fontFamily = Mono,
-                fontSize = 9.sp,
-                maxLines = 2,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
-    }
-}
 
-private data class FlowCard(
-    val title: String,
-    val icon: Int,
-    val value: Float?,
-    val unit: String
-)
+            if (state == DashboardState.STALE) {
+                StatusBanner(stringResource(R.string.dash_stale_banner), colors.warning)
+            }
+            if (state == DashboardState.ERROR && errorMessage != null) {
+                StatusBanner(stringResource(R.string.dash_error_banner), colors.error)
+            }
+            if (data.source == "demo_simulator" || data.source == "mock") {
+                StatusBanner(stringResource(R.string.dash_demo_warning), colors.warning)
+            }
 
-@Composable
-private fun PowerFlowCardsSection(data: InverterData) {
-    val cards = listOf(
-        FlowCard("PV", R.drawable.sunlink_solar_panel, data.pSun, "Вт"),
-        FlowCard("Battery", R.drawable.sunlink_battery, data.pBatt, "Вт"),
-        FlowCard("Grid", R.drawable.sunlink_grid_pole, data.pGrid, "Вт"),
-        FlowCard("Load", R.drawable.sunlink_house, data.pLoad, "Вт")
-    )
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        cards.forEach { card ->
-            Card(
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(containerColor = BgCard),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    IconImage(card.icon, card.title, Modifier.size(28.dp))
-                    Text(card.title, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 9.sp)
-                    Text(
-                        text = if (card.value == null) "Немає даних" else fmtInt(card.value, " ${card.unit}"),
-                        color = if (card.value == null) Color.Gray else Color.White,
-                        fontFamily = Mono,
-                        fontSize = 10.sp,
-                        textAlign = TextAlign.Center
+            if (!data.hasMeasurements) {
+                when (state) {
+                    DashboardState.LOADING, DashboardState.CONNECTING -> LoadingState()
+                    DashboardState.ERROR -> ErrorState(
+                        message = errorMessage ?: stringResource(R.string.dash_error_banner),
+                        onRetry = onRefresh
+                    )
+                    else -> OfflineState(
+                        message = stringResource(R.string.dash_no_data_hint),
+                        onRetry = onRefresh
                     )
                 }
+            } else {
+            // Головний енергетичний блок — тільки підтверджені поля.
+            OverviewCard(data = data, state = state)
+
+            SectionHeader(stringResource(R.string.dash_flow_title))
+            EnergyFlowDiagram(
+                pvPower = data.pSun,
+                pv1Power = data.pv1Power,
+                pv2Power = data.pv2Power,
+                pv3Power = data.pv3Power,
+                batteryPower = data.pBatt,
+                gridPower = data.pGrid,
+                loadPower = data.pLoad,
+                soc = data.batterySoc,
+                state = state,
+                modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            )
+
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = SunLinkDimensions.spaceLg)
+            ) {
+                val cards = @Composable { listOf(
+                    stringResource(R.string.metric_pv) to (data.pSun to (R.drawable.sunlink_solar_panel to colors.solar)),
+                    stringResource(R.string.metric_battery) to (data.pBatt to (R.drawable.sunlink_battery to colors.battery)),
+                    stringResource(R.string.metric_grid) to (data.pGrid to (R.drawable.sunlink_grid_pole to colors.grid)),
+                    stringResource(R.string.metric_load) to (data.pLoad to (R.drawable.sunlink_house to colors.load))
+                ) }
+                val unit = stringResource(R.string.unit_watt)
+                if (maxWidth < 360.dp) {
+                    Column(verticalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
+                        listOf(cards().take(2), cards().drop(2)).forEach { pair ->
+                            Row(horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
+                                pair.forEach { (title, info) ->
+                                    EnergyMetricCard(
+                                        title, info.first, unit, info.second.first, info.second.second,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
+                        cards().forEach { (title, info) ->
+                            EnergyMetricCard(
+                                title, info.first, unit, info.second.first, info.second.second,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            SectionHeader(
+                stringResource(R.string.dash_telemetry_title),
+                Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            )
+            RealTelemetrySection(data = data)
+
+            Text(
+                text = stringResource(R.string.dash_source, data.source),
+                style = SunLinkTypography.caption,
+                color = colors.textTertiary,
+                modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            )
+            LastUpdatedLabel(
+                data.timestamp,
+                Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            )
             }
         }
     }
 }
 
-private data class PvRow(val name: String, val v: Float?, val a: Float?, val w: Float?)
-
 @Composable
-private fun PVSection(data: Map<String, Any>) {
-    val pSun = firstNum(data, "p_sun", "power_dc")
-    val rows = listOf(
-        PvRow(
-            "PV1",
-            firstNum(data, "pv1_voltage", "pv_voltage_1", "voltage_pv1"),
-            firstNum(data, "pv1_current", "pv_current_1", "current_pv1"),
-            firstNum(data, "p_string1", "pv1_power", "pv_power_1", "power_pv1")
-        ),
-        PvRow(
-            "PV2",
-            firstNum(data, "pv2_voltage", "pv_voltage_2", "voltage_pv2"),
-            firstNum(data, "pv2_current", "pv_current_2", "current_pv2"),
-            firstNum(data, "p_string2", "pv2_power", "pv_power_2", "power_pv2")
-        ),
-        PvRow(
-            "PV3",
-            firstNum(data, "pv3_voltage", "pv_voltage_3", "voltage_pv3"),
-            firstNum(data, "pv3_current", "pv_current_3", "current_pv3"),
-            firstNum(data, "p_string3", "pv3_power", "pv_power_3", "power_pv3")
-        ),
-    )
-
+private fun StatusBanner(message: String, color: Color) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .shadow(8.dp, GlassShape),
-        colors = CardDefaults.cardColors(containerColor = GlassCard),
-        shape = GlassShape,
-        border = BorderStroke(1.dp, GlassBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            .padding(horizontal = SunLinkDimensions.spaceLg),
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.12f))
     ) {
-        Box {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .blur(20.dp)
-                    .background(Color.White.copy(alpha = 0.03f))
-            )
-            Column(modifier = Modifier.padding(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("☀️", fontSize = 20.sp)
-                    Spacer(Modifier.size(6.dp))
-                    Text(
-                        text = if (pSun != null) fmt(pSun / 1000f, 2, " кВт") else "— кВт",
-                        color = Color.White,
-                        fontFamily = Mono,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 26.sp
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    rows.forEach { row ->
-                        val powerW = row.w ?: if (row.v != null && row.a != null) row.v * row.a else null
-                        val powerText = when {
-                            powerW == null -> "—"
-                            abs(powerW) >= 1000f -> "${String.format("%.2f", powerW / 1000f)} кВт"
-                            else -> "${powerW.toInt()} Вт"
-                        }
-                        Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("☀️", fontSize = 14.sp)
-                            IconImage(R.drawable.sunlink_solar_panel, "PV", Modifier.size(48.dp))
-                            Text(
-                                "${fmtInt(row.v, " В")} · ${fmt(row.a, 1, " А")}",
-                                color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, textAlign = TextAlign.Center
-                            )
-                            Text(
-                                row.name,
-                                color = Color.Gray, fontFamily = Mono, fontSize = 10.sp
-                            )
-                            Text(
-                                powerText,
-                                color = Color.White, fontFamily = Mono, fontSize = 13.sp, fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun LottieNode(asset: String, modifier: Modifier = Modifier) {
-    val composition by rememberLottieComposition(LottieCompositionSpec.Asset("lottie/$asset"))
-    LottieAnimation(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        modifier = modifier
-    )
-}
-
-@Composable
-private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modifier) {
-    val battSoc = firstNum(data, "batt_soc", "battery_soc", "soc")
-    val battV = firstNum(data, "battery_voltage", "batt_voltage", "bat_voltage")
-    val battA = firstNum(data, "battery_current", "batt_current", "bat_current")
-    val battT = firstNum(data, "battery_temp", "batt_temp", "bat_temp", "temperature")
-    val pBatt = firstNum(data, "p_batt", "battery_power", "bat_power")
-    val pGrid = firstNum(data, "p_grid", "grid_power")
-    val gridV = firstNum(data, "grid_voltage_l1", "grid_voltage", "voltage_ac")
-    val pLoad = firstNum(data, "p_load", "load_power", "home_power", "power_ac")
-    val pSun = firstNum(data, "p_sun", "power_dc")
-    val pvRows = listOf(
-        PvRow("PV1", firstNum(data, "pv1_voltage", "pv_voltage_1", "voltage_pv1"), firstNum(data, "pv1_current", "pv_current_1", "current_pv1"), firstNum(data, "p_string1", "pv1_power", "pv_power_1", "power_pv1")),
-        PvRow("PV2", firstNum(data, "pv2_voltage", "pv_voltage_2", "voltage_pv2"), firstNum(data, "pv2_current", "pv_current_2", "current_pv2"), firstNum(data, "p_string2", "pv2_power", "pv_power_2", "power_pv2")),
-        PvRow("PV3", firstNum(data, "pv3_voltage", "pv_voltage_3", "voltage_pv3"), firstNum(data, "pv3_current", "pv_current_3", "current_pv3"), firstNum(data, "p_string3", "pv3_power", "pv_power_3", "power_pv3")),
-    )
-    val battStatus = when {
-        pBatt == null -> "Очікування"
-        pBatt > 5f -> "Заряд · ${abs(pBatt).toInt()} Вт"
-        pBatt < -5f -> "Розряд · ${abs(pBatt).toInt()} Вт"
-        else -> "Очікування"
-    }
-
-    var selectedNode by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) { selectedNode = null }
-
-    val transition = rememberInfiniteTransition(label = "flow")
-    val particleProgress by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1800, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "particle"
-    )
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .shadow(8.dp, GlassShape)
-            .clip(GlassShape)
-            .background(Brush.verticalGradient(listOf(GlassCard, Color(0x220A0D12))))
-            .border(BorderStroke(1.dp, GlassBorder), GlassShape)
-    ) {
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .blur(18.dp)
-                .background(Color.White.copy(alpha = 0.02f))
+        Text(
+            message,
+            style = SunLinkTypography.caption,
+            color = color,
+            modifier = Modifier.padding(SunLinkDimensions.spaceMd)
         )
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-            // layout: PV row top, inverter center, battery left / grid right same level, home bottom
-            val inv = Offset(w * 0.5f, h * 0.48f)
-            val pvY = h * 0.16f
-            val pv1 = Offset(w * 0.17f, pvY)
-            val pv2 = Offset(w * 0.5f, pvY)
-            val pv3 = Offset(w * 0.83f, pvY)
-            val sideY = h * 0.48f
-            val batt = Offset(w * 0.16f, sideY)
-            val grid = Offset(w * 0.84f, sideY)
-            val home = Offset(w * 0.5f, h * 0.84f)
+    }
+}
 
-            data class Flow(val path: Path, val color: Color, val power: Float?, val reverse: Boolean = false, val particles: Int = 3)
-            val pvPowers = listOf(
-                pvRows[0].w ?: if (pvRows[0].v != null && pvRows[0].a != null) pvRows[0].v!! * pvRows[0].a!! else null,
-                pvRows[1].w ?: if (pvRows[1].v != null && pvRows[1].a != null) pvRows[1].v!! * pvRows[1].a!! else null,
-                pvRows[2].w ?: if (pvRows[2].v != null && pvRows[2].a != null) pvRows[2].v!! * pvRows[2].a!! else null,
-            )
-            val invTop = Offset(inv.x, inv.y - h * 0.055f)
-            val invLeft = Offset(inv.x - w * 0.075f, inv.y)
-            val invRight = Offset(inv.x + w * 0.075f, inv.y)
-            val invBottom = Offset(inv.x, inv.y + h * 0.075f)
-            val r = minOf(w, h) * 0.045f
-
-            fun orthogonalPV(from: Offset, toTop: Offset, dir: Int): Path = Path().apply {
-                // dir: -1 left panel (turn right at bottom), 0 straight, 1 right panel (turn left)
-                moveTo(from.x, from.y)
-                if (dir == 0) {
-                    lineTo(toTop.x, toTop.y)
-                } else {
-                    val midY = toTop.y
-                    val turnY = midY - r
-                    val targetX = toTop.x
-                    if (from.y < turnY) lineTo(from.x, turnY) else lineTo(from.x, midY)
-                    val sx = if (dir < 0) 1f else -1f // move toward center
-                    quadraticBezierTo(from.x, midY, from.x + sx * r, midY)
-                    if (kotlin.math.abs(targetX - (from.x + sx * r)) > r) {
-                        lineTo(targetX - sx * r, midY)
-                        quadraticBezierTo(targetX, midY, targetX, midY - r)
-                        lineTo(toTop.x, toTop.y)
-                    } else {
-                        lineTo(toTop.x, toTop.y)
-                    }
-                }
+@Composable
+private fun OverviewCard(data: InverterData, state: DashboardState) {
+    val colors = LocalSunLinkColors.current
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = SunLinkDimensions.spaceLg),
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(SunLinkDimensions.spaceLg),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceMd)
+        ) {
+            BatterySOCIndicator(data.batterySoc, size = 68.dp)
+            Column(modifier = Modifier.weight(1f)) {
+                ConnectionStatusBadge(state = state)
+                Spacer(Modifier.height(SunLinkDimensions.spaceXs))
+                Text(
+                    text = stringResource(
+                        when (DashboardStateMapper.inverterState(data, state)) {
+                            com.sunlink.svitgrid.ui.designsystem.InverterPresentation.ONLINE -> R.string.dash_inverter_online
+                            com.sunlink.svitgrid.ui.designsystem.InverterPresentation.OFFLINE -> R.string.dash_inverter_offline
+                            com.sunlink.svitgrid.ui.designsystem.InverterPresentation.WAITING -> R.string.dash_inverter_waiting
+                            com.sunlink.svitgrid.ui.designsystem.InverterPresentation.NO_DATA -> R.string.dash_inverter_no_data
+                        }
+                    ),
+                    style = SunLinkTypography.label,
+                    color = colors.textSecondary
+                )
             }
-
-            val flows = mutableListOf<Flow>()
-            val pvStarts = listOf(pv1, pv2, pv3)
-            val pvFromY = pvY + h * 0.05f
-            val dirs = listOf(-1, 0, 1)
-            pvPowers.forEachIndexed { i, p ->
-                val from = Offset(pvStarts[i].x, pvFromY)
-                val path = if (dirs[i] == 0) {
-                    Path().apply { moveTo(from.x, from.y); lineTo(invTop.x, invTop.y) }
-                } else {
-                    val dir = dirs[i]
-                    val midY = invTop.y + r * 0.2f
-                    val turnY = midY - r
-                    val targetX = invTop.x
-                    Path().apply {
-                        moveTo(from.x, from.y)
-                        lineTo(from.x, turnY)
-                        val sx = if (dir < 0) 1f else -1f
-                        quadraticBezierTo(from.x, midY, from.x + sx * r, midY)
-                        lineTo(targetX - sx * r, midY)
-                        quadraticBezierTo(targetX, midY, targetX, midY - r * 0.2f)
-                        lineTo(invTop.x, invTop.y)
-                    }
-                }
-                flows += Flow(path, AccentOrange, p?.let { abs(it) }, particles = 4)
-            }
-            // inverter -> battery (horizontal left)
-            val battTo = Offset(batt.x + w * 0.07f, batt.y)
-            flows += Flow(Path().apply { moveTo(invLeft.x, invLeft.y); lineTo(battTo.x, battTo.y) },
-                if ((pBatt ?: 0f) >= 0f) AccentGreen else AccentBlue, pBatt?.let { abs(it) }, reverse = (pBatt ?: 0f) < 0f)
-            // inverter -> grid (horizontal right)
-            val gridTo = Offset(grid.x - w * 0.07f, grid.y)
-            flows += Flow(Path().apply { moveTo(invRight.x, invRight.y); lineTo(gridTo.x, gridTo.y) },
-                AccentBlue, pGrid?.let { abs(it) }, reverse = (pGrid ?: 0f) < 0f)
-            // inverter -> home (vertical down)
-            val homeTo = Offset(home.x, home.y - h * 0.055f)
-            flows += Flow(Path().apply { moveTo(invBottom.x, invBottom.y); lineTo(homeTo.x, homeTo.y) },
-                Color(0xFF9C27B0), pLoad?.let { abs(it) }, particles = 4
-            )
-
-            flows.forEach { f ->
-                val power = f.power ?: 0f
-                if (power <= 0.1f) return@forEach
-                drawPath(f.path, color = f.color.copy(alpha = 0.38f), style = Stroke(width = 3.5f, cap = StrokeCap.Round))
-                val measure = PathMeasure()
-                measure.setPath(f.path, false)
-                val len = measure.length
-                if (len <= 0f) return@forEach
-                val speedFactor = max(0.45f, (power / 2200f).coerceIn(0.45f, 2.6f))
-                val count = f.particles
-                for (i in 0 until count) {
-                    val base = (particleProgress * speedFactor + i.toFloat() / count) % 1f
-                    val t = if (f.reverse) 1f - base else base
-                    val pos = measure.getPosition(t * len)
-                    drawCircle(color = f.color, radius = 5f, center = pos)
-                    drawCircle(color = Color.White.copy(alpha = 0.55f), radius = 2.2f, center = pos)
-                }
+            Column(horizontalAlignment = Alignment.End) {
+                PowerValue(data.pSun, stringResource(R.string.unit_watt), color = colors.solar)
+                PowerValue(data.pLoad, stringResource(R.string.unit_watt), color = colors.load)
             }
         }
+    }
+}
 
-        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 4.dp)) {
-            // PV row (each panel separate with own line start)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                pvRows.forEachIndexed { _, row ->
-                    val powerW = row.w ?: if (row.v != null && row.a != null) row.v * row.a else null
-                    val pvVal = if (powerW == null) "—" else if (abs(powerW) >= 1000f) fmt(powerW / 1000f, 2) else powerW.toInt().toString()
-                    val pvUnit = if (powerW == null) "" else if (abs(powerW) >= 1000f) "кВт" else "Вт"
-                    Column(
-                        modifier = Modifier.weight(1f).clickable { selectedNode = "PV" },
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("☀️", fontSize = 14.sp)
-                        IconImage(R.drawable.sunlink_solar_panel, "PV", Modifier.size(38.dp))
-                        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
-                            Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                            if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Text("${fmtInt(row.v, "В")}·${fmt(row.a, 1, "А")}", color = Color(0xFF90A4AE), fontFamily = Mono, fontSize = 14.sp)
-                        Text(row.name, color = Color.Gray, fontFamily = Mono, fontSize = 9.sp)
-                    }
-                }
+@Composable
+private fun RealTelemetrySection(data: InverterData) {
+    val colors = LocalSunLinkColors.current
+    val provisional = data.provisionalParameters
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = SunLinkDimensions.spaceLg),
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(SunLinkDimensions.spaceLg),
+            verticalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceMd)
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceLg)) {
+                TelemetryValue("PV1", data.pv1Power, stringResource(R.string.unit_watt), 0, colors.solar, "pv1_power" in provisional, Modifier.weight(1f))
+                TelemetryValue("PV2", data.pv2Power, stringResource(R.string.unit_watt), 0, colors.solar, "pv2_power" in provisional, Modifier.weight(1f))
+                TelemetryValue("PV3", data.pv3Power, stringResource(R.string.unit_watt), 0, colors.solar, "pv3_power" in provisional, Modifier.weight(1f))
             }
-
-            // middle: inverter center, battery left, grid right (same level)
-            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.align(Alignment.Center).clickable { selectedNode = "Інвертор" },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    IconImage(R.drawable.sunlink_inverter, "Інвертор", Modifier.size(72.dp))
-                    Text("Інвертор", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 10.sp)
-                }
-
-                Column(
-                    modifier = Modifier.align(Alignment.CenterStart).padding(start = 0.dp).clickable { selectedNode = "Батарея" },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(84.dp)
-                            .shadow(10.dp, RoundedCornerShape(18.dp))
-                            .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(18.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (pBatt != null) {
-                            // Анімація має сенс тільки коли є реальні дані про потік батареї.
-                            LottieNode(
-                                "icon_battery_charge_discharge.json",
-                                Modifier.size(76.dp)
-                            )
-                        } else {
-                            IconImage(R.drawable.sunlink_battery, "Батарея", Modifier.size(76.dp))
-                        }
-                    }
-                    Spacer(Modifier.height(2.dp))
-                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
-                        Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text("%", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        Text("·", color = Color.White, fontFamily = Mono, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        Text(if (battV != null) fmt(battV, 2) else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text("V", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Text(battStatus, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 9.sp)
-                }
-
-                val gridV2 = firstNum(data, "grid_voltage_l2", "voltage_l2")
-                val gridV3 = firstNum(data, "grid_voltage_l3", "voltage_l3")
-                val gridVoltageText = when {
-                    gridV != null && gridV2 != null && gridV3 != null -> "${fmtInt(gridV)}/${fmtInt(gridV2)}/${fmtInt(gridV3)} V"
-                    gridV != null -> "${fmt(gridV, 1, "V")}"
-                    else -> "—V"
-                }
-                val gridDir = when {
-                    pGrid == null -> null
-                    pGrid > 0.5f -> "Експорт"
-                    pGrid < -0.5f -> "Імпорт"
-                    else -> "Баланс"
-                }
-                Column(
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 0.dp).clickable { selectedNode = "Мережа" },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    IconImage(R.drawable.sunlink_grid_pole, "Мережа", Modifier.size(56.dp))
-                    Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
-                        Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    }
-                    Text(gridVoltageText, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp)
-                    Text(
-                        gridDir ?: "—",
-                        color = when (gridDir) { "Експорт" -> Color(0xFFE57373); "Імпорт" -> AccentBlue; else -> Color(0xFFB0BEC5) },
-                        fontFamily = Mono, fontSize = 10.sp, fontWeight = FontWeight.SemiBold
-                    )
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceLg)) {
+                TelemetryValue(stringResource(R.string.metric_voltage), data.batteryVoltage, stringResource(R.string.unit_volt), 2, colors.battery, "battery_voltage" in provisional, Modifier.weight(1f))
+                TelemetryValue(stringResource(R.string.metric_current), data.batteryCurrent, stringResource(R.string.unit_amp), 2, colors.battery, "battery_current" in provisional, Modifier.weight(1f))
+                TelemetryValue(stringResource(R.string.metric_power), data.pBatt, stringResource(R.string.unit_watt), 0, colors.battery, "battery_power" in provisional, Modifier.weight(1f))
             }
-
-            // Home bottom
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = if (selectedNode != null) 72.dp else 2.dp)
-                    .clickable { selectedNode = "Дім" },
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                IconImage(R.drawable.sunlink_house, "Дім", Modifier.size(56.dp))
-                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
-                    val homeVal = if (pLoad != null) fmt(pLoad / 1000f, 2) else "—"
-                    Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(" кВт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-                Text("Споживання", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceLg)) {
+                TelemetryValue("T90", data.dcTemperature, stringResource(R.string.unit_celsius), 1, colors.warning, "dc_temperature" in provisional, Modifier.weight(1f))
+                TelemetryValue("T91", data.acTemperature, stringResource(R.string.unit_celsius), 1, colors.warning, "ac_temperature" in provisional, Modifier.weight(1f))
+                TelemetryValue("SOC", data.batterySoc, stringResource(R.string.unit_percent), 0, colors.success, false, Modifier.weight(1f))
             }
-        }
-
-        // Bottom sheet-like info card on node tap
-        selectedNode?.let { node ->
-            Card(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
-                    .shadow(6.dp, GlassShape)
-                    .clickable { selectedNode = null },
-                colors = CardDefaults.cardColors(containerColor = Color(0xCC1E2633)),
-                shape = GlassShape,
-                border = BorderStroke(1.dp, GlassBorder),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Text(node, color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                    Spacer(Modifier.height(4.dp))
-                    val detail = when (node) {
-                        "PV" -> "PV1: ${fmt(pvRows[0].v,0)}В ${fmt(pvRows[0].a,1)}А · PV2: ${fmt(pvRows[1].v,0)}В ${fmt(pvRows[1].a,1)}А · PV3: ${fmt(pvRows[2].v,0)}В ${fmt(pvRows[2].a,1)}А · Σ ${if (pSun!=null) fmt(pSun/1000f,2," кВт") else "—"}"
-                        "Інвертор" -> "Deye SUN-12K · Modbus TCP · дані з API"
-                        "Батарея" -> "SOC: ${fmtInt(battSoc, "%")} · V: ${fmt(battV, 2)} В · I: ${fmt(battA, 2)} А · T: ${fmt(battT, 0)} °C · $battStatus (batt_soc/battery_*/p_batt)"
-                        "Мережа" -> {
-                            val dir = when { pGrid == null -> "—"; pGrid > 0.5f -> "Експорт"; pGrid < -0.5f -> "Імпорт"; else -> "Баланс" }
-                            "Потік: ${if (pGrid != null) "${pGrid.toInt()} Вт ($dir)" else "—"} · V: ${fmt(gridV, 0)} В (p_grid/grid_voltage_l1)"
-                        }
-                        "Дім" -> "Навантаження: ${if (pLoad != null) fmt(pLoad / 1000f, 2, " кВт") else "—"} (p_load)"
-                        else -> ""
-                    }
-                    Text(detail, color = Color.White, fontFamily = Mono, fontSize = 12.sp)
-                    Text("Торкніться щоб закрити", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 10.sp, modifier = Modifier.padding(top = 6.dp))
-                }
+            if (provisional.isNotEmpty()) {
+                Text(
+                    stringResource(R.string.dash_provisional_note),
+                    style = SunLinkTypography.caption,
+                    color = colors.warning
+                )
             }
         }
     }
