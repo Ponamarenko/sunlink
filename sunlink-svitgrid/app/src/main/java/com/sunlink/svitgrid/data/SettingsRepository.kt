@@ -28,7 +28,7 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val KEY_HTTPS = "server_https"
         const val KEY_MIGRATION_VERSION = "settings_migration_version"
         const val KEY_THEME_MODE = "theme_mode"
-        const val CURRENT_MIGRATION_VERSION = 3
+        const val CURRENT_MIGRATION_VERSION = 4
 
         private val HOST_REGEX = Regex("^[A-Za-z0-9._-]+$")
         private val IPV4_REGEX = Regex("^\\d{1,3}(\\.\\d{1,3}){3}$")
@@ -107,8 +107,15 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             savedHost.lowercase() in BackendDefaults.LEGACY_PUBLIC_HOSTS
         val oldDefaultPort = savedHost?.equals(BackendDefaults.HOST, ignoreCase = true) == true &&
             savedPort == BackendDefaults.LEGACY_HTTPS_PORT.toString()
+        // HOTFIX: сохранённый публичный хост с любым не-9443 портом или без HTTPS
+        // (включая устаревший публичный HTTP-порт) приводится к согласованному endpoint.
+        val effectiveHost = savedHost ?: BackendDefaults.HOST
+        val effectivePort = savedPort ?: BackendDefaults.PORT.toString()
+        val effectiveHttps = prefs.getBoolean(KEY_HTTPS, BackendDefaults.USE_HTTPS)
+        val publicMisconfigured = BackendDefaults.isPublicHost(effectiveHost) &&
+            (effectivePort != BackendDefaults.PORT.toString() || !effectiveHttps)
 
-        if (legacyHost || oldDefaultPort) {
+        if (legacyHost || oldDefaultPort || publicMisconfigured) {
             prefs.edit()
                 .putString(KEY_HOST, BackendDefaults.HOST)
                 .putString(KEY_PORT, BackendDefaults.PORT.toString())
@@ -145,6 +152,28 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         serverPort.toIntOrNull() ?: BackendDefaults.PORT,
         useHttps
     )
+
+    /** HOTFIX:LAN endpoint доступен только в Debug-сборке и только по явному действию. */
+    fun useDebugLanEndpoint(): Boolean {
+        if (!com.sunlink.svitgrid.BuildConfig.DEBUG) return false
+        val url = BackendDefaults.debugLanUrlOrNull() ?: return false
+        val endpoint = parseEndpoint(url) ?: return false
+        prefs.edit()
+            .putString(KEY_HOST, endpoint.host)
+            .putString(KEY_PORT, (endpoint.port ?: BackendDefaults.DEBUG_LAN_PORT).toString())
+            .putBoolean(KEY_HTTPS, false)
+            .apply()
+        return true
+    }
+
+    /** Возврат к согласованному публичному endpoint. */
+    fun usePublicEndpoint() {
+        prefs.edit()
+            .putString(KEY_HOST, BackendDefaults.HOST)
+            .putString(KEY_PORT, BackendDefaults.PORT.toString())
+            .putBoolean(KEY_HTTPS, true)
+            .apply()
+    }
 
     /** Stage 31: SYSTEM / LIGHT / DARK. Значение сохраняется в тех же SharedPreferences. */
     var themeModeName: String

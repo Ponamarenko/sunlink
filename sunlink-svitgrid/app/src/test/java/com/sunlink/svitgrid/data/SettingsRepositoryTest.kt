@@ -202,6 +202,47 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun `HOTFIX saved public host with port 8800 migrates to 9443 https`() {
+        val prefs = FakePrefs()
+        prefs.edit()
+            .putString("server_address", "sunlink.pp.ua")
+            .putString("server_port", "8800")
+            .putBoolean("server_https", false)
+            .putInt("settings_migration_version", 3)
+            .commit()
+
+        val repo = SettingsRepository(prefs)
+        assertEquals("sunlink.pp.ua", repo.serverAddress)
+        assertEquals("9443", repo.serverPort)
+        assertTrue(repo.useHttps)
+        assertEquals("https://sunlink.pp.ua:9443/", repo.getBaseUrl())
+        assertEquals(4, prefs.getInt("settings_migration_version", 0))
+    }
+
+    @Test
+    fun `HOTFIX partial public settings with port 8800 also migrate`() {
+        val prefs = FakePrefs()
+        prefs.edit()
+            .putString("server_port", "8800")
+            .putBoolean("server_https", false)
+            .commit()
+        val repo = SettingsRepository(prefs)
+        assertEquals("https://sunlink.pp.ua:9443/", repo.getBaseUrl())
+    }
+
+    @Test
+    fun `HOTFIX custom LAN debug endpoint is preserved`() {
+        val prefs = FakePrefs()
+        prefs.edit()
+            .putString("server_address", "192.168.25.20")
+            .putString("server_port", "18800")
+            .putBoolean("server_https", false)
+            .commit()
+        val repo = SettingsRepository(prefs)
+        assertEquals("http://192.168.25.20:18800/", repo.getBaseUrl())
+    }
+
+    @Test
     fun `theme mode is persisted and defaults to system`() {
         val repo = SettingsRepository(FakePrefs())
         assertEquals("SYSTEM", repo.themeModeName)

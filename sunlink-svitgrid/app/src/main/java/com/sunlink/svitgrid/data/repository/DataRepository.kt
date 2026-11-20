@@ -3,6 +3,9 @@ package com.sunlink.svitgrid.data.repository
 import com.sunlink.svitgrid.data.dto.*
 import com.sunlink.svitgrid.data.model.*
 import com.sunlink.svitgrid.network.ApiService
+import com.sunlink.svitgrid.network.NetworkDiagnostics
+import com.sunlink.svitgrid.network.RequestType
+import com.sunlink.svitgrid.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
@@ -22,8 +25,14 @@ open class DataRepository(private val apiService: ApiService? = null) {
      */
     open suspend fun loadInverterData(): Result<Pair<InverterData, InverterStatus>> =
         withContext(Dispatchers.IO) {
+            val endpoint = RetrofitClient.getBaseUrl() + "api/live/raw"
+            NetworkDiagnostics.record(RequestType.REST, endpoint, "REQUEST")
             try {
                 val response: Response<LiveRawDto> = apiService!!.getLiveRawDto()
+                NetworkDiagnostics.record(
+                    RequestType.REST, endpoint, "RESPONSE",
+                    httpCode = response.code(), success = response.isSuccessful
+                )
                 if (response.isSuccessful) {
                     val dto = response.body()
                     if (dto != null) {
@@ -37,6 +46,9 @@ open class DataRepository(private val apiService: ApiService? = null) {
                     error(Exception("HTTP ${response.code()}"))
                 }
             } catch (e: Exception) {
+                NetworkDiagnostics.record(
+                    RequestType.REST, endpoint, "FAILED", errorType = e.javaClass.simpleName
+                )
                 error(e)
             }
         }

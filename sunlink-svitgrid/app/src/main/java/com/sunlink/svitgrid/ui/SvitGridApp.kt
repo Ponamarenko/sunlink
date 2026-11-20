@@ -330,6 +330,21 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
+        if (BuildConfig.DEBUG) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = {
+                    repo.useDebugLanEndpoint()
+                    RetrofitClient.setBaseUrl(repo.getBaseUrl())
+                    vm.checkConnection()
+                }) { Text("Debug LAN :18800") }
+                Button(onClick = {
+                    repo.usePublicEndpoint()
+                    RetrofitClient.setBaseUrl(repo.getBaseUrl())
+                    vm.checkConnection()
+                }) { Text("Публічний :9443") }
+            }
+        }
+
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Підключення до сервера", style = MaterialTheme.typography.titleMedium)
@@ -339,7 +354,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     onValueChange = { serverAddress = it; settingsError = null },
                     label = { Text("Адреса сервера") },
                     placeholder = { Text(com.sunlink.svitgrid.data.BackendDefaults.HOST) },
-                    supportingText = { Text("Публічний: https://sunlink.pp.ua:9443/ • LAN: http://192.168.25.20:8800/") },
+                    supportingText = { Text("Публічний: https://sunlink.pp.ua:9443/ • Debug LAN: http://192.168.25.20:18800/") },
                     modifier = Modifier.fillMaxWidth(),
                     isError = settingsError != null
                 )

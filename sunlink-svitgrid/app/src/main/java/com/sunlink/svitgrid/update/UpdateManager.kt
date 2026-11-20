@@ -7,6 +7,8 @@ import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
 import com.sunlink.svitgrid.BuildConfig
+import com.sunlink.svitgrid.network.NetworkDiagnostics
+import com.sunlink.svitgrid.network.RequestType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -23,6 +25,8 @@ data class UpdateInfo(
 )
 
 object UpdateManager {
+    const val UPDATE_ENDPOINT = "https://api.github.com/repos/Ponamarenko/sunlink/releases/latest"
+
     private val client = OkHttpClient.Builder()
         .connectTimeout(20, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
@@ -31,14 +35,22 @@ object UpdateManager {
     suspend fun checkForUpdates(): Result<UpdateInfo?> = withContext(Dispatchers.IO) {
         try {
             val request = Request.Builder()
-                .url("https://api.github.com/repos/Ponamarenko/sunlink/releases/latest")
+                .url(UPDATE_ENDPOINT)
                 .header("User-Agent", "SunLink-App/${BuildConfig.VERSION_NAME}")
                 .header("Accept", "application/vnd.github+json")
                 .build()
+            NetworkDiagnostics.record(RequestType.UPDATE, UPDATE_ENDPOINT, "REQUEST")
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
+                    NetworkDiagnostics.record(
+                        RequestType.UPDATE, UPDATE_ENDPOINT, "RESPONSE", httpCode = response.code
+                    )
                     return@withContext Result.failure(Exception("HTTP ${response.code}"))
                 }
+                NetworkDiagnostics.record(
+                    RequestType.UPDATE, UPDATE_ENDPOINT, "RESPONSE",
+                    httpCode = response.code, success = response.isSuccessful
+                )
                 val body = response.body?.string().orEmpty()
                 val json = JSONObject(body)
                 val tag = json.optString("tag_name", "")
@@ -71,6 +83,12 @@ object UpdateManager {
                 }
             }
         } catch (e: Exception) {
+            NetworkDiagnostics.record(
+                type = RequestType.UPDATE,
+                endpoint = UPDATE_ENDPOINT,
+                stage = "FAILED",
+                errorType = e.javaClass.simpleName
+            )
             Result.failure(e)
         }
     }
@@ -106,10 +124,18 @@ object UpdateManager {
                 .url(url)
                 .header("User-Agent", "SunLink-App/${BuildConfig.VERSION_NAME}")
                 .build()
+            NetworkDiagnostics.record(RequestType.UPDATE, url, "DOWNLOAD_REQUEST")
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
+                    NetworkDiagnostics.record(
+                        RequestType.UPDATE, url, "DOWNLOAD_RESPONSE", httpCode = response.code
+                    )
                     return@withContext Result.failure(Exception("HTTP ${response.code}"))
                 }
+                NetworkDiagnostics.record(
+                    RequestType.UPDATE, url, "DOWNLOAD_RESPONSE",
+                    httpCode = response.code, success = response.isSuccessful
+                )
                 val body = response.body ?: return@withContext Result.failure(Exception("Порожня відповідь"))
                 val total = body.contentLength()
                 body.byteStream().use { input ->

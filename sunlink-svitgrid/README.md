@@ -2,7 +2,7 @@
 
 **SunLink** — Android-застосунок (Kotlin, Jetpack Compose, Material3) для моніторингу сонячної станції на базі інвертора **Deye** у стилі SvitGrid-дашборду: вузли PV/інвертор/батарея/мережа/дім, потоки енергії (Bezier-лінії з анімацією), статус з’єднання, екран відладки сирих даних.
 
-Поточна версія застосунку: **v2.34.0** (versionCode 55).
+Поточна версія застосунку: **v2.35.0** (versionCode 56).
 
 ## Можливості
 - Дашборд з реальними даними (PV-рядки, батарея, мережа, навантаження) та відображенням `—` для відсутніх полів
@@ -99,6 +99,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-28-real-hardware-validation.md](docs/stages/stage-28-real-hardware-validation.md) — реальний FC03 reg 184 (94 % SOC), перевірка pipeline/API/WebSocket на фізичних даних (етап 28)
 - [docs/stages/stage-30-dashboard-real-telemetry.md](docs/stages/stage-30-dashboard-real-telemetry.md) — WebSocket у Android, оновлений дашборд з ассетами `Icon/`, реальні REST/WS кадри (етап 30)
 - [docs/stages/stage-31-premium-dashboard.md](docs/stages/stage-31-premium-dashboard.md) — Premium Design System,_light/dark/system, локалізація uk/en, нова енергетична схема (етап 31)
+- [docs/stages/stage-32-hotfix-release-endpoint.md](docs/stages/stage-32-hotfix-release-endpoint.md) — виправлення застарілого public :8800 → https://sunlink.pp.ua:9443/, діагностика UPDATE/REST/WS (hotfix)
 
 ## Перевірка релізу
 
@@ -143,6 +144,7 @@ https://github.com/Ponamarenko/sunlink/releases/tag/android-v2.32.1-stage25b1
 | v2.32.1 | Етап 25B.1: HTTP 8800 (LAN) + HTTPS 9443 (публічний), міграція 8443→9443, два listener одного FastAPI app, 258 backend + Android тести, APK |
 | v2.33.0 | Етап 30: WebSocket-клієнт у Android, дашборд з реальними станами та ассетами `Icon/`, 276 backend + 93 Android тестів, debug APK |
 | v2.34.0 | Етап 31: Premium Design System, Dark/Light/System, uk/en, нова схема потоків, 276 backend + 105 Android тестів, debug APK |
+| v2.35.0 | Hotfix: міграція збереженого public :8800 → 9443, заборона публічного HTTP, debug LAN 18800, діагностика UPDATE/REST/WS, 276 backend + 115 Android тестів |
 
 ## Відомі застереження
 - Карта регістрів/масштаби Deye можуть відрізнятися для конкретної моделі/прошивки (потрібна верифікація значень: напруга мережі, температури, лічильники енергії).

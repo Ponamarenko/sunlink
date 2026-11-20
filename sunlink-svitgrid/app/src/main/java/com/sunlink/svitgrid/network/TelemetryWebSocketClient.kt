@@ -102,11 +102,13 @@ class TelemetryWebSocketClient internal constructor(
             return
         }
         val myGeneration = ++generation
+        NetworkDiagnostics.record(RequestType.WEBSOCKET, url, "CONNECTING")
         onState(WsTransportState.CONNECTING)
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
                 if (!isCurrent(myGeneration)) return
                 attempt = 0
+                NetworkDiagnostics.record(RequestType.WEBSOCKET, url, "OPEN", success = true)
                 onState(WsTransportState.OPEN)
             }
 
@@ -115,6 +117,7 @@ class TelemetryWebSocketClient internal constructor(
                 val message = WebSocketLiveParser.parse(text)
                 if (!WebSocketLiveParser.isLiveData(message)) return
                 attempt = 0
+                NetworkDiagnostics.record(RequestType.WEBSOCKET, url, "LIVE_DATA", success = true)
                 message?.let(onMessage)
             }
 
@@ -129,6 +132,10 @@ class TelemetryWebSocketClient internal constructor(
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
+                NetworkDiagnostics.record(
+                    RequestType.WEBSOCKET, url, "FAILED",
+                    httpCode = response?.code, errorType = t.javaClass.simpleName
+                )
                 if (!isCurrent(myGeneration)) return
                 this@TelemetryWebSocketClient.webSocket = null
                 scheduleReconnect()

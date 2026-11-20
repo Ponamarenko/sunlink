@@ -2,6 +2,17 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.35.0] — 2026-11-20 (hotfix endpoint релізу)
+- Виправлено причину `Failed to connect to sunlink.pp.ua:8800`: застарілі SharedPreferences публічного хоста не мігрували з v3
+- Міграція v4: будь-який публічний хост з не-9443 портом/без HTTPS → `https://sunlink.pp.ua:9443/`
+- Публічний HTTP заборонений у `RetrofitClient.setBaseUrl`; debug LAN `http://192.168.25.20:18800/` — тільки в Debug і тільки явним ACTION
+- WebSocket fallback більше не `127.0.0.1:8800`, а `wss://sunlink.pp.ua:9443/ws`
+- Діагностика UPDATE / REST / WEBSOCKET з типом, endpoint'ом без секретів, етапом, HTTP-кодом і часом останнього успіху
+- UPDATE лишається окремим потоком (`api.github.com`) і не блокує Dashboard
+- Backend 276 PASS, Android 115 PASS; debug APK v2.35.0 (56)
+- Реальне підключення до production **НЕ перевірено**: `curl https://sunlink.pp.ua:9443/status` — connection refused (сервер не розгорнуто)
+
+
 ## [v2.34.0] — 2026-11-20 (Premium Design System та дашборд, етап 31)
 - **Етап 31:** цілісна візуальна система без зміни production/телеметрії
   - Design System: централізована семантична палітра Dark/Light, типографіка з tabular figures, єдині відступи/радіуси/іконки

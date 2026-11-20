@@ -62,7 +62,7 @@ object RetrofitClient {
      */
     fun getWebSocketUrl(): String {
         val parsed = baseUrl.toHttpUrlOrNull()
-            ?: return "ws://127.0.0.1:8800/ws"
+            ?: return "wss://${com.sunlink.svitgrid.data.BackendDefaults.HOST}:${com.sunlink.svitgrid.data.BackendDefaults.PORT}/ws"
         val scheme = when (parsed.scheme) {
             "https" -> "wss"
             else -> "ws"
@@ -97,6 +97,10 @@ object RetrofitClient {
             val parsed = candidate.toHttpUrlOrNull() ?: return null
             if (parsed.scheme !in setOf("http", "https")) return null
             if (parsed.host.isNullOrEmpty()) return null
+            // Публичный HTTP запрещён и в Release, и в Debug.
+            if (parsed.scheme == "http" &&
+                !com.sunlink.svitgrid.data.BackendDefaults.isLocalHost(parsed.host)
+            ) return null
             parsed.toString()
         } catch (e: Exception) {
             null

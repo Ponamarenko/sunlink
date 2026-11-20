@@ -13,11 +13,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.data.model.*
 import com.sunlink.svitgrid.viewmodel.MainViewModel
+import com.sunlink.svitgrid.network.NetworkDiagnostics
 
 @Composable
 fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
     val uiState by vm.uiState.collectAsState()
     val loading by vm.refreshing.collectAsState()
+    val events by NetworkDiagnostics.events.collectAsState()
+    val lastSuccess by NetworkDiagnostics.lastSuccessUtc.collectAsState()
 
     val uiStateValue = uiState
     val data = when (uiStateValue) {
@@ -66,6 +69,16 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
                 "Реєстрів: ${status.availableRegisters}",
                 "Помилка: ${status.error ?: "немає"}"
             )
+        )
+
+        DiagnosticCard(
+            title = "Мережеві запити (UPDATE / REST / WEBSOCKET)",
+            status = "Останній успіх: ${lastSuccess ?: "—"}",
+            statusColor = Color(0xFF66BB6A),
+            details = if (events.isEmpty()) listOf("Запитів ще не було")
+            else events.take(10).map { e ->
+                "${e.type} · ${e.stage} · ${e.endpoint} · HTTP ${e.httpCode ?: "—"} · ${e.errorType ?: "OK"} · ${e.atUtc.take(19)}"
+            }
         )
 
         DiagnosticCard(
