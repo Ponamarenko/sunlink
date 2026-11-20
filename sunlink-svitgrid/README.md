@@ -96,6 +96,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-25b-direct-https.md](docs/stages/stage-25b-direct-https.md) — прямий HTTPS на backend, міграція URL Android, deployment package, реліз v2.32.0 (етап 25B)
 - [docs/stages/stage-25b1-direct-https-9443.md](docs/stages/stage-25b1-direct-https-9443.md) — два listener: HTTP 8800 (LAN) + HTTPS 9443 (публічний), міграція 8443→9443 (етап 25B.1)
 - [docs/stages/stage-27-real-inverter-integration.md](docs/stages/stage-27-real-inverter-integration.md) — єдиний read-only poller, аддитивні міграції SQLite, production pipeline без симуляції (етап 27)
+- [docs/stages/stage-28-real-hardware-validation.md](docs/stages/stage-28-real-hardware-validation.md) — реальний FC03 reg 184 (94 % SOC), перевірка pipeline/API/WebSocket на фізичних даних (етап 28)
 
 ## Перевірка релізу
 

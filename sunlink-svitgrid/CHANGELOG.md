@@ -2,6 +2,14 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [unreleased] — 2026-11-20 (реальна перевірка обладнання, етап 28)
+- **Етап 28:** фізичне підключення до Ebyte NA111-E `192.168.25.15:502` і читання регистра 184
+  - TCP доступний (66 мс / 11 мс із сервера), виконовано 3 FC03-читання reg 184: raw `0x005E` = 94 % SOC, TID=1, Unit=1, стабільні значення
+  - Ізольований `DeyePollingService` з реальним транспортом і тимчасовою SQLite: `state=online`, `source=deye_modbus`, збережено raw=94 / normalized=94.0
+  - Ізольовані API/WebSocket віддають реальні дані (`source=deye_modbus`), simulator не задіяний
+  - Backend **276 PASS** (8 нових Stage 28 тестів); single-poller/write-protection/reconnect підтверджені
+  - Синхронна звірка з дисплеєм і інші регистри — NOT TESTED; production не змінювався
+
 ## [unreleased] — 2026-11-20 (підготовка реальної Deye-телеметрії, етап 27)
 - **Етап 27:** єдиний production pipeline без симуляції
   - `services/production_pipeline.py` — physical Modbus тільки при явному opt-in, без DEMO/симуляторів

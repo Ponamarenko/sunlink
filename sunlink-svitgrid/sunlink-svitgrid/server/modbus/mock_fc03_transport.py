@@ -58,6 +58,7 @@ class MockFc03Transport:
         self.connected = False
         self.read_calls: List[tuple] = []
         self.connect_calls = 0
+        self.request_count = 0
         # Режимы отказов (включаются тестами).
         self.fail_timeout = False
         self.fail_connection = False
@@ -80,6 +81,7 @@ class MockFc03Transport:
     def read_holding_registers(self, address: int, count: int = 1, device_id: int = 1):
         """Только FC03. Возвращает Fc03Result или выбрасывает Fc03Error."""
         self.read_calls.append((address, count, device_id))
+        self.request_count += 1
         if not self.connected:
             raise Fc03ConnectionRefused("mock connection closed")
         if self.fail_connection:
