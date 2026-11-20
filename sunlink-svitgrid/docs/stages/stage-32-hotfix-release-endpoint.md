@@ -67,8 +67,12 @@ SettingsRepository(prefs) → getBaseUrl() = buildBaseUrl(serverAddress, serverP
 ## 6. Git и Release
 
 - Исходный HEAD: `d6f271b4365d13f24f90b3500d9be79b257f4cea`.
-- Commit и tag/release указываются в финальном ответе и в CHANGELOG.
-- APK: debug, prerelease, SHA-256/PK size — в финальном ответе. APK в Git не добавлялся.
+- Commit: `3aa7a775ddb35570385dcb4784911650093cd343` — `HOTFIX: migrate stale public endpoint from :8800 to HTTPS :9443`; push в `origin/main`, `HEAD = origin/main`.
+- Release: `SunLink Hotfix — Release Endpoint (Prerelease)`, tag `android-v2.35.0-stage32-debug`.
+- URL: https://github.com/Ponamarenko/sunlink/releases/tag/android-v2.35.0-stage32-debug
+- APK asset: https://github.com/Ponamarenko/sunlink/releases/download/android-v2.35.0-stage32-debug/app-debug.apk
+- Размер APK: **13 099 555** B; SHA-256: `07bb9fbea82a954b7f736b353b9c920d1faa3b195412567409937f950a21bd0b` (скачанный asset проверен скриптом).
+- APK в Git не добавлялся.
 - Мастер-ТЗ `мобильное приложение.txt` не изменялся.
 
 ## 7. Что НЕ проверено
