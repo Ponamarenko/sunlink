@@ -92,6 +92,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-22-real-telemetry-register-validation.md](docs/stages/stage-22-real-telemetry-register-validation.md) — повна карта телеметрії, рівні достовірності, план наступного фізичного тесту (етап 22)
 - [docs/stages/stage-23-controlled-register-validation.md](docs/stages/stage-23-controlled-register-validation.md) — 5 контрольованих FC03: PV, V/I/P батареї, температури; гіпотеза scale reg 190 ×0.1 (етап 23)
 - [docs/stages/stage-24-real-telemetry-expansion.md](docs/stages/stage-24-real-telemetry-expansion.md) — розширення телеметрії: backend/API/Android, 246 backend + 67 Android тестів, APK v2.31.0 (етап 24)
+- [docs/stages/stage-25a-connectivity-diagnostic.md](docs/stages/stage-25a-connectivity-diagnostic.md) — діагностика DNS/TCP/HTTPS: причина CLEARTEXT-помилки, сертифікат, топологія (етап 25A)
 
 ## Перевірка релізу
 
