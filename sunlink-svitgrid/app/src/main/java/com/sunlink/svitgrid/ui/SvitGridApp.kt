@@ -112,6 +112,11 @@ fun SvitGridApp() {
                     repository = DataRepository(RetrofitClient.getApiService())
                 )
             )
+            // Stage 29: один WebSocket-клієнт на весь час роботи екрана.
+            DisposableEffect(viewModel) {
+                viewModel.startLiveUpdates()
+                onDispose { viewModel.stopLiveUpdates() }
+            }
             NavHost(
                 navController = navController,
                 startDestination = "dashboard",

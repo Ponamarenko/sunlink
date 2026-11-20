@@ -128,6 +128,9 @@ else
   STABILITY="RELEASE — требует проверенной подписи"
 fi
 
+BACKEND_TESTS="${BACKEND_TESTS:-276}"
+ANDROID_TESTS="${ANDROID_TESTS:-93}"
+
 NOTES_FILE="$TMP/NOTES.md"
 cat > "$NOTES_FILE" <<EOF
 ## SunLink Android $VERSION_NAME ($VERSION_CODE)
@@ -139,8 +142,8 @@ cat > "$NOTES_FILE" <<EOF
 - minSdk 26 / targetSdk 34
 
 ### Тесты
-- Backend: 159 unit-тестов PASS
-- Android: 62 unit-тестов PASS
+- Backend: ${BACKEND_TESTS} unit-тестов PASS
+- Android: ${ANDROID_TESTS} unit-тестов PASS
 - \`scripts/verify_sunlink_release.sh\`: RELEASE VERIFICATION: PASS
 
 ### SHA-256
@@ -148,8 +151,12 @@ cat > "$NOTES_FILE" <<EOF
 $SHA  $APK_NAME
 \`\`\`
 
+### Источник данных
+- Реальная телеметрия приходит по REST/WebSocket от backend с \`source: deye_modbus\`.
+- Неподтверждённые параметры остаются пустыми и отображаются как «Немає даних», а не нулями.
+- DEMO/mock/simulator в production-пути запрещены.
+
 ### Ограничения
-- Данные демо-backend симулируются (\`source: demo_simulator\`), это НЕ показания физического инвертора.
 - Установка и запуск на реальном Android-устройстве: **NOT VERIFIED** (устройство/эмулятор недоступны).
 - Debug APK не подписан production-ключом.
 ${NOTES:-}

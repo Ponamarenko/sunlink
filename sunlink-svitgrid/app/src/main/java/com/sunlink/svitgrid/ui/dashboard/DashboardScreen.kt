@@ -66,6 +66,9 @@ import com.sunlink.svitgrid.R
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 import com.sunlink.svitgrid.data.model.InverterData
 import com.sunlink.svitgrid.data.model.InverterUiState
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -102,6 +105,60 @@ private fun fmtInt(v: Float?, suffix: String = ""): String {
     return "${v.toInt()}$suffix"
 }
 
+/** Зображення з каталогу Icon/ — без розтягування, зі збереженням пропорцій. */
+@Composable
+private fun IconImage(resId: Int, description: String, modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(id = resId),
+        contentDescription = description,
+        modifier = modifier,
+        contentScale = ContentScale.Fit
+    )
+}
+
+private val timeFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("dd.MM HH:mm:ss").withZone(ZoneId.systemDefault())
+
+private fun formatUpdateTime(timestamp: String?): String {
+    if (timestamp.isNullOrBlank()) return "—"
+    return try {
+        val normalized = if (timestamp.endsWith("Z")) timestamp else timestamp.replace("+00:00", "Z")
+        timeFormatter.format(Instant.parse(normalized))
+    } catch (e: Exception) {
+        timestamp.take(19)
+    }
+}
+
+private enum class ConnectionPresentation {
+    LOADING, ONLINE, OFFLINE, STALE, ERROR
+}
+
+private fun connectionPresentation(state: InverterUiState, loading: Boolean): ConnectionPresentation =
+    when {
+        loading -> ConnectionPresentation.LOADING
+        state is InverterUiState.Success && state.stale -> ConnectionPresentation.STALE
+        state is InverterUiState.Success && state.status.online -> ConnectionPresentation.ONLINE
+        state is InverterUiState.Error && state.data != null -> ConnectionPresentation.STALE
+        state is InverterUiState.Error -> ConnectionPresentation.ERROR
+        else -> ConnectionPresentation.OFFLINE
+    }
+
+private fun ConnectionPresentation.label(): String = when (this) {
+    ConnectionPresentation.LOADING -> "Завантаження"
+    ConnectionPresentation.ONLINE -> "Онлайн"
+    ConnectionPresentation.OFFLINE -> "Офлайн"
+    ConnectionPresentation.STALE -> "Застарілі дані"
+    ConnectionPresentation.ERROR -> "Помилка з'єднання"
+}
+
+private fun ConnectionPresentation.color(): Color = when (this) {
+    ConnectionPresentation.LOADING -> AccentBlue
+    ConnectionPresentation.ONLINE -> AccentGreen
+    ConnectionPresentation.OFFLINE -> Color(0xFFE57373)
+    ConnectionPresentation.STALE -> AccentOrange
+    ConnectionPresentation.ERROR -> Color(0xFFE57373)
+}
+
 @Composable
 fun DashboardScreen(vm: MainViewModel = viewModel()) {
     val uiState by vm.uiState.collectAsState()
@@ -133,17 +190,24 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
             .fillMaxSize()
             .background(BgDark)
     ) {
-        HeaderSection(loading = loading, hasData = d.hasMeasurements, error = error, status = uiStateValue)
+        HeaderSection(
+            loading = loading,
+            hasData = d.hasMeasurements,
+            error = error,
+            status = uiStateValue,
+            data = d
+        )
         if (isStale || error != null) {
             Text(
-                text = if (isStale) "⚠ Дані застарілі — backend недоступний" else "⚠ Немає зв'язку з backend",
+                text = if (isStale) "⚠ Дані застарілі — свіжий обмін з backend не підтверджено"
+                       else "⚠ Немає зв'язку з backend",
                 color = AccentOrange,
                 fontFamily = Mono,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
             )
         }
-        if (d.source == "demo_simulator") {
+        if (d.source == "demo_simulator" || d.source == "mock") {
             Text(
                 text = "DEMO • дані демонстраційного джерела, не реальний інвертор",
                 color = AccentOrange,
@@ -152,8 +216,7 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
             )
         }
-        BlackoutSection()
-        TimelineSection()
+        PowerFlowCardsSection(data = d)
         RealTelemetrySection(data = d)
         FlowSchemeSection(d.toMap() as Map<String, Any>, Modifier.weight(1f))
     }
@@ -215,6 +278,12 @@ private fun RealTelemetrySection(data: InverterData) {
                     )
                 }
             }
+            Text(
+                text = "Джерело: ${data.source} · «—» = Немає даних",
+                fontFamily = Mono,
+                fontSize = 9.sp,
+                color = Color.Gray
+            )
             if (provisional.isNotEmpty()) {
                 Text(
                     text = "* provisional — масштаб/зсув потребують верифікації на дисплеї",
@@ -228,92 +297,138 @@ private fun RealTelemetrySection(data: InverterData) {
 }
 
 @Composable
-private fun HeaderSection(loading: Boolean, hasData: Boolean, error: String?, status: InverterUiState) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "HOME",
-                style = MaterialTheme.typography.headlineMedium.copy(fontFamily = Mono, fontWeight = FontWeight.Bold),
-                color = Color.White,
-                fontSize = 22.sp
-            )
-            val connStatus = when {
-                loading -> "Оновлення..."
-                status is InverterUiState.Success && status.status.online -> "Є зв'язок"
-                error != null -> "Немає зв'язку"
-                else -> "Очікування..."
+private fun HeaderSection(
+    loading: Boolean,
+    hasData: Boolean,
+    error: String?,
+    status: InverterUiState,
+    data: InverterData
+) {
+    val presentation = connectionPresentation(status, loading)
+    val inverterOnline = when (status) {
+        is InverterUiState.Success -> status.status.online
+        is InverterUiState.Error -> status.status?.online == true
+        else -> false
+    }
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconImage(R.drawable.sunlink_inverter, "SunLink", Modifier.size(36.dp))
+                Column {
+                    Text(
+                        text = "SunLink",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = Mono, fontWeight = FontWeight.Bold
+                        ),
+                        color = Color.White,
+                        fontSize = 20.sp
+                    )
+                    Text(
+                        text = "Deye SUN-12K-SG02LP1-EU-AM3",
+                        fontFamily = Mono, fontSize = 9.sp, color = Color.Gray
+                    )
+                }
             }
-            val connected = hasData && !loading && (status is InverterUiState.Success && status.status.online)
-            Text(
-                text = connStatus,
-                color = if (connected) AccentGreen else if (error != null) Color(0xFFE57373) else Color.Gray,
-                fontFamily = Mono,
-                fontSize = 12.sp,
-                fontWeight = if (connected) FontWeight.Bold else FontWeight.Normal,
-                style = if (connected) TextStyle(
-                    shadow = Shadow(color = AccentGreen.copy(alpha = 0.9f), blurRadius = 14f)
-                ) else TextStyle.Default
-            )
-            if (!hasData && error != null) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = AccentBlue
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(9.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(presentation.color())
+                )
                 Text(
-                    error.take(90),
-                    color = Color(0xFFEF9A9A),
-                    fontFamily = Mono,
-                    fontSize = 9.sp,
-                    maxLines = 2
+                    text = presentation.label(),
+                    color = presentation.color(),
+                    fontFamily = Mono, fontSize = 12.sp, fontWeight = FontWeight.Bold
                 )
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            if (loading) CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = AccentBlue)
-            Text("14° Мряка", style = MaterialTheme.typography.bodySmall, color = Color.Gray, fontFamily = Mono)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            val inverterState = when {
+                !hasData && error != null -> "Інвертор: немає даних"
+                inverterOnline -> "Інвертор: онлайн"
+                data.timestamp == null -> "Інвертор: очікування"
+                else -> "Інвертор: офлайн"
+            }
+            Text(inverterState, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp)
+            Text(
+                text = "Оновлено: ${formatUpdateTime(data.timestamp)}",
+                color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp
+            )
+        }
+        if (!hasData && error != null) {
+            Text(
+                text = error.take(90),
+                color = Color(0xFFEF9A9A),
+                fontFamily = Mono,
+                fontSize = 9.sp,
+                maxLines = 2,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
     }
 }
 
-@Composable
-private fun BlackoutSection() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
-            .shadow(8.dp, RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFCDDC39).copy(alpha = 0.85f)),
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
-    ) {
-        Text(
-            text = "Без світла 16 хв · на акумуляторі",
-            modifier = Modifier.padding(12.dp).fillMaxWidth(),
-            style = MaterialTheme.typography.titleMedium.copy(fontFamily = Mono, fontWeight = FontWeight.Bold),
-            color = Color(0xFF111111),
-            textAlign = TextAlign.Center
-        )
-    }
-}
+private data class FlowCard(
+    val title: String,
+    val icon: Int,
+    val value: Float?,
+    val unit: String
+)
 
 @Composable
-private fun TimelineSection() {
+private fun PowerFlowCardsSection(data: InverterData) {
+    val cards = listOf(
+        FlowCard("PV", R.drawable.sunlink_solar_panel, data.pSun, "Вт"),
+        FlowCard("Battery", R.drawable.sunlink_battery, data.pBatt, "Вт"),
+        FlowCard("Grid", R.drawable.sunlink_grid_pole, data.pGrid, "Вт"),
+        FlowCard("Load", R.drawable.sunlink_house, data.pLoad, "Вт")
+    )
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp)
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        for (i in 0..23) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(16.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(if (i % 3 == 0) AccentGreen else Color(0xFFE74C3C))
-            )
+        cards.forEach { card ->
+            Card(
+                modifier = Modifier.weight(1f),
+                colors = CardDefaults.cardColors(containerColor = BgCard),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    IconImage(card.icon, card.title, Modifier.size(28.dp))
+                    Text(card.title, color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 9.sp)
+                    Text(
+                        text = if (card.value == null) "Немає даних" else fmtInt(card.value, " ${card.unit}"),
+                        color = if (card.value == null) Color.Gray else Color.White,
+                        fontFamily = Mono,
+                        fontSize = 10.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
     }
 }
@@ -388,7 +503,7 @@ private fun PVSection(data: Map<String, Any>) {
                         }
                         Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("☀️", fontSize = 14.sp)
-                            LottieNode("solar.json", Modifier.size(48.dp))
+                            IconImage(R.drawable.sunlink_solar_panel, "PV", Modifier.size(48.dp))
                             Text(
                                 "${fmtInt(row.v, " В")} · ${fmt(row.a, 1, " А")}",
                                 color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, textAlign = TextAlign.Center
@@ -590,7 +705,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text("☀️", fontSize = 14.sp)
-                        LottieNode("solar.json", Modifier.size(38.dp))
+                        IconImage(R.drawable.sunlink_solar_panel, "PV", Modifier.size(38.dp))
                         Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
                             Text(pvVal, color = Color.White, fontFamily = Mono, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                             if (pvUnit.isNotEmpty()) Text(" $pvUnit", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp, fontWeight = FontWeight.Bold)
@@ -607,7 +722,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     modifier = Modifier.align(Alignment.Center).clickable { selectedNode = "Інвертор" },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LottieNode("inverter.json", Modifier.size(72.dp))
+                    IconImage(R.drawable.sunlink_inverter, "Інвертор", Modifier.size(72.dp))
                     Text("Інвертор", color = Color(0xFFCFD8DC), fontFamily = Mono, fontSize = 10.sp)
                 }
 
@@ -621,7 +736,17 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                             .shadow(10.dp, RoundedCornerShape(18.dp))
                             .background(Brush.radialGradient(listOf(AccentGreen.copy(alpha = 0.25f), Color.Transparent)), RoundedCornerShape(18.dp)),
                         contentAlignment = Alignment.Center
-                    ) { LottieNode("battery.json", Modifier.size(76.dp)) }
+                    ) {
+                        if (pBatt != null) {
+                            // Анімація має сенс тільки коли є реальні дані про потік батареї.
+                            LottieNode(
+                                "icon_battery_charge_discharge.json",
+                                Modifier.size(76.dp)
+                            )
+                        } else {
+                            IconImage(R.drawable.sunlink_battery, "Батарея", Modifier.size(76.dp))
+                        }
+                    }
                     Spacer(Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) {
                         Text(if (battSoc != null) "${battSoc.toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -650,7 +775,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     modifier = Modifier.align(Alignment.CenterEnd).padding(end = 0.dp).clickable { selectedNode = "Мережа" },
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LottieNode("transformer.json", Modifier.size(56.dp))
+                    IconImage(R.drawable.sunlink_grid_pole, "Мережа", Modifier.size(56.dp))
                     Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
                         Text(if (pGrid != null) "${abs(pGrid).toInt()}" else "—", color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Text(" Вт", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -672,7 +797,7 @@ private fun FlowSchemeSection(data: Map<String, Any>, modifier: Modifier = Modif
                     .clickable { selectedNode = "Дім" },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                LottieNode("home_sun.json", Modifier.size(56.dp))
+                IconImage(R.drawable.sunlink_house, "Дім", Modifier.size(56.dp))
                 Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
                     val homeVal = if (pLoad != null) fmt(pLoad / 1000f, 2) else "—"
                     Text(homeVal, color = Color.White, fontFamily = Mono, fontSize = 20.sp, fontWeight = FontWeight.Bold)

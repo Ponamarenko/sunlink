@@ -15,6 +15,17 @@ object RetrofitClient {
     private var retrofit: Retrofit? = null
     private var realService: ApiService? = null
 
+    /** Stage 29: подписчики на смену адреса (WebSocket должен переподключиться). */
+    private val baseUrlListeners = mutableListOf<(String) -> Unit>()
+
+    fun addBaseUrlListener(listener: (String) -> Unit) {
+        synchronized(baseUrlListeners) { baseUrlListeners.add(listener) }
+    }
+
+    fun removeBaseUrlListener(listener: (String) -> Unit) {
+        synchronized(baseUrlListeners) { baseUrlListeners.remove(listener) }
+    }
+
     /** Единственный экземпляр, который держат Repository/ViewModel. */
     private val bus: ApiService = DelegatingApiService { currentService() }
 
@@ -46,6 +57,21 @@ object RetrofitClient {
     fun getBaseUrl(): String = baseUrl
 
     /**
+     * Stage 29: адрес WebSocket того же backend. Используется тот же хост/порт
+     * и та же политика TLS (http→ws, https→wss). Никаких демо-адресов.
+     */
+    fun getWebSocketUrl(): String {
+        val parsed = baseUrl.toHttpUrlOrNull()
+            ?: return "ws://127.0.0.1:8800/ws"
+        val scheme = when (parsed.scheme) {
+            "https" -> "wss"
+            else -> "ws"
+        }
+        val port = if (parsed.port > 0) ":${parsed.port}" else ""
+        return "$scheme://${parsed.host}$port/ws"
+    }
+
+    /**
      * Меняет адрес backend. Возвращает false для некорректного URL —
      * предыдущая конфигурация остаётся рабочей.
      */
@@ -59,6 +85,9 @@ object RetrofitClient {
         realService = null
         retrofit = null
         okHttpClient = null
+        synchronized(baseUrlListeners) {
+            baseUrlListeners.toList().forEach { runCatching { it(normalized) } }
+        }
         return true
     }
 

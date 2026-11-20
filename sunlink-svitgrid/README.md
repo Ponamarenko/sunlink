@@ -2,7 +2,7 @@
 
 **SunLink** — Android-застосунок (Kotlin, Jetpack Compose, Material3) для моніторингу сонячної станції на базі інвертора **Deye** у стилі SvitGrid-дашборду: вузли PV/інвертор/батарея/мережа/дім, потоки енергії (Bezier-лінії з анімацією), статус з’єднання, екран відладки сирих даних.
 
-Поточна версія застосунку: **v2.32.1** (versionCode 53).
+Поточна версія застосунку: **v2.33.0** (versionCode 54).
 
 ## Можливості
 - Дашборд з реальними даними (PV-рядки, батарея, мережа, навантаження) та відображенням `—` для відсутніх полів
@@ -97,6 +97,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-25b1-direct-https-9443.md](docs/stages/stage-25b1-direct-https-9443.md) — два listener: HTTP 8800 (LAN) + HTTPS 9443 (публічний), міграція 8443→9443 (етап 25B.1)
 - [docs/stages/stage-27-real-inverter-integration.md](docs/stages/stage-27-real-inverter-integration.md) — єдиний read-only poller, аддитивні міграції SQLite, production pipeline без симуляції (етап 27)
 - [docs/stages/stage-28-real-hardware-validation.md](docs/stages/stage-28-real-hardware-validation.md) — реальний FC03 reg 184 (94 % SOC), перевірка pipeline/API/WebSocket на фізичних даних (етап 28)
+- [docs/stages/stage-30-dashboard-real-telemetry.md](docs/stages/stage-30-dashboard-real-telemetry.md) — WebSocket у Android, оновлений дашборд з ассетами `Icon/`, реальні REST/WS кадри (етап 30)
 
 ## Перевірка релізу
 
@@ -139,6 +140,7 @@ https://github.com/Ponamarenko/sunlink/releases/tag/android-v2.32.1-stage25b1
 | v2.31.0 | Етап 24: розширення реальної телеметрії (PV, V/I/P батареї, температури), кандидатські декодери, API/Android, 246 backend + 67 Android тестів, APK |
 | v2.32.0 | Етап 25B: прямий HTTPS `https://sunlink.pp.ua:8443/`, міграція старих URL, діагностика з'єднання, backend TLS config, deployment package, 256 backend + 72 Android тестів |
 | v2.32.1 | Етап 25B.1: HTTP 8800 (LAN) + HTTPS 9443 (публічний), міграція 8443→9443, два listener одного FastAPI app, 258 backend + Android тести, APK |
+| v2.33.0 | Етап 30: WebSocket-клієнт у Android, дашборд з реальними станами та ассетами `Icon/`, 276 backend + 93 Android тестів, debug APK |
 
 ## Відомі застереження
 - Карта регістрів/масштаби Deye можуть відрізнятися для конкретної моделі/прошивки (потрібна верифікація значень: напруга мережі, температури, лічильники енергії).

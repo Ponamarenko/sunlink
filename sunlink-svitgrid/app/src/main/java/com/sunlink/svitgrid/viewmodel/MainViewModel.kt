@@ -4,10 +4,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sunlink.svitgrid.data.dto.InvertersDto
+import com.sunlink.svitgrid.data.dto.LiveDataMessageDto
 import com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto
+import com.sunlink.svitgrid.data.dto.WebSocketLiveParser
+import com.sunlink.svitgrid.data.dto.WebSocketTelemetryMapper
 import com.sunlink.svitgrid.data.model.*
 import com.sunlink.svitgrid.data.repository.DataRepository
 import com.sunlink.svitgrid.network.RetrofitClient
+import com.sunlink.svitgrid.network.TelemetryWebSocketClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -39,6 +43,12 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     private val _connectionDiagnostic = MutableStateFlow<ConnectionDiagnostic?>(null)
     val connectionDiagnostic: StateFlow<ConnectionDiagnostic?> = _connectionDiagnostic
 
+    /** Stage 29: транспорт WebSocket (OPEN — только после реального handshake). */
+    private val _liveTransport = MutableStateFlow(TelemetryWebSocketClient.WsTransportState.CLOSED)
+    val liveTransport: StateFlow<TelemetryWebSocketClient.WsTransportState> = _liveTransport
+
+    private var wsClient: TelemetryWebSocketClient? = null
+
     /** Последние успешные данные — сохраняются при потере связи (offline/stale). */
     private var lastGood: Pair<InverterData, InverterStatus>? = null
 
@@ -48,6 +58,71 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
 
     fun setPollInterval(seconds: Int) {
         pollIntervalSeconds = seconds.coerceIn(1, 60)
+    }
+
+    // ------------------------------------------------------------------
+    // Stage 29: WebSocket live-телеметрія (один клієнт, REST — reserve)
+    // ------------------------------------------------------------------
+
+    /** Запускає єдиний WebSocket-клієнт. Повторний виклик нічого не змінює. */
+    fun startLiveUpdates() {
+        if (wsClient != null) return
+        wsClient = TelemetryWebSocketClient(
+            scope = viewModelScope,
+            urlProvider = { RetrofitClient.getWebSocketUrl() },
+            onMessage = { onLiveDataMessage(it) },
+            onState = { handleTransportState(it) }
+        ).also { it.start() }
+    }
+
+    /** Зупиняє клієнт і знімає підписку на зміну адреси. */
+    fun stopLiveUpdates() {
+        wsClient?.stop()
+        wsClient = null
+        _liveTransport.value = TelemetryWebSocketClient.WsTransportState.CLOSED
+    }
+
+    /**
+     * Обробка реального кадру `live_data`.
+     * ONLINE встановлюється тільки після успішного обміну: статус сервера
+     * connection_status=true і хоча б одне валідне вимірювання.
+     */
+    fun onLiveDataMessage(message: LiveDataMessageDto) {
+        if (!WebSocketLiveParser.isLiveData(message)) return
+        val data = WebSocketTelemetryMapper.toInverterData(message)
+        val status = WebSocketTelemetryMapper.toInverterStatus(message)
+        if (!status.online || !data.hasMeasurements) {
+            // Реальний кадр, але backend не має підтверджених даних — не видаємо ONLINE.
+            applyError("Backend не має підтверджених даних")
+            return
+        }
+        if (data.timestamp.isNullOrBlank()) {
+            // Немає часу — не можемо стверджувати свіжість даних.
+            applyError("WebSocket кадр без часу оновлення")
+            return
+        }
+        applySuccess(data, status)
+    }
+
+    private fun handleTransportState(state: TelemetryWebSocketClient.WsTransportState) {
+        _liveTransport.value = state
+        if (state != TelemetryWebSocketClient.WsTransportState.RECONNECTING) return
+        // REST як резервний механізм: один запит, без створення другого poller.
+        viewModelScope.launch {
+            val result = try {
+                repository.loadInverterData()
+            } catch (e: Exception) {
+                Log.w(tag, "REST fallback failed", e)
+                null
+            }
+            if (result is Result.Success) {
+                val (data, status) = result.data
+                if (data.hasMeasurements || status.online) applySuccess(data, status)
+                else applyError("Дані інвертора недоступні")
+            } else {
+                applyError("Втрату з'єднання з WebSocket підтверджено; REST недоступний")
+            }
+        }
     }
 
     /** Завантажує дані один раз. Використовується при старті екрана та ручному оновленні. */
@@ -273,6 +348,7 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     }
 
     override fun onCleared() {
+        stopLiveUpdates()
         super.onCleared()
         viewModelScope.coroutineContext[Job]?.cancel()
     }
