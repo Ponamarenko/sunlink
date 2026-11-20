@@ -2,6 +2,15 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [unreleased] — 2026-11-20 (підготовка реальної Deye-телеметрії, етап 27)
+- **Етап 27:** єдиний production pipeline без симуляції
+  - `services/production_pipeline.py` — physical Modbus тільки при явному opt-in, без DEMO/симуляторів
+  - `DeyePollingService` — реєстр одного poller на інвертор, bounded reconnect backoff, reconnect_count, стан CONNECTING/ONLINE
+  - `storage/migrations.py` — аддитивні міграції SQLite з backup і забороною downgrade user_version
+  - API + WebSocket `/ws` працюють з єдиним TelemetrySnapshot; Android-код не змінювався
+  - Backend **268 PASS** (10 нових Stage 27 тестів); APK не збирався
+  - Фізичний Modbus, production deployment, сертифікати й MikroTik не змінювались
+
 ## [v2.32.1] — 2026-11-20 (порт 9443 + локальний HTTP 8800, етап 25B.1)
 - **Етап 25B.1:** два listener одного FastAPI application без Reverse Proxy
   - Backend: `tls_config.py` (HTTP default 8800, HTTPS default 9443, валідація TLS-пари/портів/host) та `listener_config.py` (HTTP lifespan on, HTTPS lifespan off — один startup/shutdown, один poller); відсутність сертифіката не блокує локальний HTTP

@@ -36,6 +36,17 @@ from storage.repository import MeasurementRepository
 INVERTER_ID = "deye_sg02lp1_am3"
 # Консервативный интервал для физического опроса: 30 с (настраивается).
 DEFAULT_PHYSICAL_POLL_INTERVAL = 30.0
+# Ограниченный backoff при потере связи; без бесконечных retry.
+DEFAULT_RECONNECT_BACKOFF = 5.0
+DEFAULT_MAX_BACKOFF = 60.0
+
+# Реестр запущенных poller — только один на инвертор на процесс.
+_ACTIVE_POLLERS: set[str] = set()
+_POLLERS_LOCK = threading.Lock()
+
+
+class PollerAlreadyRunning(RuntimeError):
+    """Второй poller для того же инвертора запрещён."""
 
 
 class PollingState(str, Enum):
@@ -51,6 +62,7 @@ class PollingState(str, Enum):
 class PollingStats:
     success_count: int = 0
     error_count: int = 0
+    reconnect_count: int = 0
     last_success_utc: Optional[str] = None
     last_error_utc: Optional[str] = None
     last_error: Optional[str] = None
@@ -68,6 +80,8 @@ class DeyePollingService(TelemetrySource):
         poll_interval: float = DEFAULT_PHYSICAL_POLL_INTERVAL,
         source: DataSource = DataSource.DEYE_MODBUS,
         active_registers: Optional[Dict[int, object]] = None,
+        reconnect_backoff: float = DEFAULT_RECONNECT_BACKOFF,
+        max_backoff: float = DEFAULT_MAX_BACKOFF,
     ) -> None:
         if poll_interval <= 0:
             raise ValueError("poll_interval must be positive")
@@ -86,6 +100,10 @@ class DeyePollingService(TelemetrySource):
         self._stats = PollingStats()
         self._last_good: Optional[TelemetrySnapshot] = None
         self._connected = False
+        self._backoff = max(0.1, reconnect_backoff)
+        self._max_backoff = max(self._backoff, max_backoff)
+        self._current_backoff = self._backoff
+        self._registered = False
 
     # -- TelemetrySource ----------------------------------------------------
 
@@ -124,6 +142,13 @@ class DeyePollingService(TelemetrySource):
 
     def start(self) -> None:
         """Запуск фонового polling. Не делает инвертор online автоматически."""
+        with _POLLERS_LOCK:
+            if self._inverter_id in _ACTIVE_POLLERS:
+                raise PollerAlreadyRunning(
+                    f"poller for inverter {self._inverter_id} already running"
+                )
+            _ACTIVE_POLLERS.add(self._inverter_id)
+            self._registered = True
         with self._state_lock:
             if self._thread is not None and self._thread.is_alive():
                 return
@@ -140,6 +165,10 @@ class DeyePollingService(TelemetrySource):
             thread = self._thread
         if thread is not None:
             thread.join(timeout=timeout)
+        with _POLLERS_LOCK:
+            if self._registered:
+                _ACTIVE_POLLERS.discard(self._inverter_id)
+                self._registered = False
         with self._state_lock:
             self._state = PollingState.STOPPED
 
@@ -164,6 +193,7 @@ class DeyePollingService(TelemetrySource):
             "last_error": stats.last_error,
             "error_count": stats.error_count,
             "success_count": stats.success_count,
+            "reconnect_count": stats.reconnect_count,
             "active_registers": sorted(self._active.keys()),
             "poll_interval_seconds": self._poll_interval,
             "stale": self._last_good is not None and not self._connected,
@@ -173,8 +203,19 @@ class DeyePollingService(TelemetrySource):
 
     def _poll_loop(self) -> None:
         while not self._stop_event.is_set():
+            was_connected = self._connected
             self.read()
-            self._stop_event.wait(self._poll_interval)
+            if self._connected:
+                if not was_connected:
+                    self._stats.reconnect_count += 1
+                self._current_backoff = self._backoff
+                delay = self._poll_interval
+            else:
+                with self._state_lock:
+                    self._state = PollingState.CONNECTING
+                delay = self._current_backoff
+                self._current_backoff = min(self._current_backoff * 2, self._max_backoff)
+            self._stop_event.wait(delay)
 
     def _empty_snapshot(self, error: str) -> TelemetrySnapshot:
         return TelemetrySnapshot(
@@ -286,5 +327,6 @@ __all__ = [
     "DeyePollingService",
     "PollingState",
     "PollingStats",
+    "PollerAlreadyRunning",
     "DEFAULT_PHYSICAL_POLL_INTERVAL",
 ]

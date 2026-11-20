@@ -37,8 +37,6 @@ def _thread_safe(fn):
     return wrapper
 
 _SCHEMA = f"""
-PRAGMA user_version = {SCHEMA_VERSION};
-
 CREATE TABLE IF NOT EXISTS measurements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     inverter_id TEXT NOT NULL,
@@ -103,8 +101,19 @@ class SQLiteMeasurementRepository(MeasurementRepository):
 
     def _init_schema(self) -> None:
         assert self._conn is not None
-        self._conn.executescript(_SCHEMA)
-        self._conn.commit()
+        version = int(self._conn.execute("PRAGMA user_version").fetchone()[0])
+        if version == 0:
+            # Новая БД: создаём схему и фиксируем версию.
+            self._conn.executescript(_SCHEMA)
+            self._conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
+            self._conn.commit()
+        elif version < SCHEMA_VERSION:
+            # Аддитивная миграция с backup; данные не удаляются.
+            from storage.migrations import migrate_database
+            self._conn.close()
+            self._conn = None
+            migrate_database(self.db_path, SCHEMA_VERSION)
+            self._connect()
 
     @_thread_safe
     def close(self) -> None:
