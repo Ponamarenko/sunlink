@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from domain.models import Measurement
 
@@ -39,6 +39,16 @@ class MeasurementRepository(ABC):
         end: datetime,
     ) -> List[Measurement]:
         """Return measurements for a parameter within [start, end] UTC."""
+
+    def get_statistics(
+        self,
+        inverter_id: str,
+        parameter_name: str,
+        start: datetime,
+        end: datetime,
+    ) -> Dict[str, Any]:
+        """Aggregate a parameter over [start, end]. Optional for implementations."""
+        raise NotImplementedError("statistics are not supported by this repository")
 
     @abstractmethod
     def get_all_latest(self, inverter_id: str) -> List[Measurement]:

@@ -21,6 +21,8 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
     val loading by vm.refreshing.collectAsState()
     val events by NetworkDiagnostics.events.collectAsState()
     val lastSuccess by NetworkDiagnostics.lastSuccessUtc.collectAsState()
+    val backendHealth by vm.backendHealth.collectAsState()
+    val backendVersion by vm.backendVersion.collectAsState()
 
     val uiStateValue = uiState
     val data = when (uiStateValue) {
@@ -32,7 +34,10 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
         else -> InverterStatus()
     }
 
-    LaunchedEffect(Unit) { vm.loadData() }
+    LaunchedEffect(Unit) {
+        vm.loadData()
+        vm.loadBackendInfo()
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -79,6 +84,18 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
             else events.take(10).map { e ->
                 "${e.type} · ${e.stage} · ${e.endpoint} · HTTP ${e.httpCode ?: "—"} · ${e.errorType ?: "OK"} · ${e.atUtc.take(19)}"
             }
+        )
+
+        DiagnosticCard(
+            title = "Backend",
+            status = backendHealth?.status ?: "—",
+            statusColor = if (backendHealth?.status == "ok") Color(0xFF66BB6A) else Color(0xFF90A4AE),
+            details = listOf(
+                "API: ${backendVersion?.api ?: "—"} · Gateway: ${backendVersion?.gateway ?: "—"}",
+                "Протокол: ${backendVersion?.protocol ?: "—"}",
+                "Source: ${backendHealth?.source ?: "—"}",
+                "Останній успіх (мережа): ${lastSuccess ?: "—"}"
+            )
         )
 
         DiagnosticCard(

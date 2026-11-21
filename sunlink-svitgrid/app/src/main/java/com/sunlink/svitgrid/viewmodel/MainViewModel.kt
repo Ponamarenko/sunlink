@@ -3,7 +3,11 @@ package com.sunlink.svitgrid.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sunlink.svitgrid.data.dto.HealthDto
 import com.sunlink.svitgrid.data.dto.InvertersDto
+import com.sunlink.svitgrid.data.dto.StatsSummaryDto
+import com.sunlink.svitgrid.data.dto.TelemetryFullDto
+import com.sunlink.svitgrid.data.dto.VersionDto
 import com.sunlink.svitgrid.data.dto.LiveDataMessageDto
 import com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto
 import com.sunlink.svitgrid.data.dto.WebSocketLiveParser
@@ -42,6 +46,19 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
 
     private val _connectionDiagnostic = MutableStateFlow<ConnectionDiagnostic?>(null)
     val connectionDiagnostic: StateFlow<ConnectionDiagnostic?> = _connectionDiagnostic
+
+    /** Comprehensive stage: категориальная модель, статистика и диагностика backend. */
+    private val _fullTelemetry = MutableStateFlow<TelemetryFullDto?>(null)
+    val fullTelemetry: StateFlow<TelemetryFullDto?> = _fullTelemetry
+
+    private val _stats = MutableStateFlow<StatsSummaryDto?>(null)
+    val stats: StateFlow<StatsSummaryDto?> = _stats
+
+    private val _backendHealth = MutableStateFlow<HealthDto?>(null)
+    val backendHealth: StateFlow<HealthDto?> = _backendHealth
+
+    private val _backendVersion = MutableStateFlow<VersionDto?>(null)
+    val backendVersion: StateFlow<VersionDto?> = _backendVersion
 
     /** Stage 29: транспорт WebSocket (OPEN — только после реального handshake). */
     private val _liveTransport = MutableStateFlow(TelemetryWebSocketClient.WsTransportState.CLOSED)
@@ -309,6 +326,47 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
             } catch (e: Exception) {
                 _historyState.value = HistoryUiState.Error(message = e.message ?: "Невідома помилка")
             }
+        }
+    }
+
+    /** Прямая установка уже загруженной модели (используется тестами и WS-адаптерами). */
+    fun onFullTelemetryLoaded(dto: TelemetryFullDto) {
+        _fullTelemetry.value = dto
+    }
+
+    /** Загружает полную категориальную модель телеметрии (без физических запросов). */
+    fun loadFullTelemetry() {
+        viewModelScope.launch {
+            val result = try {
+                repository.loadFullTelemetry()
+            } catch (e: Exception) {
+                Log.w(tag, "loadFullTelemetry failed", e)
+                null
+            }
+            if (result is Result.Success) _fullTelemetry.value = result.data
+        }
+    }
+
+    /** Статистика по параметру за период. */
+    fun loadStats(parameter: String, start: String, end: String) {
+        viewModelScope.launch {
+            val result = try {
+                repository.loadStats(parameter, start, end)
+            } catch (e: Exception) {
+                Log.w(tag, "loadStats failed", e)
+                null
+            }
+            if (result is Result.Success) _stats.value = result.data
+        }
+    }
+
+    /** Health/version backend — для экрана диагностики. */
+    fun loadBackendInfo() {
+        viewModelScope.launch {
+            val health = try { repository.loadHealth() } catch (e: Exception) { null }
+            if (health is Result.Success) _backendHealth.value = health.data
+            val version = try { repository.loadBackendVersion() } catch (e: Exception) { null }
+            if (version is Result.Success) _backendVersion.value = version.data
         }
     }
 

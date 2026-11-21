@@ -2,6 +2,14 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.36.0] — 2026-11-21 (комплексна розробка, етап 36)
+- Backend: DWORD-декодери, категориальна модель `/api/telemetry/full`, агрегація `/api/stats/summary`, `/api/health`, `/api/version`
+- Android: нові екрани «Телеметрія» (всі категорії з provenance) та «Статистика» (періоди 24h/7d/30d/365d), графи з чесними пропусками
+- Діагностика показує health/version backend; локалізація uk/en розширена
+- Backend 330 PASS, Android 120 PASS; debug APK v2.36.0 (57)
+- Production не змінювався; фізичних Modbus-запитів не виконувалось
+
+
 ## [stage35a] — 2026-11-21 (безпека production, етап 35A)
 - Statusи регистрів розділено: `fc03_read` vs `physically_confirmed`; додано `display_verified` і `production_allowed`
 - DEMO/mock явно підключають offline-джерело й забороняють створення Modbus-клієнта; physical fallback у DEMO прибрано

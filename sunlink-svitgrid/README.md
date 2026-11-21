@@ -2,7 +2,7 @@
 
 **SunLink** — Android-застосунок (Kotlin, Jetpack Compose, Material3) для моніторингу сонячної станції на базі інвертора **Deye** у стилі SvitGrid-дашборду: вузли PV/інвертор/батарея/мережа/дім, потоки енергії (Bezier-лінії з анімацією), статус з’єднання, екран відладки сирих даних.
 
-Поточна версія застосунку: **v2.35.0** (versionCode 56).
+Поточна версія застосунку: **v2.36.0** (versionCode 57).
 
 ## Можливості
 - Дашборд з реальними даними (PV-рядки, батарея, мережа, навантаження) та відображенням `—` для відсутніх полів
@@ -103,6 +103,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-33-production-deployment.md](docs/stages/stage-33-production-deployment.md) — розгорнуто HTTPS 9443 + реальний read-only poller (reg 184), перевірено REST/WS (етап 33)
 - [docs/stages/stage-34-deye-register-map.md](docs/stages/stage-34-deye-register-map.md) — таблиця достовірності регістрів Deye, offline-тести декодерів, план безпечного FC03-тесту (етап 34)
 - [docs/stages/stage-35a-production-safety-hardening.md](docs/stages/stage-35a-production-safety-hardening.md) — ізоляція DEMO/PRODUCTION, безпечна обробка Modbus-помилок, чесні поля /status (етап 35A)
+- [docs/stages/stage-36-comprehensive-development.md](docs/stages/stage-36-comprehensive-development.md) — повна модель телеметрії, статистика, екрани «Телеметрія» та «Статистика» (етап 36)
 
 ## Перевірка релізу
 

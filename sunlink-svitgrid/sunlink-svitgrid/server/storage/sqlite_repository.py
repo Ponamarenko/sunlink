@@ -12,7 +12,7 @@ import os
 import sqlite3
 import threading
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from domain.models import (
     Measurement,
@@ -225,6 +225,42 @@ class SQLiteMeasurementRepository(MeasurementRepository):
         except sqlite3.Error as exc:
             raise RuntimeError(f"failed to read history: {exc}") from exc
         return [_row_to_measurement(tuple(r)) for r in rows]
+
+    @_thread_safe
+    def get_statistics(
+        self,
+        inverter_id: str,
+        parameter_name: str,
+        start: datetime,
+        end: datetime,
+    ) -> Dict[str, Any]:
+        conn = self._ensure_open()
+        try:
+            row = conn.execute(
+                """
+                SELECT COUNT(*), MIN(normalized_value), MAX(normalized_value),
+                       AVG(normalized_value), SUM(normalized_value)
+                FROM measurements
+                WHERE inverter_id = ? AND parameter_name = ?
+                  AND timestamp >= ? AND timestamp <= ?
+                  AND normalized_value IS NOT NULL
+                """,
+                (inverter_id, parameter_name, start.isoformat(), end.isoformat()),
+            ).fetchone()
+        except sqlite3.Error as exc:
+            raise RuntimeError(f"failed to aggregate history: {exc}") from exc
+        count, minimum, maximum, average, total = tuple(row)
+        return {
+            "parameter": parameter_name,
+            "inverter_id": inverter_id,
+            "start": start.isoformat(),
+            "end": end.isoformat(),
+            "count": int(count or 0),
+            "min": minimum,
+            "max": maximum,
+            "avg": average,
+            "sum": total,
+        }
 
     @_thread_safe
     def get_all_latest(self, inverter_id: str) -> List[Measurement]:

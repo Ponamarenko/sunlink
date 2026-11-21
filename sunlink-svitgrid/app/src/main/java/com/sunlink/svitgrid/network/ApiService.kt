@@ -2,12 +2,16 @@ package com.sunlink.svitgrid.network
 
 import com.google.gson.JsonElement
 import com.sunlink.svitgrid.data.dto.InvertersDto
+import com.sunlink.svitgrid.data.dto.HealthDto
 import com.sunlink.svitgrid.data.dto.LiveRawDto
 import com.sunlink.svitgrid.data.dto.MeasurementDto
 import com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto
 import com.sunlink.svitgrid.data.dto.MeasurementsLatestDto
 import com.sunlink.svitgrid.data.dto.RegistersDto
+import com.sunlink.svitgrid.data.dto.StatsSummaryDto
 import com.sunlink.svitgrid.data.dto.StatusDto
+import com.sunlink.svitgrid.data.dto.TelemetryFullDto
+import com.sunlink.svitgrid.data.dto.VersionDto
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -73,4 +77,21 @@ interface ApiService {
         @Query("start") start: String,
         @Query("end") end: String
     ): Response<MeasurementsHistoryDto>
+
+    // Comprehensive stage — категориальная модель и статистика.
+    @GET("api/telemetry/full")
+    suspend fun getTelemetryFull(): Response<TelemetryFullDto>
+
+    @GET("api/stats/summary")
+    suspend fun getStatsSummary(
+        @Query("parameter") parameter: String,
+        @Query("start") start: String,
+        @Query("end") end: String
+    ): Response<StatsSummaryDto>
+
+    @GET("api/health")
+    suspend fun getHealthDto(): Response<HealthDto>
+
+    @GET("api/version")
+    suspend fun getVersionDto(): Response<VersionDto>
 }

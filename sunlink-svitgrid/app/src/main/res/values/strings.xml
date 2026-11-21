@@ -66,4 +66,11 @@
     <string name="theme_system">Системна</string>
     <string name="theme_light">Світла</string>
     <string name="theme_dark">Темна</string>
+    <string name="telemetry_title">ТЕЛЕМЕТРІЯ (УСІ КАТЕГОРІЇ)</string>
+    <string name="telemetry_unavailable">Повна телеметрія недоступна — сервер не повернув дані</string>
+    <string name="statistics_title">СТАТИСТИКА</string>
+    <string name="statistics_no_data">Немає даних за вибраний період</string>
+    <string name="statistics_count">Вимірювань: %1$d</string>
+    <string name="nav_telemetry">Телеметрія</string>
+    <string name="statistics">Статистика</string>
 </resources>

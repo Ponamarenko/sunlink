@@ -61,6 +61,36 @@ def _decode_word(raw: int, is_signed: bool) -> int:
     return raw - 65536 if is_signed and raw > 32767 else raw
 
 
+def decode_u_dword(
+    low: int, high: int, *, scale: float = 1.0, word_order: str = "LW_HW"
+) -> float:
+    """Собирает 32-bit unsigned из двух 16-bit слов.
+
+    `LW_HW` (по умолчанию в карте Deye): младшее слово по младшему адресу.
+    """
+    for word in (low, high):
+        if not 0 <= word <= 0xFFFF:
+            raise ValueError(f"DWORD word {word} out of 16-bit range")
+    lo, hi = (low, high) if word_order == "LW_HW" else (high, low)
+    raw = lo + (hi << 16)
+    return raw * scale
+
+
+def decode_s_dword(
+    low: int, high: int, *, scale: float = 1.0, word_order: str = "LW_HW"
+) -> float:
+    """Собирает 32-bit signed (two's complement) из двух 16-bit слов."""
+    for word in (low, high):
+        if not 0 <= word <= 0xFFFF:
+            raise ValueError(f"DWORD word {word} out of 16-bit range")
+    lo, hi = (low, high) if word_order == "LW_HW" else (high, low)
+    raw = lo + (hi << 16)
+    if raw > 0xFFFFFFFF:
+        raise ValueError("DWORD out of 32-bit range")
+    signed = raw - (1 << 32) if raw > 0x7FFFFFFF else raw
+    return signed * scale
+
+
 def decode_register(
     raw_value: Optional[int],
     metadata: RegisterMetadata,
@@ -130,4 +160,10 @@ def decode_register(
     )
 
 
-__all__ = ["DecodedRegister", "decode_register", "RANGES"]
+__all__ = [
+    "DecodedRegister",
+    "decode_register",
+    "decode_u_dword",
+    "decode_s_dword",
+    "RANGES",
+]

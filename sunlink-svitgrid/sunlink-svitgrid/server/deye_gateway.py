@@ -44,6 +44,7 @@ from domain.models import (
     NormalizedReading,
 )
 from storage.sqlite_repository import SQLiteMeasurementRepository
+from domain.telemetry import TelemetrySnapshot, TelemetryValue
 
 # Настройка логирования
 logging.basicConfig(
@@ -554,6 +555,81 @@ async def get_live_raw():
         return flat
     except Exception as e:
         return {"error": str(e), "timestamp": datetime.now(timezone.utc).isoformat(), "connection_status": False}
+
+
+# ------------------------------------------------------------------
+# Unified telemetry & statistics (comprehensive development stage)
+# ------------------------------------------------------------------
+
+@app.get("/api/telemetry/full")
+async def get_full_telemetry():
+    """Категориальная модель телеметрии. Отсутствующие поля остаются null."""
+    try:
+        await gateway.read_all_registers()
+        snapshot = getattr(gateway, "_last_snapshot", None)
+        if snapshot is None:
+            values: Dict[str, TelemetryValue] = {}
+            for name, item in (gateway.last_data or {}).items():
+                if not isinstance(item, dict):
+                    continue
+                timestamp = item.get("timestamp") or datetime.now(timezone.utc).isoformat()
+                values[name] = TelemetryValue(
+                    parameter_name=name,
+                    normalized_value=item.get("normalized_value"),
+                    unit=item.get("unit", ""),
+                    timestamp=timestamp,
+                    confidence=item.get("confidence", "unverified"),
+                    quality=item.get("quality", "unavailable"),
+                    raw_value=item.get("raw_value"),
+                    register_address=item.get("address"),
+                )
+            snapshot = TelemetrySnapshot(
+                inverter_id=INVERTER_ID,
+                source=gateway.source,
+                timestamp=datetime.now(timezone.utc).isoformat(),
+                connection_ok=gateway.connection_status,
+                values=values,
+            )
+        return snapshot.to_full_dict()
+    except Exception as exc:
+        logger.error(f"Failed to build full telemetry: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/stats/summary")
+async def get_stats_summary(
+    parameter: str = Query(..., description="Parameter name"),
+    start: str = Query(..., description="ISO-8601 UTC start"),
+    end: str = Query(..., description="ISO-8601 UTC end"),
+):
+    """Минимум/максимум/среднее/сумма за период из истории измерений."""
+    try:
+        start_dt = datetime.fromisoformat(start.replace("Z", "+00:00"))
+        end_dt = datetime.fromisoformat(end.replace("Z", "+00:00"))
+        return _repository.get_statistics(INVERTER_ID, parameter, start_dt, end_dt)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid timestamp: {exc}")
+    except NotImplementedError as exc:
+        raise HTTPException(status_code=501, detail=str(exc))
+    except Exception as exc:
+        logger.error(f"Failed to aggregate statistics: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/health")
+async def get_health():
+    return {
+        "status": "ok",
+        "read_only": True,
+        "source": gateway.source.value,
+        "connection_status": gateway.connection_status,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+@app.get("/api/version")
+async def get_version():
+    return {"api": "2.1.0", "gateway": "2.0.0", "protocol": "read-only FC03"}
 
 
 # ------------------------------------------------------------------

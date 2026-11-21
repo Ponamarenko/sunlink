@@ -66,4 +66,11 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="telemetry_title">FULL TELEMETRY</string>
+    <string name="telemetry_unavailable">Full telemetry unavailable — server returned no data</string>
+    <string name="statistics_title">STATISTICS</string>
+    <string name="statistics_no_data">No data for the selected period</string>
+    <string name="statistics_count">Measurements: %1$d</string>
+    <string name="nav_telemetry">Telemetry</string>
+    <string name="statistics">Statistics</string>
 </resources>

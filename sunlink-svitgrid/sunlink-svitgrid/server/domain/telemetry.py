@@ -67,6 +67,87 @@ class TelemetrySnapshot:
         """Формат совместим с deye_gateway.read_all_registers() и Android DTO."""
         return {name: value.to_dict() for name, value in self.values.items()}
 
+    def to_full_dict(self) -> Dict[str, Any]:
+        """Полная категориальная модель телеметрии для API/Android.
+
+        Каждое отсутствующее значение остаётся None — никогда 0.0.
+        Расчётные поля помечаются confidence='calculated' и не выдаются
+        за измеренные.
+        """
+        categories: Dict[str, Dict[str, Optional[str]]] = {
+            "pv": {
+                "pv1_voltage": "pv1_voltage", "pv1_current": "pv1_current",
+                "pv1_power": "pv1_power", "pv2_voltage": "pv2_voltage",
+                "pv2_current": "pv2_current", "pv2_power": "pv2_power",
+                "pv3_voltage": "pv3_voltage", "pv3_current": "pv3_current",
+                "pv3_power": "pv3_power", "daily_energy": "daily_pv_energy",
+                "total_energy": "total_pv_energy",
+            },
+            "battery": {
+                "soc": "battery_soc", "voltage": "battery_voltage",
+                "current": "battery_current", "power": "battery_power",
+                "temperature": "battery_temperature",
+                "daily_charge_energy": "daily_battery_charge",
+                "daily_discharge_energy": "daily_battery_discharge",
+            },
+            "grid": {
+                "power": "grid_power", "voltage_l1": "grid_voltage_l1",
+                "voltage_l2": "grid_voltage_l2", "frequency": "grid_frequency",
+                "import_energy": "grid_import_energy",
+                "export_energy": "grid_export_energy",
+                "connected": "grid_connected",
+            },
+            "load": {
+                "power": "load_power", "voltage": "load_voltage",
+                "current": "load_current", "energy": "load_energy",
+            },
+            "inverter": {
+                "dc_temperature": "dc_temperature",
+                "ac_temperature": "ac_temperature",
+                "state": "inverter_state",
+            },
+            "energy": {
+                "daily_generation": "daily_pv_energy",
+                "total_generation": "total_pv_energy",
+                "daily_consumption": "load_energy",
+                "daily_grid_import": "grid_import_energy",
+                "daily_grid_export": "grid_export_energy",
+            },
+        }
+
+        def item(name: str) -> Optional[Dict[str, Any]]:
+            value = self.values.get(name)
+            return value.to_dict() if value is not None else None
+
+        result: Dict[str, Any] = {
+            "source": self.source.value,
+            "timestamp": self.timestamp,
+            "connection_status": self.connection_ok,
+            "stale": self.stale,
+            "inverter_id": self.inverter_id,
+            "categories": {
+                category: {out_name: item(param) for out_name, param in fields.items()}
+                for category, fields in categories.items()
+            },
+        }
+        # p_sun: только из подтверждённых PV-мощностей; если их нет — None.
+        pv_fields = result["categories"]["pv"]
+        powers = [
+            pv_fields[k]["normalized_value"]
+            for k in ("pv1_power", "pv2_power", "pv3_power")
+            if pv_fields[k] is not None and pv_fields[k]["normalized_value"] is not None
+        ]
+        pv_total = float(sum(powers)) if powers else None
+        result["categories"]["pv"]["total_power"] = (
+            {
+                "raw_value": None, "normalized_value": pv_total,
+                "unit": "W", "confidence": "calculated", "quality": "valid",
+                "address": None, "timestamp": self.timestamp,
+            }
+            if pv_total is not None else None
+        )
+        return result
+
     def present_values(self) -> Dict[str, TelemetryValue]:
         return {k: v for k, v in self.values.items() if v.present}
 

@@ -158,6 +158,63 @@ open class DataRepository(private val apiService: ApiService? = null) {
         }
 
     // ------------------------------------------------------------------
+    // Comprehensive stage — полная телеметрия, статистика, health/version
+    // ------------------------------------------------------------------
+
+    open suspend fun loadFullTelemetry(): Result<TelemetryFullDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                val response = apiService!!.getTelemetryFull()
+                if (response.isSuccessful) {
+                    response.body()?.let { success(it) }
+                        ?: error(Exception("Пустой ответ /api/telemetry/full"))
+                } else error(Exception("HTTP ${response.code()}"))
+            } catch (e: Exception) {
+                error(e)
+            }
+        }
+
+    open suspend fun loadStats(
+        parameter: String,
+        start: String,
+        end: String
+    ): Result<StatsSummaryDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService!!.getStatsSummary(parameter, start, end)
+            if (response.isSuccessful) {
+                response.body()?.let { success(it) }
+                    ?: error(Exception("Пустой ответ /api/stats/summary"))
+            } else error(Exception("HTTP ${response.code()}"))
+        } catch (e: Exception) {
+            error(e)
+        }
+    }
+
+    open suspend fun loadHealth(): Result<HealthDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService!!.getHealthDto()
+            if (response.isSuccessful) {
+                response.body()?.let { success(it) }
+                    ?: error(Exception("Пустой ответ /api/health"))
+            } else error(Exception("HTTP ${response.code()}"))
+        } catch (e: Exception) {
+            error(e)
+        }
+    }
+
+    open suspend fun loadBackendVersion(): Result<VersionDto> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService!!.getVersionDto()
+            if (response.isSuccessful) {
+                response.body()?.let { success(it) }
+                    ?: error(Exception("Пустой ответ /api/version"))
+            } else error(Exception("HTTP ${response.code()}"))
+        } catch (e: Exception) {
+            error(e)
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Преобразование DTO -> доменные модели
     // ------------------------------------------------------------------
 

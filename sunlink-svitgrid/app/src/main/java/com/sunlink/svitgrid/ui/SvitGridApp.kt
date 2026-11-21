@@ -41,6 +41,8 @@ import com.sunlink.svitgrid.ui.dashboard.DashboardScreen
 import com.sunlink.svitgrid.ui.history.HistoryScreen
 import com.sunlink.svitgrid.ui.inverters.InverterDetailsScreen
 import com.sunlink.svitgrid.ui.diagnostics.DiagnosticsScreen
+import com.sunlink.svitgrid.ui.telemetry.TelemetryScreen
+import com.sunlink.svitgrid.ui.statistics.StatisticsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,6 +73,8 @@ fun SvitGridApp() {
                 val currentRoute = navController.currentBackStackEntry?.destination?.route
                 listOf(
                     "dashboard" to ("Головна" to Icons.Default.Home),
+                    "telemetry" to (stringResource(R.string.nav_telemetry) to Icons.Default.Info),
+                    "statistics" to (stringResource(R.string.statistics) to Icons.Default.DateRange),
                     "history" to ("Історія" to Icons.Default.List),
                     "inverter-details" to ("Інвертор" to Icons.Default.Info),
                     "diagnostics" to ("Діагностика" to Icons.Default.Build),
@@ -153,6 +157,8 @@ fun SvitGridApp() {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable("dashboard") { DashboardScreen(vm = viewModel) }
+                composable("telemetry") { TelemetryScreen(vm = viewModel) }
+                composable("statistics") { StatisticsScreen(vm = viewModel) }
                 composable("history") { HistoryScreen(vm = viewModel) }
                 composable("inverter-details") { InverterDetailsScreen(vm = viewModel) }
                 composable("diagnostics") { DiagnosticsScreen(vm = viewModel) }
