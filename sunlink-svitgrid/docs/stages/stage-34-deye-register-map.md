@@ -188,7 +188,7 @@ Deye SUN-12K-SG02LP1-EU-AM3 → RS485 → Ebyte NA111-E 192.168.25.15:502
 **PASS** — аудит, карта регистров, offline-тесты и план выполнены; физическое расширение не выполнялось по требованию.
 
 ### 2. Git
-Initial HEAD `43817c4`; final HEAD — см. финальный ответ; branch `main`; `HEAD = origin/main` после коммита; untracked мастер-ТЗ сохранён.
+Initial HEAD `43817c4bdac044ac57dd80a5325387542398278f`; commit `19b140aa8966d839d49fe21ea68ad4aef7019a24` (`stage34: document Deye register map and telemetry validation plan`), затем docs-коммит с этим отчётом; branch `main`; `HEAD = origin/main`; untracked мастер-ТЗ сохранён.
 
 ### 3. Production safety
 Production не изменялся (см. §13).
