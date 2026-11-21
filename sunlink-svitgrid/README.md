@@ -102,6 +102,7 @@ python3 demo_backend.py --port 8801 --db /tmp/sunlink-stage12-demo.db
 - [docs/stages/stage-32-hotfix-release-endpoint.md](docs/stages/stage-32-hotfix-release-endpoint.md) — виправлення застарілого public :8800 → https://sunlink.pp.ua:9443/, діагностика UPDATE/REST/WS (hotfix)
 - [docs/stages/stage-33-production-deployment.md](docs/stages/stage-33-production-deployment.md) — розгорнуто HTTPS 9443 + реальний read-only poller (reg 184), перевірено REST/WS (етап 33)
 - [docs/stages/stage-34-deye-register-map.md](docs/stages/stage-34-deye-register-map.md) — таблиця достовірності регістрів Deye, offline-тести декодерів, план безпечного FC03-тесту (етап 34)
+- [docs/stages/stage-35a-production-safety-hardening.md](docs/stages/stage-35a-production-safety-hardening.md) — ізоляція DEMO/PRODUCTION, безпечна обробка Modbus-помилок, чесні поля /status (етап 35A)
 
 ## Перевірка релізу
 

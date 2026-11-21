@@ -13,6 +13,7 @@ and 76–84 are deliberately NOT included without a separate decision.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional
 
 from .models import ConfidenceLevel
@@ -36,8 +37,44 @@ class RegisterMetadata:
     # Этап 24: физический статус и кандидаты на уточнение масштаба/смещения.
     # Value: PHYSICALLY_READ | CORROBORATED | PROVISIONAL | UNKNOWN
     physical_status: str = "UNKNOWN"
+    display_verified: bool = False
+    production_allowed: bool = False
     candidate_scale: Optional[float] = None
     candidate_offset: Optional[float] = None
+
+
+# ---------------------------------------------------------------------------
+# Stage 35A: раздельные оси доказательности регистра.
+#
+#   ConfidenceLevel  — насколько достоверно НАЗНАЧЕНИЕ регистра (семантика).
+#   RegisterStatus   — что мы реально видели: документ, FC03-ответ, сверка с HMI.
+#   display_verified — отдельный флаг: значение сверено с дисплеем инвертора.
+#   production_allowed — отдельный флаг: параметр разрешён в активном poller.
+#
+# PHYSICALLY_READ (legacy) заменён на FC03_READ: сам FC03-ответ не доказывает,
+# что параметь правильно идентифицирован или совпадает с дисплеем.
+# ---------------------------------------------------------------------------
+
+
+class RegisterStatus(str, Enum):
+    UNKNOWN = "unknown"
+    FC03_READ = "fc03_read"                  # был реальный FC03-ответ
+    CORROBORATED = "corroborated"            # несколько независимых источников
+    PROVISIONAL = "provisional"              # есть основания, доказательств мало
+    PHYSICALLY_CONFIRMED = "physically_confirmed"  # реальный источник + история
+    DISPLAY_VERIFIED = "display_verified"    # сверено с дисплеем (пока ни у кого)
+
+
+LEGACY_STATUS_ALIASES = {
+    "PHYSICALLY_READ": RegisterStatus.FC03_READ.value,
+    "VERIFIED": RegisterStatus.DISPLAY_VERIFIED.value,
+    "PHYSICALLY_CONFIRMED": RegisterStatus.PHYSICALLY_CONFIRMED.value,
+}
+
+
+def normalize_physical_status(value: str) -> str:
+    """Приводит старые метки к новой шкале без изменения публичного API."""
+    return LEGACY_STATUS_ALIASES.get(str(value).upper(), str(value).lower())
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +92,7 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
         formula="raw × 0.01",
         is_signed=False,
         description="Battery voltage",
-        physical_status="PHYSICALLY_READ",
+        physical_status=RegisterStatus.FC03_READ.value,
     ),
     184: RegisterMetadata(
         address=184,
@@ -67,7 +104,8 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
         formula="raw × 1",
         is_signed=False,
         description="Battery state of charge",
-        physical_status="PHYSICALLY_READ",
+        physical_status=RegisterStatus.PHYSICALLY_CONFIRMED.value,
+        production_allowed=True,
     ),
     186: RegisterMetadata(
         address=186,
@@ -79,7 +117,7 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
         formula="signed_raw × 1",
         is_signed=True,
         description="PV1 power (first MPPT)",
-        physical_status="PHYSICALLY_READ",
+        physical_status=RegisterStatus.FC03_READ.value,
     ),
     187: RegisterMetadata(
         address=187,
@@ -91,7 +129,7 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
         formula="signed_raw × 1",
         is_signed=True,
         description="PV2 power (second MPPT)",
-        physical_status="PHYSICALLY_READ",
+        physical_status=RegisterStatus.FC03_READ.value,
     ),
     188: RegisterMetadata(
         address=188,
@@ -103,7 +141,7 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
         formula="signed_raw × 1",
         is_signed=True,
         description="PV3 power (third MPPT, 10/12 kW models)",
-        physical_status="PHYSICALLY_READ",
+        physical_status=RegisterStatus.FC03_READ.value,
     ),
     191: RegisterMetadata(
         address=191,
@@ -115,7 +153,7 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
         formula="signed_raw × 0.01",
         is_signed=True,
         description="Battery current",
-        physical_status="PHYSICALLY_READ",
+        physical_status=RegisterStatus.FC03_READ.value,
     ),
     190: RegisterMetadata(
         address=190,
@@ -137,7 +175,7 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
             "(V*I = -187.9 W): -1853 x 0.1 = -185.3 W matches power balance, "
             "so candidate scale 0.1 is under review. NOT confirmed."
         ),
-        physical_status="PROVISIONAL",
+        physical_status=RegisterStatus.PROVISIONAL.value,
         candidate_scale=0.1,
     ),
     90: RegisterMetadata(
@@ -158,7 +196,7 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
             "(non-physical), x0.1-100 = 41 C (plausible). Raw preserved; "
             "candidate offset -100 NOT confirmed by display."
         ),
-        physical_status="PROVISIONAL",
+        physical_status=RegisterStatus.PROVISIONAL.value,
         candidate_offset=100.0,
     ),
     91: RegisterMetadata(
@@ -179,7 +217,7 @@ REGISTER_MAP: dict[int, RegisterMetadata] = {
             "(non-physical), x0.1-100 = 48 C (plausible). Raw preserved; "
             "candidate offset -100 NOT confirmed by display."
         ),
-        physical_status="PROVISIONAL",
+        physical_status=RegisterStatus.PROVISIONAL.value,
         candidate_offset=100.0,
     ),
 }
@@ -207,6 +245,8 @@ CANDIDATE_REGISTERS: dict[int, RegisterMetadata] = {
 
 __all__ = [
     "RegisterMetadata",
+    "RegisterStatus",
+    "normalize_physical_status",
     "REGISTER_MAP",
     "ACTIVE_POLL_REGISTERS",
     "CANDIDATE_REGISTERS",

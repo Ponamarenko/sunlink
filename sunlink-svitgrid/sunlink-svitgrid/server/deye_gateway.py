@@ -24,7 +24,12 @@ import uvicorn
 from pydantic import BaseModel
 
 # Data Layer (этапы 7–8)
-from domain.register_metadata import REGISTER_MAP, RegisterMetadata
+from domain.register_metadata import (
+    ACTIVE_POLL_REGISTERS,
+    REGISTER_MAP,
+    RegisterMetadata,
+    RegisterStatus,
+)
 from domain.normalizer import (
     normalize_register,
     normalize_to_reading,
@@ -46,6 +51,10 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+class PhysicalModbusDisabled(RuntimeError):
+    """Физический Modbus запрещён конфигурацией источника."""
 
 # Инвертор
 INVERTER_ID = "deye_sg02lp1_am3"
@@ -80,6 +89,7 @@ class DeyeGateway:
         config: Dict,
         repository: Optional[SQLiteMeasurementRepository] = None,
         telemetry_source=None,  # Optional[TelemetrySource] — этап 16
+        physical_modbus_allowed: bool = True,
     ) -> None:
         self.config = config
         self.register_map = REGISTER_MAP  # из Data Layer, не инлайновый
@@ -90,6 +100,8 @@ class DeyeGateway:
         # Единый источник телеметрии (этап 16). Если задан, read_all_registers()
         # и get_system_status() используют его вместо прямого Modbus-клиента.
         self.telemetry_source = telemetry_source
+        # Stage 35A: DEMO/mock никогда не создают физический транспорт.
+        self.physical_modbus_allowed = physical_modbus_allowed
         self._last_snapshot = None
         self.source: DataSource = (
             telemetry_source.source if telemetry_source is not None
@@ -102,6 +114,10 @@ class DeyeGateway:
 
     async def connect(self) -> bool:
         """Подключение к инвертору (Modbus TCP client, read-only)."""
+        if not self.physical_modbus_allowed:
+            logger.info("Physical Modbus disabled by source configuration")
+            self.connection_status = False
+            return False
         try:
             self.client = ModbusTcpClient(
                 host=self.config["modbus"]["host"],
@@ -240,6 +256,10 @@ class DeyeGateway:
                     logger.warning(f"Failed to persist telemetry snapshot: {exc}")
             return data
 
+        if not self.physical_modbus_allowed:
+            # DEMO/mock: физический транспорт не создаётся и не открывается.
+            self.connection_status = False
+            return data
         if not self.connection_status:
             ok = await self.connect()
             if not ok:
@@ -276,13 +296,33 @@ class DeyeGateway:
             connection_status = self.telemetry_source.connection_ok
         else:
             connection_status = self.connection_status
+        # Stage 35A:известные метаданные / активный polling / физическое подтверждение — разные понятия.
+        active_map = getattr(self.telemetry_source, "_active", None)
+        if self.source in (DataSource.DEMO_SIMULATOR, DataSource.MOCK):
+            active_addresses: list[int] = []
+        elif active_map is not None:
+            active_addresses = sorted(active_map.keys())
+        elif self.physical_modbus_allowed:
+            active_addresses = sorted(ACTIVE_POLL_REGISTERS.keys())
+        else:
+            active_addresses = []
+        confirmed_count = sum(
+            1 for m in self.register_map.values()
+            if m.physical_status == RegisterStatus.PHYSICALLY_CONFIRMED.value
+        )
         return {
             "connection_status": connection_status,
             "last_update": last_update,
             "inverter_id": inverter_id,
+            # Legacy-поля: количество известных метаданных (обратная совместимость).
             "available_registers": len(self.register_map),
             "registers": sorted(self.register_map.keys()),
             "source": self.source.value,
+            # Новые однозначные поля Stage 35A.
+            "known_registers_count": len(self.register_map),
+            "active_registers_count": len(active_addresses),
+            "active_register_addresses": active_addresses,
+            "physically_confirmed_registers_count": confirmed_count,
         }
 
 
@@ -730,12 +770,28 @@ if __name__ == "__main__":
     # Stage 27/33: единый physical pipeline. DEMO/mock не запускаются в production.
     source_cfg = DataSourceConfig.from_env()
     if source_cfg.source in PHYSICAL_SOURCES:
+        gateway.physical_modbus_allowed = True
         poller, _, _ = build_production_poller(source_cfg, _repository)
         attach_to_gateway(gateway, poller)
         logger.info(
             "Production pipeline attached: %s, registers=%s",
             source_cfg.source,
             sorted(getattr(poller, "_active", {}).keys()),
+        )
+    else:
+        # Stage 35A: offline source явно подключается, физический Modbus выключен.
+        from services.telemetry_sources import DemoTelemetrySource, MockTelemetrySource
+        from modbus.mock_fc03_transport import MockFc03Transport
+
+        gateway.physical_modbus_allowed = False
+        if source_cfg.source == "mock":
+            gateway.telemetry_source = MockTelemetrySource(MockFc03Transport({}))
+        else:
+            gateway.telemetry_source = DemoTelemetrySource()
+        gateway.source = gateway.telemetry_source.source
+        logger.info(
+            "Offline source attached: %s (physical Modbus disabled)",
+            gateway.source.value,
         )
 
     try:

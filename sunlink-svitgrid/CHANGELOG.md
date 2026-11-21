@@ -2,6 +2,15 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [stage35a] — 2026-11-21 (безпека production, етап 35A)
+- Statusи регистрів розділено: `fc03_read` vs `physically_confirmed`; додано `display_verified` і `production_allowed`
+- DEMO/mock явно підключають offline-джерело й забороняють створення Modbus-клієнта; physical fallback у DEMO прибрано
+- `ReadOnlyModbusClient` перевіряє `isError()`, `registers`, довжину й тип; помилки → `ModbusReadError`, ніколи 0
+- `/status` додав `known_registers_count`, `active_registers_count`, `active_register_addresses`, `physically_confirmed_registers_count`; legacy-поля збережено
+- Backend 321 PASS (22 нових Stage 35A); Android 115 PASS (без змін); REST/WS сумісність підтверджена
+- Фізичних Modbus-запитів і write не виконувалось; production не змінювався
+
+
 ## [docs] — 2026-11-21 (етап 34, аудит регістрів Deye)
 - Повний аудит production pipeline: один poller, тільки reg 184, source=deye_modbus, stale/null без підміни
 - Карта достовірності: 184 PHYSICALLY_CONFIRMED; 183/186–188/191 CORROBORATED; 190/90/91/169 PROVISIONAL; 151-as-frequency та legacy energy-адреси REJECTED

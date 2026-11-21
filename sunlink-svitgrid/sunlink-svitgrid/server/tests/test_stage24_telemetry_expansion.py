@@ -42,7 +42,7 @@ class TestExpandedDecoder(unittest.TestCase):
         result = decode_register(0x005F, REGISTER_MAP[184])
         self.assertTrue(result.ok)
         self.assertEqual(result.normalized_value, 95.0)
-        self.assertEqual(result.physical_status, "PHYSICALLY_READ")
+        self.assertEqual(result.physical_status, "physically_confirmed")
         self.assertEqual(result.unit, "%")
 
     def test_pv_power_positive_and_signed_equivalence(self):
@@ -50,7 +50,7 @@ class TestExpandedDecoder(unittest.TestCase):
             with self.subTest(address=address):
                 result = decode_register(raw, REGISTER_MAP[address])
                 self.assertEqual(result.normalized_value, float(raw))
-                self.assertEqual(result.physical_status, "PHYSICALLY_READ")
+                self.assertEqual(result.physical_status, "fc03_read")
 
     def test_battery_voltage(self):
         result = decode_register(0x14E9, REGISTER_MAP[183])
