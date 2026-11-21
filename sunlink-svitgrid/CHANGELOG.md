@@ -2,6 +2,15 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [production] — 2026-11-21 (етап 33, санкціонований deployment)
+- Випущено сертифікат Let's Encrypt (DNS-01, Cloudflare token через приватну картку), SAN sunlink.pp.ua
+- Розгорнуто `sunlink-https.service`: HTTP 8800 (LAN) + HTTPS 9443 (публічний), TLS без reverse proxy
+- Підключено єдиний Stage 27 read-only poller: `deye_modbus`, `SUNLINK_ENABLE_MODBUS=1`, тільки reg 184
+- Зовнішня перевірка: `/status` HTTP 200 verify=0; `/api/live/raw`, `/api/measurements/latest`, WS `/ws` віддають реальні значення SOC (76→77 %)
+- Backup `/root/sunlink-backup/2026-11-21-054952`; health-check 6/6 PASS; backend 276 PASS
+- MikroTik/NAT/DNS/firewall та конфігурація Ebyte/інвертора не змінювались; Modbus write не виконувався
+
+
 ## [v2.35.0] — 2026-11-20 (hotfix endpoint релізу)
 - Виправлено причину `Failed to connect to sunlink.pp.ua:8800`: застарілі SharedPreferences публічного хоста не мігрували з v3
 - Міграція v4: будь-який публічний хост з не-9443 портом/без HTTPS → `https://sunlink.pp.ua:9443/`

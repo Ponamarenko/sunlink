@@ -724,6 +724,19 @@ if __name__ == "__main__":
     # TLS завершается в Uvicorn; Reverse Proxy не используется.
     from tls_config import TlsConfig, TlsConfigError
     from listener_config import run_listeners
+    from data_source_config import DataSourceConfig, PHYSICAL_SOURCES
+    from services.production_pipeline import build_production_poller, attach_to_gateway
+
+    # Stage 27/33: единый physical pipeline. DEMO/mock не запускаются в production.
+    source_cfg = DataSourceConfig.from_env()
+    if source_cfg.source in PHYSICAL_SOURCES:
+        poller, _, _ = build_production_poller(source_cfg, _repository)
+        attach_to_gateway(gateway, poller)
+        logger.info(
+            "Production pipeline attached: %s, registers=%s",
+            source_cfg.source,
+            sorted(getattr(poller, "_active", {}).keys()),
+        )
 
     try:
         cfg = TlsConfig.from_env()
