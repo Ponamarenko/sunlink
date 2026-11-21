@@ -2,6 +2,15 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [docs] — 2026-11-21 (етап 34, аудит регістрів Deye)
+- Повний аудит production pipeline: один poller, тільки reg 184, source=deye_modbus, stale/null без підміни
+- Карта достовірності: 184 PHYSICALLY_CONFIRMED; 183/186–188/191 CORROBORATED; 190/90/91/169 PROVISIONAL; 151-as-frequency та legacy energy-адреси REJECTED
+- Аудит джерел: офіційна карта регистрів для SUN-12K-SG02LP1-EU-AM3 відсутня; kbialek/MarkLabs підтверджують адреси/типи/масштаби, але не є офіційними
+- Знайдено конфлікти: reg 190 ×1 vs локальна гіпотеза ×0.1; temps offset −100 vs поточні карти без offset; available_registers=9 при одному активному регистрі
+- 23 нових offline-тести (U/S_WORD, DWORD/LW,HW, scale, null, timeout, exception, stale, source isolation); backend 299 PASS, Android 115 PASS
+- NEXT_READ_ONLY_TEST_PLAN: 183/191/190 → PV → grid/temps; фазичні запити НЕ виконувались, production не змінювався
+
+
 ## [production] — 2026-11-21 (етап 33, санкціонований deployment)
 - Випущено сертифікат Let's Encrypt (DNS-01, Cloudflare token через приватну картку), SAN sunlink.pp.ua
 - Розгорнуто `sunlink-https.service`: HTTP 8800 (LAN) + HTTPS 9443 (публічний), TLS без reverse proxy
