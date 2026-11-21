@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Card
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.R
@@ -46,7 +49,7 @@ import com.sunlink.svitgrid.ui.designsystem.TelemetryValue
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 
 @Composable
-fun DashboardScreen(vm: MainViewModel = viewModel()) {
+fun DashboardScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {}) {
     val uiState by vm.uiState.collectAsState()
     val refreshing by vm.refreshing.collectAsState()
     val transport by vm.liveTransport.collectAsState()
@@ -54,7 +57,8 @@ fun DashboardScreen(vm: MainViewModel = viewModel()) {
         uiState = uiState,
         refreshing = refreshing,
         transport = transport,
-        onRefresh = { vm.refresh() }
+        onRefresh = { vm.refresh() },
+        onNavigate = onNavigate
     )
 }
 
@@ -63,7 +67,8 @@ internal fun DashboardContent(
     uiState: InverterUiState,
     refreshing: Boolean,
     transport: com.sunlink.svitgrid.network.TelemetryWebSocketClient.WsTransportState,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onNavigate: (String) -> Unit
 ) {
     val state = DashboardStateMapper.map(uiState, refreshing, transport)
     val colors = LocalSunLinkColors.current
@@ -161,6 +166,33 @@ internal fun DashboardContent(
                                 modifier = Modifier.weight(1f)
                             )
                         }
+                    }
+                }
+            }
+
+            SectionHeader(stringResource(R.string.quick_access))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = SunLinkDimensions.spaceLg),
+                horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)
+            ) {
+                listOf(
+                    "battery" to R.string.screen_battery,
+                    "pv" to R.string.screen_pv,
+                    "grid" to R.string.screen_grid,
+                    "load" to R.string.screen_load,
+                    "energy-flow" to R.string.screen_energy_flow,
+                    "statistics" to R.string.statistics
+                ).forEach { (route, label) ->
+                    Card(
+                        modifier = Modifier.weight(1f).clickable { onNavigate(route) },
+                        colors = CardDefaults.cardColors(containerColor = colors.surface)
+                    ) {
+                        Text(
+                            stringResource(label), style = SunLinkTypography.caption,
+                            color = colors.primary,
+                            modifier = Modifier.padding(SunLinkDimensions.spaceSm),
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             }

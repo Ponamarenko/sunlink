@@ -53,7 +53,8 @@ fun PreviewDashboardDarkOnline() = PreviewHost(ThemeMode.DARK) {
         uiState = InverterUiState.Success(PreviewTelemetry.online(), PreviewTelemetry.status(), false),
         refreshing = false,
         transport = TelemetryWebSocketClient.WsTransportState.OPEN,
-        onRefresh = {}
+        onRefresh = {},
+        onNavigate = {}
     )
 }
 
@@ -64,7 +65,8 @@ fun PreviewDashboardLightOnline() = PreviewHost(ThemeMode.LIGHT) {
         uiState = InverterUiState.Success(PreviewTelemetry.online(), PreviewTelemetry.status(), false),
         refreshing = false,
         transport = TelemetryWebSocketClient.WsTransportState.OPEN,
-        onRefresh = {}
+        onRefresh = {},
+        onNavigate = {}
     )
 }
 
@@ -75,7 +77,8 @@ fun PreviewDashboardOffline() = PreviewHost(ThemeMode.DARK) {
         uiState = InverterUiState.Error("WebSocket недоступний", null, null, false),
         refreshing = false,
         transport = TelemetryWebSocketClient.WsTransportState.RECONNECTING,
-        onRefresh = {}
+        onRefresh = {},
+        onNavigate = {}
     )
 }
 
@@ -86,7 +89,8 @@ fun PreviewDashboardStale() = PreviewHost(ThemeMode.DARK) {
         uiState = InverterUiState.Success(PreviewTelemetry.partial(), PreviewTelemetry.status(), true),
         refreshing = false,
         transport = TelemetryWebSocketClient.WsTransportState.RECONNECTING,
-        onRefresh = {}
+        onRefresh = {},
+        onNavigate = {}
     )
 }
 
@@ -97,7 +101,8 @@ fun PreviewDashboardLoading() = PreviewHost(ThemeMode.DARK) {
         uiState = InverterUiState.Loading,
         refreshing = true,
         transport = TelemetryWebSocketClient.WsTransportState.CONNECTING,
-        onRefresh = {}
+        onRefresh = {},
+        onNavigate = {}
     )
 }
 
@@ -108,6 +113,7 @@ fun PreviewDashboardPartial() = PreviewHost(ThemeMode.LIGHT) {
         uiState = InverterUiState.Success(PreviewTelemetry.partial(), PreviewTelemetry.status(), false),
         refreshing = false,
         transport = TelemetryWebSocketClient.WsTransportState.OPEN,
-        onRefresh = {}
+        onRefresh = {},
+        onNavigate = {}
     )
 }

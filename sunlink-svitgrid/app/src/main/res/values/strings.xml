@@ -73,4 +73,25 @@
     <string name="statistics_count">Вимірювань: %1$d</string>
     <string name="nav_telemetry">Телеметрія</string>
     <string name="statistics">Статистика</string>
+    <string name="screen_battery">АКУМУЛЯТОР</string>
+    <string name="screen_pv">СОНЯЧНІ ПАНЕЛІ</string>
+    <string name="screen_grid">МЕРЕЖА</string>
+    <string name="screen_load">НАВАНТАЖЕННЯ</string>
+    <string name="screen_energy_flow">ПОТОКИ ЕНЕРГІЇ</string>
+    <string name="battery_temperature">Температура</string>
+    <string name="battery_daily_charge">Заряд за день</string>
+    <string name="battery_daily_discharge">Розряд за день</string>
+    <string name="pv_total">PV загальна</string>
+    <string name="pv_daily">Генерація за день</string>
+    <string name="pv_total_energy">Генерація всього</string>
+    <string name="grid_frequency">Частота</string>
+    <string name="grid_import">Імпорт</string>
+    <string name="grid_export">Експорт</string>
+    <string name="grid_connection">Підключення</string>
+    <string name="load_daily_energy">Споживання за день</string>
+    <string name="flow_hint">Напрямок потоків показується тільки при наявності підтверджених значень потужності.</string>
+    <string name="value_calculated">розраховане значення</string>
+    <string name="nav_energy">Енергія</string>
+    <string name="nav_more">Більше</string>
+    <string name="quick_access">ШВИДКИЙ ДОСТУП</string>
 </resources>

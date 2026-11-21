@@ -73,4 +73,25 @@
     <string name="statistics_count">Measurements: %1$d</string>
     <string name="nav_telemetry">Telemetry</string>
     <string name="statistics">Statistics</string>
+    <string name="screen_battery">BATTERY</string>
+    <string name="screen_pv">SOLAR PANELS</string>
+    <string name="screen_grid">GRID</string>
+    <string name="screen_load">LOAD</string>
+    <string name="screen_energy_flow">ENERGY FLOW</string>
+    <string name="battery_temperature">Temperature</string>
+    <string name="battery_daily_charge">Daily charge</string>
+    <string name="battery_daily_discharge">Daily discharge</string>
+    <string name="pv_total">PV total</string>
+    <string name="pv_daily">Daily generation</string>
+    <string name="pv_total_energy">Total generation</string>
+    <string name="grid_frequency">Frequency</string>
+    <string name="grid_import">Import</string>
+    <string name="grid_export">Export</string>
+    <string name="grid_connection">Connection</string>
+    <string name="load_daily_energy">Daily consumption</string>
+    <string name="flow_hint">Flow direction is shown only for confirmed power readings.</string>
+    <string name="value_calculated">calculated value</string>
+    <string name="nav_energy">Energy</string>
+    <string name="nav_more">More</string>
+    <string name="quick_access">QUICK ACCESS</string>
 </resources>

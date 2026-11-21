@@ -32,14 +32,22 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
     val historyStateValue = historyState
 
     var selectedParameter by remember { mutableStateOf("battery_soc") }
-
-    LaunchedEffect(Unit) {
-        vm.loadData()
-        vm.loadHistory(selectedParameter, "2026-01-01T00:00:00Z", "2026-12-31T23:59:59Z")
+    val periods = listOf(
+        "1h" to java.time.Duration.ofHours(1),
+        "6h" to java.time.Duration.ofHours(6),
+        "24h" to java.time.Duration.ofDays(1),
+        "7d" to java.time.Duration.ofDays(7),
+        "30d" to java.time.Duration.ofDays(30)
+    )
+    var selectedPeriod by remember { mutableStateOf(periods[2]) }
+    val end = remember { java.time.Instant.now().toString() }
+    val start = remember(selectedPeriod) {
+        java.time.Instant.now().minus(selectedPeriod.second).toString()
     }
 
-    LaunchedEffect(selectedParameter) {
-        vm.loadHistory(selectedParameter, "2026-01-01T00:00:00Z", "2026-12-31T23:59:59Z")
+    LaunchedEffect(Unit) { vm.loadData() }
+    LaunchedEffect(selectedParameter, selectedPeriod) {
+        vm.loadHistory(selectedParameter, start, end)
     }
 
     Column(
@@ -60,7 +68,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
             Button(
                 onClick = {
                     vm.loadData()
-                    vm.loadHistory(selectedParameter, "2026-01-01T00:00:00Z", "2026-12-31T23:59:59Z")
+                    vm.loadHistory(selectedParameter, start, end)
                 },
                 enabled = !loading,
                 modifier = Modifier.weight(1f)
@@ -105,6 +113,24 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
                     text = parameterUnit(selectedParameter),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                )
+            }
+        }
+
+        Text(
+            text = "Період",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            periods.forEach { (label, duration) ->
+                FilterChip(
+                    selected = selectedPeriod.second == duration,
+                    onClick = { selectedPeriod = label to duration },
+                    label = { Text(label) }
                 )
             }
         }

@@ -43,6 +43,11 @@ import com.sunlink.svitgrid.ui.inverters.InverterDetailsScreen
 import com.sunlink.svitgrid.ui.diagnostics.DiagnosticsScreen
 import com.sunlink.svitgrid.ui.telemetry.TelemetryScreen
 import com.sunlink.svitgrid.ui.statistics.StatisticsScreen
+import com.sunlink.svitgrid.ui.telemetry.BatteryDetailScreen
+import com.sunlink.svitgrid.ui.telemetry.PvDetailScreen
+import com.sunlink.svitgrid.ui.telemetry.GridDetailScreen
+import com.sunlink.svitgrid.ui.telemetry.LoadDetailScreen
+import com.sunlink.svitgrid.ui.telemetry.EnergyFlowScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,13 +78,17 @@ fun SvitGridApp() {
                 val currentRoute = navController.currentBackStackEntry?.destination?.route
                 listOf(
                     "dashboard" to ("Головна" to Icons.Default.Home),
+                    "battery" to (stringResource(R.string.screen_battery) to Icons.Default.Favorite),
+                    "pv" to (stringResource(R.string.screen_pv) to Icons.Default.Info),
+                    "grid" to (stringResource(R.string.screen_grid) to Icons.Default.Build),
+                    "load" to (stringResource(R.string.screen_load) to Icons.Default.Home),
+                    "energy-flow" to (stringResource(R.string.screen_energy_flow) to Icons.Default.Info),
                     "telemetry" to (stringResource(R.string.nav_telemetry) to Icons.Default.Info),
                     "statistics" to (stringResource(R.string.statistics) to Icons.Default.DateRange),
                     "history" to ("Історія" to Icons.Default.List),
                     "inverter-details" to ("Інвертор" to Icons.Default.Info),
                     "diagnostics" to ("Діагностика" to Icons.Default.Build),
                     "live" to ("Live моніторинг" to Icons.Default.Info),
-                    "battery" to ("Батарея" to Icons.Default.Favorite),
                     "forecast" to ("Прогноз" to Icons.Default.DateRange),
                     "debug" to ("Відладка / Сирі дані" to Icons.Default.Info),
                     "settings" to ("Налаштування" to Icons.Default.Settings),
@@ -156,14 +165,18 @@ fun SvitGridApp() {
                 startDestination = "dashboard",
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable("dashboard") { DashboardScreen(vm = viewModel) }
+                composable("dashboard") { DashboardScreen(vm = viewModel, onNavigate = { route -> navController.navigate(route) }) }
+                composable("battery") { BatteryDetailScreen(vm = viewModel) }
+                composable("pv") { PvDetailScreen(vm = viewModel) }
+                composable("grid") { GridDetailScreen(vm = viewModel) }
+                composable("load") { LoadDetailScreen(vm = viewModel) }
+                composable("energy-flow") { EnergyFlowScreen(vm = viewModel) }
                 composable("telemetry") { TelemetryScreen(vm = viewModel) }
                 composable("statistics") { StatisticsScreen(vm = viewModel) }
                 composable("history") { HistoryScreen(vm = viewModel) }
                 composable("inverter-details") { InverterDetailsScreen(vm = viewModel) }
                 composable("diagnostics") { DiagnosticsScreen(vm = viewModel) }
                 composable("live") { LiveScreen(vm = viewModel) }
-                composable("battery") { BatteryScreen(vm = viewModel) }
                 composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen(vm = viewModel) }
                 composable("debug") { DebugScreen() }
                 composable("settings") { SettingsScreen(vm = viewModel) }
