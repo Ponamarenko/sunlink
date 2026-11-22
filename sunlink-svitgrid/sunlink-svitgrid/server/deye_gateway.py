@@ -636,6 +636,9 @@ async def get_telemetry_quality():
             "by_confidence": by_confidence,
             "categories": categories,
             "active_registers": sorted(ACTIVE_POLL_REGISTERS.keys()),
+            "extended_polling": getattr(
+                gateway.telemetry_source, "get_status", lambda: {}
+            )().get("extended_polling", {"enabled": False}),
         }
     except Exception as exc:
         logger.error(f"Failed to build telemetry quality: {exc}")
@@ -888,6 +891,7 @@ if __name__ == "__main__":
     from listener_config import run_listeners
     from data_source_config import DataSourceConfig, PHYSICAL_SOURCES
     from services.production_pipeline import build_production_poller, attach_to_gateway
+    from services.extended_polling import ExtendedPollingConfig, build_extended_poller
 
     # Stage 27/33: единый physical pipeline. DEMO/mock не запускаются в production.
     source_cfg = DataSourceConfig.from_env()
@@ -900,6 +904,15 @@ if __name__ == "__main__":
             source_cfg.source,
             sorted(getattr(poller, "_active", {}).keys()),
         )
+        # Stage 42: дополнительные FC03-задания выполняет ТОТ ЖЕ poller.
+        extended_cfg = ExtendedPollingConfig.from_env()
+        if extended_cfg.enabled:
+            build_extended_poller(source_cfg, extended_cfg, existing_poller=poller)
+            status = poller.get_status().get("extended_polling", {})
+            logger.info(
+                "Extended polling attached to existing poller: jobs=%s dry_run=%s",
+                status.get("jobs"), status.get("dry_run"),
+            )
     else:
         # Stage 35A: offline source явно подключается, физический Modbus выключен.
         from services.telemetry_sources import DemoTelemetrySource, MockTelemetrySource

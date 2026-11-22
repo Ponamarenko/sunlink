@@ -32,6 +32,7 @@ from domain.telemetry import (
 from modbus.modbus_tcp_transport import ModbusTransportError
 from modbus.read_only_modbus_client import ReadOnlyModbusClient
 from storage.repository import MeasurementRepository
+from services.extended_queue import ExtendedCycleResult, ExtendedJobQueue
 
 INVERTER_ID = "deye_sg02lp1_am3"
 # Консервативный интервал для физического опроса: 30 с (настраивается).
@@ -82,6 +83,8 @@ class DeyePollingService(TelemetrySource):
         active_registers: Optional[Dict[int, object]] = None,
         reconnect_backoff: float = DEFAULT_RECONNECT_BACKOFF,
         max_backoff: float = DEFAULT_MAX_BACKOFF,
+        extended_queue: Optional[ExtendedJobQueue] = None,
+        extended_dry_run: bool = False,
     ) -> None:
         if poll_interval <= 0:
             raise ValueError("poll_interval must be positive")
@@ -104,6 +107,17 @@ class DeyePollingService(TelemetrySource):
         self._max_backoff = max(self._backoff, max_backoff)
         self._current_backoff = self._backoff
         self._registered = False
+        # Stage 42: очередь дополнительных FC03-заданий в том же цикле/transport'е.
+        self._extended_queue = extended_queue
+        self._extended_enabled = extended_queue is not None
+        self._extended_dry_run = extended_dry_run
+        self._extended_last_cycle: Dict[str, object] = {
+            "enabled": self._extended_enabled,
+            "jobs": len(extended_queue.jobs) if extended_queue else 0,
+            "executed": [],
+            "errors": [],
+            "dry_run": extended_dry_run,
+        }
 
     # -- TelemetrySource ----------------------------------------------------
 
@@ -139,6 +153,23 @@ class DeyePollingService(TelemetrySource):
         self._client.close()
 
     # -- lifecycle ----------------------------------------------------------
+
+    def attach_extended_queue(
+        self, queue: ExtendedJobQueue, dry_run: bool = False
+    ) -> None:
+        """Подключает очередь к ЭТОМУ poller'у — новый transport не создаётся."""
+        if self._extended_queue is not None:
+            raise RuntimeError("extended queue is already attached")
+        self._extended_queue = queue
+        self._extended_enabled = True
+        self._extended_dry_run = dry_run
+        self._extended_last_cycle = {
+            "enabled": True,
+            "jobs": len(queue.jobs),
+            "executed": [],
+            "errors": [],
+            "dry_run": dry_run,
+        }
 
     def start(self) -> None:
         """Запуск фонового polling. Не делает инвертор online автоматически."""
@@ -197,6 +228,7 @@ class DeyePollingService(TelemetrySource):
             "active_registers": sorted(self._active.keys()),
             "poll_interval_seconds": self._poll_interval,
             "stale": self._last_good is not None and not self._connected,
+            "extended_polling": dict(self._extended_last_cycle),
         }
 
     # -- internal -----------------------------------------------------------
@@ -258,6 +290,18 @@ class DeyePollingService(TelemetrySource):
                 register_address=address,
             )
 
+        if self._extended_enabled and self._extended_queue is not None:
+            extended = self._run_extended_jobs(ts)
+            values.update(extended.values)
+            errors.extend(extended.errors)
+            self._extended_last_cycle = {
+                "enabled": True,
+                "jobs": len(self._extended_queue.jobs),
+                "executed": extended.executed,
+                "errors": extended.errors,
+                "dry_run": False,
+            }
+
         if errors:
             self._connected = False
             self._stats.error_count += 1
@@ -296,6 +340,58 @@ class DeyePollingService(TelemetrySource):
                 error="; ".join(errors) or "no values",
             )
         return self._empty_snapshot("; ".join(errors) or "no values")
+
+    def _run_extended_jobs(self, timestamp: str) -> ExtendedCycleResult:
+        """Выполняет несколько FC03-заданий через ТОТ ЖЕ client/transport.
+
+        Называется только из `_run_cycle`, который уже держит `_cycle_lock`.
+       Никакого параллельного чтения и второго соединения нет.
+        """
+        result = ExtendedCycleResult()
+        queue = self._extended_queue
+        if queue is None or self._extended_dry_run:
+            return result
+        for job in queue.next_jobs():
+            if self._stop_event.is_set():
+                break
+            stats = queue.stats[job.address]
+            stats.attempts += 1
+            reason = queue.validate_job(job)
+            if reason is not None:
+                stats.failures += 1
+                stats.last_error = reason
+                result.errors.append(f"reg {job.address}: {reason}")
+                continue
+            registers = None
+            last_error: Optional[str] = None
+            for attempt in range(job.max_retries + 1):
+                try:
+                    registers = self._client.read_holding_registers(
+                        job.address, job.count, self._unit_id
+                    )
+                    break
+                except ModbusTransportError as exc:
+                    last_error = str(exc)
+                except Exception as exc:  # defensive: never fabricate values
+                    last_error = type(exc).__name__
+                if self._stop_event.is_set():
+                    break
+            if registers is None:
+                stats.failures += 1
+                stats.last_error = last_error
+                result.errors.append(f"reg {job.address}: {last_error}")
+                continue
+            values, decode_errors = queue.decode(job, registers, timestamp)
+            result.values.update(values)
+            result.errors.extend(decode_errors)
+            if decode_errors:
+                stats.failures += 1
+                stats.last_error = "; ".join(decode_errors)
+            else:
+                stats.successes += 1
+                stats.last_error = None
+                result.executed.append(job.address)
+        return result
 
     def _persist(self, snapshot: TelemetrySnapshot) -> None:
         if self._repository is None or not snapshot.values:

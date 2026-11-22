@@ -2,6 +2,14 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.42.0] — 2026-11-22 (інтеграція черги в poller, етап 42)
+- Черга FC03-завдань виконується всередині існуючого pollerа; другий transport/master заборонений
+- Round-robin, пріоритети, dry-run, retry, валідація production allowlist
+- `/api/telemetry/quality` показує статус розширеного polling
+- Backend 363 PASS, Android 147 PASS; debug APK v2.42.0 (63)
+- Production не змінювався; active map {184}, розширення вимкнено
+
+
 ## [v2.41.0] — 2026-11-22 (розширений моніторинг, etap 41)
 - Ekран «Всі параметри» з пошуком і фільтрами; діагностика якості телеметрії
 - Extended polling конфігурація з безпечним default (виключено, тільки 184)

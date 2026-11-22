@@ -24,12 +24,14 @@ from domain.register_metadata import RegisterMetadata
 from modbus.modbus_tcp_transport import ModbusTcpTransport
 from modbus.read_only_modbus_client import ReadOnlyModbusClient
 from services.deye_polling_service import DeyePollingService
+from services.extended_queue import ExtendedJobQueue, build_extended_jobs
 
 ENV_EXTENDED = "SUNLINK_EXTENDED_POLLING"
 ENV_GROUPS = "SUNLINK_EXTENDED_GROUPS"
 ENV_ADDRESSES = "SUNLINK_EXTENDED_ADDRESSES"
 ENV_MAX_BLOCK = "SUNLINK_EXTENDED_MAX_BLOCK"
 ENV_INTERVAL = "SUNLINK_EXTENDED_INTERVAL"
+ENV_DRY_RUN = "SUNLINK_EXTENDED_DRY_RUN"
 
 
 @dataclass(frozen=True)
@@ -39,6 +41,7 @@ class ExtendedPollingConfig:
     addresses: Tuple[int, ...] = ()
     max_block: int = 8
     interval_seconds: float = 30.0
+    dry_run: bool = False
 
     @classmethod
     def from_env(cls, environ: Optional[Mapping[str, str]] = None) -> "ExtendedPollingConfig":
@@ -63,7 +66,8 @@ class ExtendedPollingConfig:
             raise ValueError("max block must be 1..16")
         if interval <= 0:
             raise ValueError("interval must be positive")
-        return cls(enabled, groups, addresses, max_block, interval)
+        dry_run = env.get(ENV_DRY_RUN, "0").strip().lower() in ("1", "true", "yes")
+        return cls(enabled, groups, addresses, max_block, interval, dry_run)
 
     def resolve_addresses(self) -> Tuple[int, ...]:
         """Адресы плана; каждый адрес обязан иметь production_allowed=True."""
@@ -109,33 +113,27 @@ def build_extended_poller(
     config: DataSourceConfig,
     extended: ExtendedPollingConfig,
     repository=None,
+    existing_poller: Optional[DeyePollingService] = None,
 ) -> Optional[DeyePollingService]:
-    """Создаёт расширенный poller только при явном enabled.
+    """Подключает расширенные FC03-задания к существующему poller'у.
 
-    Возвращает None, если расширенный опрос выключен — production остаётся
-    на исходном poller'е с картой {184}.
+    При `extended.enabled=False` ничего не меняет. При включении требует
+    существующий poller: создание второго transport'а/мастера запрещено.
     """
     if not extended.enabled:
         return None
+    if existing_poller is None:
+        raise RuntimeError(
+            "extended polling requires the existing production poller; "
+            "creating a second Modbus master is forbidden"
+        )
     if config.source not in ("deye_modbus", "modbus") or not config.enable_modbus:
         raise RuntimeError("extended polling requires explicitly enabled physical Modbus source")
-    if not config.modbus_host:
-        raise RuntimeError("SUNLINK_MODBUS_HOST is required")
-    addresses = extended.resolve_addresses()
-    if not addresses:
+    jobs = build_extended_jobs(extended)
+    if not jobs:
         raise RuntimeError("no production_allowed addresses resolved")
-    active: Dict[int, RegisterMetadata] = {a: _to_register_metadata(a) for a in addresses}
-    transport = ModbusTcpTransport(
-        host=config.modbus_host, port=config.modbus_port, timeout=config.timeout_seconds
-    )
-    client = ReadOnlyModbusClient(transport)
-    return DeyePollingService(
-        client=client,
-        repository=repository,
-        unit_id=config.unit_id,
-        poll_interval=extended.interval_seconds,
-        active_registers=active,
-    )
+    existing_poller.attach_extended_queue(ExtendedJobQueue(jobs), dry_run=extended.dry_run)
+    return existing_poller
 
 
 __all__ = ["ExtendedPollingConfig", "build_extended_poller", "ENV_EXTENDED"]
