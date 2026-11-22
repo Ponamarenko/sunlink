@@ -23,6 +23,15 @@ data class InverterData(
     val pv3Voltage: Float? = null,     // Напряжение PV3 (В)
     val pv3Current: Float? = null,     // Ток PV3 (А)
     val gridVoltageL1: Float? = null,  // Напряжение сети L1 (В)
+    val gridFrequency: Float? = null,  // Частота сети (Гц)
+    val dailyPvEnergy: Float? = null,  // Суточная генерация (кВт·год)
+    val totalPvEnergy: Float? = null,  // Общая генерация (кВт·год)
+    val dailyBatteryCharge: Float? = null,
+    val dailyBatteryDischarge: Float? = null,
+    val totalBatteryCharge: Float? = null,
+    val totalBatteryDischarge: Float? = null,
+    val dailyGridImport: Float? = null,
+    val dailyGridExport: Float? = null,
     val dcTemperature: Float? = null,  // Температура DC (°C)
     val acTemperature: Float? = null,  // Температура AC (°C)
     val timestamp: String? = null,     // Время последнего измерения

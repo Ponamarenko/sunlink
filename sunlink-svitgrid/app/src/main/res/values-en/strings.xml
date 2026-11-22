@@ -180,4 +180,5 @@
     <string name="quality_source">Source: %1$s</string>
     <string name="quality_active">Active: %1$s</string>
     <string name="extended_polling_status">Extended polling: %1$s</string>
+    <string name="energy_summary">ENERGY TODAY</string>
 </resources>

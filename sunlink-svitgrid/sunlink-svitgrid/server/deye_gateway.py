@@ -413,28 +413,15 @@ async def get_registers():
 
 @app.post("/read")
 async def read_registers(request: ReadRequest):
-    """Чтение регистров (read-only, FC 03)."""
-    if request.addresses:
-        result: Dict[str, Any] = {}
-        for address in request.addresses:
-            norm_result = await gateway.read_register(address)
-            if norm_result and norm_result.ok:
-                metadata = gateway.register_map.get(address)
-                if metadata:
-                    result[metadata.name] = {
-                        "raw_value": norm_result.raw_value,
-                        "normalized_value": norm_result.normalized_value,
-                        "unit": norm_result.unit,
-                        "formula": norm_result.formula,
-                        "confidence": norm_result.confidence.value,
-                        "quality": norm_result.quality.value,
-                        "address": address,
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                    }
-    else:
-        result = await gateway.read_all_registers()
+    """Прямое чтение отключено: оно создавало бы второй Modbus master.
 
-    return {"data": result, "timestamp": datetime.now(timezone.utc).isoformat()}
+    Разовые чтения выполняются только через существующий poller и его очередь.
+    Текущие значения доступны через /api/telemetry/full и /api/live/raw.
+    """
+    raise HTTPException(
+        status_code=403,
+        detail="Direct register read is disabled: use the single existing poller telemetry endpoints",
+    )
 
 
 # Удалён: POST /write, POST /emergency-stop, POST /emergency-resume

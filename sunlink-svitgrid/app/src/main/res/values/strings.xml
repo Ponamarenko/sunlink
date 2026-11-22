@@ -180,4 +180,5 @@
     <string name="quality_source">Джерело: %1$s</string>
     <string name="quality_active">Активні: %1$s</string>
     <string name="extended_polling_status">Розширений polling: %1$s</string>
+    <string name="energy_summary">ЕНЕРГІЯ ЗА ДЕНЬ</string>
 </resources>

@@ -81,7 +81,7 @@ class TelemetrySnapshot:
                 "pv2_current": "pv2_current", "pv2_power": "pv2_power",
                 "pv3_voltage": "pv3_voltage", "pv3_current": "pv3_current",
                 "pv3_power": "pv3_power", "daily_energy": "daily_pv_energy",
-                "total_energy": "total_pv_energy", "status": "pv_status",
+                "total_energy": "total_pv_energy_low", "status": "pv_status",
             },
             "battery": {
                 "soc": "battery_soc", "voltage": "battery_voltage",
@@ -89,8 +89,8 @@ class TelemetrySnapshot:
                 "temperature": "battery_temperature", "status": "battery_status",
                 "daily_charge_energy": "daily_battery_charge",
                 "daily_discharge_energy": "daily_battery_discharge",
-                "total_charge_energy": "total_battery_charge",
-                "total_discharge_energy": "total_battery_discharge",
+                "total_charge_energy": "total_battery_charge_low",
+                "total_discharge_energy": "total_battery_discharge_low",
             },
             "grid": {
                 "power": "grid_power", "voltage_l1": "grid_voltage_l1",
@@ -102,8 +102,8 @@ class TelemetrySnapshot:
                 "external_ct_l2": "external_ct_l2_power",
                 "import_power": "grid_import_power",
                 "export_power": "grid_export_power",
-                "import_energy": "grid_import_energy",
-                "export_energy": "grid_export_energy",
+                "import_energy": "daily_grid_import",
+                "export_energy": "daily_grid_export",
                 "connected": "grid_connected",
             },
             "load": {
@@ -131,12 +131,12 @@ class TelemetrySnapshot:
             },
             "energy": {
                 "daily_generation": "daily_pv_energy",
-                "total_generation": "total_pv_energy",
+                "total_generation": "total_pv_energy_low",
                 "daily_consumption": "load_energy",
-                "daily_grid_import": "grid_import_energy",
-                "daily_grid_export": "grid_export_energy",
-                "total_grid_import": "total_grid_import",
-                "total_grid_export": "total_grid_export",
+                "daily_grid_import": "daily_grid_import",
+                "daily_grid_export": "daily_grid_export",
+                "total_grid_import": "total_grid_import_low",
+                "total_grid_export": "total_grid_export_low",
             },
             "status": {
                 "battery": "battery_status",

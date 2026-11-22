@@ -120,6 +120,7 @@ internal fun DashboardContent(
             } else {
             // Головний енергетичний блок — тільки підтверджені поля.
             OverviewCard(data = data, state = state)
+            EnergySummaryCard(data = data)
 
             SectionHeader(stringResource(R.string.dash_flow_title))
             EnergyFlowDiagram(
@@ -271,6 +272,42 @@ private fun OverviewCard(data: InverterData, state: DashboardState) {
                 PowerValue(data.pLoad, stringResource(R.string.unit_watt), color = colors.load)
             }
         }
+    }
+}
+
+@Composable
+private fun EnergySummaryCard(data: InverterData) {
+    val colors = LocalSunLinkColors.current
+    Card(
+        modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg),
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
+    ) {
+        Column(modifier = Modifier.padding(SunLinkDimensions.spaceMd)) {
+            Text(
+                stringResource(R.string.energy_summary),
+                style = SunLinkTypography.label,
+                color = colors.textSecondary
+            )
+            Spacer(Modifier.height(SunLinkDimensions.spaceSm))
+            Row(horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
+                EnergyItem(stringResource(R.string.pv_daily), data.dailyPvEnergy, colors.solar, Modifier.weight(1f))
+                EnergyItem(stringResource(R.string.battery_daily_charge), data.dailyBatteryCharge, colors.success, Modifier.weight(1f))
+                EnergyItem(stringResource(R.string.battery_daily_discharge), data.dailyBatteryDischarge, colors.load, Modifier.weight(1f))
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
+                EnergyItem(stringResource(R.string.grid_import), data.dailyGridImport, colors.gridImport, Modifier.weight(1f))
+                EnergyItem(stringResource(R.string.grid_export), data.dailyGridExport, colors.gridExport, Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun EnergyItem(label: String, value: Float?, color: Color, modifier: Modifier = Modifier) {
+    val colors = LocalSunLinkColors.current
+    Column(modifier = modifier) {
+        Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
+        PowerValue(value, "кВт·год", 1, color, SunLinkTypography.label)
     }
 }
 
