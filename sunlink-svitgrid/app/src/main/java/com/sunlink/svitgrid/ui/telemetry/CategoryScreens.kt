@@ -7,8 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,6 +81,7 @@ private fun CategoryScaffold(
 ) {
     val full by vm.fullTelemetry.collectAsState()
     val loadError by vm.fullTelemetryError.collectAsState()
+    val loadingFull by vm.fullTelemetryLoading.collectAsState()
     val colors = LocalSunLinkColors.current
     LaunchedEffect(Unit) { vm.loadFullTelemetry() }
     Column(
@@ -90,7 +92,9 @@ private fun CategoryScaffold(
         verticalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceMd)
     ) {
         SectionHeader(title, Modifier.padding(horizontal = SunLinkDimensions.spaceLg))
-        if (full == null) {
+        if (loadingFull && full == null) {
+            CircularProgressIndicator(modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg))
+        } else if (full == null) {
             Text(
                 loadError ?: stringResource(R.string.telemetry_unavailable),
                 style = SunLinkTypography.body,

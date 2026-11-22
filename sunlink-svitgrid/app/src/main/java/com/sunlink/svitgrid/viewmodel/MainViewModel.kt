@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sunlink.svitgrid.data.dto.HealthDto
+import com.sunlink.svitgrid.data.dto.LiveDataFullMapper
 import com.sunlink.svitgrid.data.dto.InvertersDto
 import com.sunlink.svitgrid.data.dto.StatsSummaryDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
@@ -52,6 +53,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     val fullTelemetry: StateFlow<TelemetryFullDto?> = _fullTelemetry
     private val _fullTelemetryError = MutableStateFlow<String?>(null)
     val fullTelemetryError: StateFlow<String?> = _fullTelemetryError
+    private val _fullTelemetryLoading = MutableStateFlow(false)
+    val fullTelemetryLoading: StateFlow<Boolean> = _fullTelemetryLoading
 
     private val _stats = MutableStateFlow<StatsSummaryDto?>(null)
     val stats: StateFlow<StatsSummaryDto?> = _stats
@@ -121,6 +124,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
             return
         }
         applySuccess(data, status)
+        // WS-кадр обновляет и категориальную модель — экраны Battery/PV/... без REST.
+        onFullTelemetryLoaded(LiveDataFullMapper.merge(_fullTelemetry.value, message))
     }
 
     private fun handleTransportState(state: TelemetryWebSocketClient.WsTransportState) {
@@ -136,8 +141,10 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
             }
             if (result is Result.Success) {
                 val (data, status) = result.data
-                if (data.hasMeasurements || status.online) applySuccess(data, status)
-                else applyError("Дані інвертора недоступні")
+                if (data.hasMeasurements || status.online) {
+                    applySuccess(data, status)
+                    loadFullTelemetry()
+                } else applyError("Дані інвертора недоступні")
             } else {
                 applyError("Втрату з'єднання з WebSocket підтверджено; REST недоступний")
             }
@@ -310,6 +317,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                             val v = m.normalized_value?.toFloat()
                             HistoryPoint(timestamp = m.timestamp ?: "", value = v, unit = m.unit ?: "")
                         }
+                            .sortedBy { it.timestamp }
+                            .distinctBy { it.timestamp }
                         _historyState.value = HistoryUiState.Success(
                             parameter = dto.parameter ?: parameter,
                             unit = dto.measurements.firstOrNull()?.unit ?: "",
@@ -334,11 +343,13 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     /** Прямая установка уже загруженной модели (используется тестами и WS-адаптерами). */
     fun onFullTelemetryLoaded(dto: TelemetryFullDto) {
         _fullTelemetry.value = dto
+        _fullTelemetryError.value = null
     }
 
     /** Загружает полную категориальную модель телеметрии (без физических запросов). */
     fun loadFullTelemetry() {
         viewModelScope.launch {
+            _fullTelemetryLoading.value = true
             val result = try {
                 repository.loadFullTelemetry()
             } catch (e: Exception) {
@@ -351,6 +362,7 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
             } else {
                 _fullTelemetryError.value = (result as? Result.Error)?.exception?.message
             }
+            _fullTelemetryLoading.value = false
         }
     }
 
