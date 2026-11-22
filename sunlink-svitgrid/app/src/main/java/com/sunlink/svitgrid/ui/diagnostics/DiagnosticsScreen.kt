@@ -113,6 +113,8 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
                 stringResource(R.string.quality_available, quality?.available_parameters ?: 0),
                 stringResource(R.string.quality_unavailable, quality?.unavailable_parameters ?: 0),
                 stringResource(R.string.quality_active, quality?.active_registers?.joinToString() ?: "—"),
+                "Polling: ${if (quality?.polling_running == true) "ON" else "OFF"} · cycles ${quality?.cycles ?: 0}",
+                "Failed cycles: ${quality?.failed_cycles ?: 0} · missed: ${quality?.missed_cycles ?: 0}",
                 stringResource(R.string.extended_polling_status,
                     if (quality?.extended_polling?.enabled == true) "ON" else "OFF")
             )

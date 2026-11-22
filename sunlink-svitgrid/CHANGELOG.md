@@ -2,6 +2,14 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.48.0] — 2026-11-22 (безперервний моніторинг, етап 48)
+- Фоновий poller стартує один раз у main і працює незалежно від HTTP/WS клієнтів
+- Статистика циклів у /api/telemetry/quality; каталог 49 параметрів через /api/telemetry/catalog
+- Android Diagnostics показує стан polling; історія поповнюється без запитів клієнта
+- Backend 389 PASS, Android 168 PASS; debug APK v2.48.0 (69)
+- Production не змінювався; план deployment підготовлено
+
+
 ## [v2.47.0] — 2026-11-22 (повне збереження історії, етап 47)
 - Виправлено падіння batch insert через невідомий confidence: додано verification і безпечне маппінг
 - У SQLite тепер зберігаються всі валідні параметри poller'а + CALCULATED pv_total_power

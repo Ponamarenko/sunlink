@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import math
 import threading
+import time
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from enum import Enum
@@ -68,6 +69,10 @@ class PollingStats:
     last_success_utc: Optional[str] = None
     last_error_utc: Optional[str] = None
     last_error: Optional[str] = None
+    cycles: int = 0
+    failed_cycles: int = 0
+    last_cycle_ms: Optional[float] = None
+    missed_cycles: int = 0
 
 
 _CONFIDENCE_MAP = {
@@ -196,6 +201,9 @@ class DeyePollingService(TelemetrySource):
 
     def start(self) -> None:
         """Запуск фонового polling. Не делает инвертор online автоматически."""
+        with self._state_lock:
+            if self._thread is not None and self._thread.is_alive():
+                return  # повторный вызов — no-op, второй цикл не создаётся
         with _POLLERS_LOCK:
             if self._inverter_id in _ACTIVE_POLLERS:
                 raise PollerAlreadyRunning(
@@ -252,6 +260,12 @@ class DeyePollingService(TelemetrySource):
             "poll_interval_seconds": self._poll_interval,
             "stale": self._last_good is not None and not self._connected,
             "extended_polling": dict(self._extended_last_cycle),
+            "polling_running": self.is_running(),
+            "polling_state": self._state.value,
+            "cycles": stats.cycles,
+            "failed_cycles": stats.failed_cycles,
+            "last_cycle_ms": stats.last_cycle_ms,
+            "missed_cycles": stats.missed_cycles,
         }
 
     # -- internal -----------------------------------------------------------
@@ -259,7 +273,17 @@ class DeyePollingService(TelemetrySource):
     def _poll_loop(self) -> None:
         while not self._stop_event.is_set():
             was_connected = self._connected
+            started = time.monotonic()
             self.read()
+            elapsed_ms = round((time.monotonic() - started) * 1000, 1)
+            with self._state_lock:
+                self._stats.cycles += 1
+                self._stats.last_cycle_ms = elapsed_ms
+                if elapsed_ms / 1000.0 > self._poll_interval:
+                    self._stats.missed_cycles += 1
+            if not self._connected:
+                with self._state_lock:
+                    self._stats.failed_cycles += 1
             if self._connected:
                 if not was_connected:
                     self._stats.reconnect_count += 1

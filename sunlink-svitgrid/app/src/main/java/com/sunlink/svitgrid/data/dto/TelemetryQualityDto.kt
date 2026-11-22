@@ -22,5 +22,10 @@ data class TelemetryQualityDto(
     val by_confidence: Map<String, Int> = emptyMap(),
     val categories: Map<String, CategoryQualityDto> = emptyMap(),
     val active_registers: List<Int> = emptyList(),
-    val extended_polling: ExtendedPollingStatusDto? = null
+    val extended_polling: ExtendedPollingStatusDto? = null,
+    val polling_running: Boolean? = null,
+    val cycles: Int = 0,
+    val failed_cycles: Int = 0,
+    val last_cycle_ms: Double? = null,
+    val missed_cycles: Int = 0
 )

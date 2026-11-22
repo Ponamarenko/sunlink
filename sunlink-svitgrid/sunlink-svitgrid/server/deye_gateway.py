@@ -652,6 +652,17 @@ async def get_stats_summary(
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.get("/api/telemetry/catalog")
+async def get_telemetry_catalog():
+    """Каталог известных параметров (описания, без фактических значений)."""
+    try:
+        from services.telemetry_catalog import build_catalog
+        return build_catalog()
+    except Exception as exc:
+        logger.error(f"Failed to build telemetry catalog: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @app.get("/api/health")
 async def get_health():
     return {
@@ -884,6 +895,9 @@ async def websocket_endpoint(websocket: WebSocket):
 async def shutdown_event():
     """Остановка при завершении работы."""
     logger.info("Shutting down Deye Gateway Server")
+    source = getattr(gateway, "telemetry_source", None)
+    if source is not None and hasattr(source, "stop"):
+        source.stop()
     await gateway.disconnect()
     _repository.close()
 
@@ -903,6 +917,7 @@ if __name__ == "__main__":
         gateway.physical_modbus_allowed = True
         poller, _, _ = build_production_poller(source_cfg, _repository)
         attach_to_gateway(gateway, poller)
+        poller.start()  # Stage 48: фоновый цикл живёт независимо от HTTP-клиентов.
         logger.info(
             "Production pipeline attached: %s, registers=%s",
             source_cfg.source,
