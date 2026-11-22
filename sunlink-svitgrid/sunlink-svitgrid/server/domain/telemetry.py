@@ -138,6 +138,26 @@ class TelemetrySnapshot:
                 "total_grid_import": "total_grid_import",
                 "total_grid_export": "total_grid_export",
             },
+            "status": {
+                "battery": "battery_status",
+                "pv": "pv_status",
+                "grid": "grid_connected",
+                "load": "load_status",
+                "inverter": "inverter_operating_state",
+            },
+            "warnings": {
+                "inverter": "inverter_warning_code",
+                "battery": "battery_alarm",
+            },
+            "errors": {
+                "inverter": "inverter_fault_code",
+                "modbus": "modbus_error",
+            },
+            "system": {
+                "communication": "inverter_communication_status",
+                "last_poll": "last_poll_timestamp",
+                "active_registers": "active_registers_count",
+            },
         }
 
         def item(name: str) -> Optional[Dict[str, Any]]:

@@ -11,6 +11,7 @@ import com.sunlink.svitgrid.data.dto.RegistersDto
 import com.sunlink.svitgrid.data.dto.StatsSummaryDto
 import com.sunlink.svitgrid.data.dto.StatusDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
+import com.sunlink.svitgrid.data.dto.TelemetryQualityDto
 import com.sunlink.svitgrid.data.dto.VersionDto
 import retrofit2.Response
 import retrofit2.http.GET
@@ -81,6 +82,9 @@ interface ApiService {
     // Comprehensive stage — категориальная модель и статистика.
     @GET("api/telemetry/full")
     suspend fun getTelemetryFull(): Response<TelemetryFullDto>
+
+    @GET("api/telemetry/quality")
+    suspend fun getTelemetryQuality(): Response<TelemetryQualityDto>
 
     @GET("api/stats/summary")
     suspend fun getStatsSummary(

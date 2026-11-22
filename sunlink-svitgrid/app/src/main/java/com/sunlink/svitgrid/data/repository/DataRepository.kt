@@ -174,6 +174,19 @@ open class DataRepository(private val apiService: ApiService? = null) {
             }
         }
 
+    open suspend fun loadTelemetryQuality(): Result<TelemetryQualityDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                val response = apiService!!.getTelemetryQuality()
+                if (response.isSuccessful) {
+                    response.body()?.let { success(it) }
+                        ?: error(Exception("Пустой ответ /api/telemetry/quality"))
+                } else error(Exception("HTTP ${response.code()}"))
+            } catch (e: Exception) {
+                error(e)
+            }
+        }
+
     open suspend fun loadStats(
         parameter: String,
         start: String,

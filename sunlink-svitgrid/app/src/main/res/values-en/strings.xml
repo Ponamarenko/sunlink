@@ -166,4 +166,17 @@
     <string name="inverter_fault_code">Fault code</string>
     <string name="inverter_warning_code">Warning code</string>
     <string name="inverter_communication_status">Communication status</string>
+    <string name="all_parameters">ALL PARAMETERS</string>
+    <string name="all_parameters_search">Search parameter</string>
+    <string name="filter_all">All</string>
+    <string name="filter_available">Available</string>
+    <string name="filter_verified">Verified</string>
+    <string name="filter_unverified">Unverified</string>
+    <string name="filter_unavailable">Unavailable</string>
+    <string name="quality_title">Telemetry quality</string>
+    <string name="quality_known">Known: %1$d</string>
+    <string name="quality_available">Available: %1$d</string>
+    <string name="quality_unavailable">Unavailable: %1$d</string>
+    <string name="quality_source">Source: %1$s</string>
+    <string name="quality_active">Active: %1$s</string>
 </resources>

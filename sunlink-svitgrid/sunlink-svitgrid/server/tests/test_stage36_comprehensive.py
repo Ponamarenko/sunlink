@@ -60,9 +60,10 @@ class TestFullTelemetryModel(unittest.TestCase):
             values={},
         )
         data = snapshot.to_full_dict()
-        self.assertEqual(
-            set(data["categories"]),
-            {"pv", "battery", "grid", "load", "inverter", "energy"},
+        self.assertTrue(
+            {"pv", "battery", "grid", "load", "inverter", "energy"}.issubset(
+                set(data["categories"])
+            )
         )
         for category in data["categories"].values():
             for item in category.values():

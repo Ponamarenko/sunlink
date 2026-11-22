@@ -596,6 +596,52 @@ async def get_full_telemetry():
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.get("/api/telemetry/quality")
+async def get_telemetry_quality():
+    """Доступность и качество параметров; ошибки не маскируются нулями."""
+    try:
+        await gateway.read_all_registers()
+        snapshot = getattr(gateway, "_last_snapshot", None)
+        full = snapshot.to_full_dict() if snapshot is not None else {
+            "source": gateway.source.value,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "stale": False,
+            "categories": {},
+        }
+        total = 0
+        available = 0
+        by_confidence: Dict[str, int] = {}
+        categories: Dict[str, Dict[str, int]] = {}
+        for name, fields in full["categories"].items():
+            cat_total = 0
+            cat_available = 0
+            for item in fields.values():
+                if item is None:
+                    continue
+                cat_total += 1
+                total += 1
+                if item.get("normalized_value") is not None:
+                    cat_available += 1
+                    available += 1
+                confidence = item.get("confidence", "unknown")
+                by_confidence[str(confidence)] = by_confidence.get(str(confidence), 0) + 1
+            categories[name] = {"total": cat_total, "available": cat_available}
+        return {
+            "source": full["source"],
+            "timestamp": full["timestamp"],
+            "stale": full["stale"],
+            "known_parameters": total,
+            "available_parameters": available,
+            "unavailable_parameters": total - available,
+            "by_confidence": by_confidence,
+            "categories": categories,
+            "active_registers": sorted(ACTIVE_POLL_REGISTERS.keys()),
+        }
+    except Exception as exc:
+        logger.error(f"Failed to build telemetry quality: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @app.get("/api/stats/summary")
 async def get_stats_summary(
     parameter: str = Query(..., description="Parameter name"),

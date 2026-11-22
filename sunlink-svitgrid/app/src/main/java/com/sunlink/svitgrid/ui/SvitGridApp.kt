@@ -49,6 +49,7 @@ import com.sunlink.svitgrid.ui.telemetry.GridDetailScreen
 import com.sunlink.svitgrid.ui.telemetry.LoadDetailScreen
 import com.sunlink.svitgrid.ui.telemetry.EnergyFlowScreen
 import com.sunlink.svitgrid.ui.telemetry.InverterDetailScreen
+import com.sunlink.svitgrid.ui.telemetry.AllParametersScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,6 +86,7 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
                     "load" to (stringResource(R.string.screen_load) to Icons.Default.Home),
                     "energy-flow" to (stringResource(R.string.screen_energy_flow) to Icons.Default.Info),
                     "inverter-status" to (stringResource(R.string.screen_inverter) to Icons.Default.Build),
+                    "all-parameters" to (stringResource(R.string.all_parameters) to Icons.Default.List),
                     "telemetry" to (stringResource(R.string.nav_telemetry) to Icons.Default.Info),
                     "statistics" to (stringResource(R.string.statistics) to Icons.Default.DateRange),
                     "history" to (stringResource(R.string.nav_history) to Icons.Default.List),
@@ -172,6 +174,7 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
                 composable("load") { LoadDetailScreen(vm = viewModel) }
                 composable("energy-flow") { EnergyFlowScreen(vm = viewModel) }
                 composable("inverter-status") { InverterDetailScreen(vm = viewModel) }
+                composable("all-parameters") { AllParametersScreen(vm = viewModel) }
                 composable("telemetry") { TelemetryScreen(vm = viewModel) }
                 composable("statistics") { StatisticsScreen(vm = viewModel) }
                 composable("history") { HistoryScreen(vm = viewModel) }

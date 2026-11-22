@@ -8,6 +8,7 @@ import com.sunlink.svitgrid.data.dto.LiveDataFullMapper
 import com.sunlink.svitgrid.data.dto.InvertersDto
 import com.sunlink.svitgrid.data.dto.StatsSummaryDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
+import com.sunlink.svitgrid.data.dto.TelemetryQualityDto
 import com.sunlink.svitgrid.data.dto.VersionDto
 import com.sunlink.svitgrid.data.dto.LiveDataMessageDto
 import com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto
@@ -55,6 +56,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     val fullTelemetryError: StateFlow<String?> = _fullTelemetryError
     private val _fullTelemetryLoading = MutableStateFlow(false)
     val fullTelemetryLoading: StateFlow<Boolean> = _fullTelemetryLoading
+    private val _telemetryQuality = MutableStateFlow<TelemetryQualityDto?>(null)
+    val telemetryQuality: StateFlow<TelemetryQualityDto?> = _telemetryQuality
 
     private val _stats = MutableStateFlow<StatsSummaryDto?>(null)
     val stats: StateFlow<StatsSummaryDto?> = _stats
@@ -363,6 +366,19 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                 _fullTelemetryError.value = (result as? Result.Error)?.exception?.message
             }
             _fullTelemetryLoading.value = false
+        }
+    }
+
+    /** Качество/доступность параметров для диагностики. */
+    fun loadTelemetryQuality() {
+        viewModelScope.launch {
+            val result = try {
+                repository.loadTelemetryQuality()
+            } catch (e: Exception) {
+                Log.w(tag, "loadTelemetryQuality failed", e)
+                null
+            }
+            if (result is Result.Success) _telemetryQuality.value = result.data
         }
     }
 

@@ -166,4 +166,17 @@
     <string name="inverter_fault_code">Код помилки</string>
     <string name="inverter_warning_code">Код попередження</string>
     <string name="inverter_communication_status">Стан з\'вязку</string>
+    <string name="all_parameters">ВСІ ПАРАМЕТРИ</string>
+    <string name="all_parameters_search">Пошук параметра</string>
+    <string name="filter_all">Усі</string>
+    <string name="filter_available">Доступні</string>
+    <string name="filter_verified">Підтверджені</string>
+    <string name="filter_unverified">Непідтверджені</string>
+    <string name="filter_unavailable">Недоступні</string>
+    <string name="quality_title">Якість телеметрії</string>
+    <string name="quality_known">Відомо: %1$d</string>
+    <string name="quality_available">Доступно: %1$d</string>
+    <string name="quality_unavailable">Недоступно: %1$d</string>
+    <string name="quality_source">Джерело: %1$s</string>
+    <string name="quality_active">Активні: %1$s</string>
 </resources>

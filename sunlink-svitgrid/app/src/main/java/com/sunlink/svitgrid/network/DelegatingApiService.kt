@@ -11,6 +11,7 @@ import com.sunlink.svitgrid.data.dto.RegistersDto
 import com.sunlink.svitgrid.data.dto.StatsSummaryDto
 import com.sunlink.svitgrid.data.dto.StatusDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
+import com.sunlink.svitgrid.data.dto.TelemetryQualityDto
 import com.sunlink.svitgrid.data.dto.VersionDto
 import retrofit2.Response
 
@@ -50,6 +51,7 @@ class DelegatingApiService(private val provider: () -> ApiService) : ApiService 
         end: String
     ): Response<MeasurementsHistoryDto> = api.getHistoryDto(parameter, start, end)
     override suspend fun getTelemetryFull(): Response<TelemetryFullDto> = api.getTelemetryFull()
+    override suspend fun getTelemetryQuality(): Response<TelemetryQualityDto> = api.getTelemetryQuality()
     override suspend fun getStatsSummary(
         parameter: String,
         start: String,

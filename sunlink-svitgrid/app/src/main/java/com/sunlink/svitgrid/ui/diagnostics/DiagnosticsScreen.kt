@@ -27,6 +27,7 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
     val lastSuccess by NetworkDiagnostics.lastSuccessUtc.collectAsState()
     val backendHealth by vm.backendHealth.collectAsState()
     val backendVersion by vm.backendVersion.collectAsState()
+    val quality by vm.telemetryQuality.collectAsState()
 
     val uiStateValue = uiState
     val data = when (uiStateValue) {
@@ -41,6 +42,7 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
     LaunchedEffect(Unit) {
         vm.loadData()
         vm.loadBackendInfo()
+        vm.loadTelemetryQuality()
     }
 
     Column(
@@ -99,6 +101,18 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
                 "Протокол: ${backendVersion?.protocol ?: "—"}",
                 "Source: ${backendHealth?.source ?: "—"}",
                 "Останній успіх (мережа): ${lastSuccess ?: "—"}"
+            )
+        )
+
+        DiagnosticCard(
+            title = stringResource(R.string.quality_title),
+            status = quality?.source ?: "—",
+            statusColor = if (quality?.stale == true) Color(0xFFFFCA28) else Color(0xFF66BB6A),
+            details = listOf(
+                stringResource(R.string.quality_known, quality?.known_parameters ?: 0),
+                stringResource(R.string.quality_available, quality?.available_parameters ?: 0),
+                stringResource(R.string.quality_unavailable, quality?.unavailable_parameters ?: 0),
+                stringResource(R.string.quality_active, quality?.active_registers?.joinToString() ?: "—")
             )
         )
 
