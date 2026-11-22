@@ -9,6 +9,7 @@ ReadOnlyModbusClient, только подтверждённый регистр 1
 
 from __future__ import annotations
 
+import math
 import threading
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -67,6 +68,27 @@ class PollingStats:
     last_success_utc: Optional[str] = None
     last_error_utc: Optional[str] = None
     last_error: Optional[str] = None
+
+
+_CONFIDENCE_MAP = {
+    "physically_verified": "corroborated",
+    "documented": "corroborated",
+    "corroborated": "corroborated",
+    "verified": "verified",
+    "model_compatible": "provisional",
+    "provisional": "provisional",
+    "calculated": "provisional",
+    "unverified": "unverified",
+}
+
+
+def _telemetry_confidence(value: str) -> str:
+    """Приводит статус регистра к корректному ConfidenceLevel."""
+    return _CONFIDENCE_MAP.get(str(value).lower(), "unverified")
+
+
+def _measurement_confidence(value: str) -> ConfidenceLevel:
+    return ConfidenceLevel(_telemetry_confidence(value))
 
 
 class DeyePollingService(TelemetrySource):
@@ -400,25 +422,50 @@ class DeyePollingService(TelemetrySource):
         if self._repository is None or not snapshot.values:
             return
         try:
-            rows = [
-                Measurement(
+            rows: list[Measurement] = []
+            for name, value in snapshot.values.items():
+                numeric = value.normalized_value
+                if numeric is None or not math.isfinite(float(numeric)):
+                    continue
+                if value.quality not in ("valid", "stale"):
+                    continue
+                rows.append(Measurement(
                     inverter_id=snapshot.inverter_id,
                     register_address=value.register_address,
                     parameter_name=name,
                     raw_value=value.raw_value,
-                    normalized_value=value.normalized_value,
+                    normalized_value=numeric,
                     unit=value.unit,
                     timestamp=datetime.fromisoformat(value.timestamp),
                     quality=MeasurementQuality(value.quality),
-                    confidence=ConfidenceLevel(value.confidence),
+                    confidence=_measurement_confidence(value.confidence),
                     source=self._source,
-                    description="read-only FC03 polling (stage 20)",
-                )
-                for name, value in snapshot.values.items()
+                    description=value.verification or "read-only FC03 polling",
+                ))
+            # Расчётная сумма PV — только из реально прочитанных трёх входов.
+            pv_values = [
+                snapshot.values[n].normalized_value
+                for n in ("pv1_power", "pv2_power", "pv3_power")
+                if n in snapshot.values and snapshot.values[n].normalized_value is not None
             ]
+            if len(pv_values) == 3 and all(math.isfinite(float(v)) for v in pv_values):
+                from domain.models import DataSource
+                rows.append(Measurement(
+                    inverter_id=snapshot.inverter_id,
+                    register_address=None,
+                    parameter_name="pv_total_power",
+                    raw_value=None,
+                    normalized_value=float(sum(pv_values)),
+                    unit="W",
+                    timestamp=datetime.fromisoformat(snapshot.timestamp),
+                    quality=MeasurementQuality.VALID,
+                    confidence=ConfidenceLevel.PROVISIONAL,
+                    source=DataSource.CALCULATED,
+                    description="SUM(pv1_power,pv2_power,pv3_power)",
+                ))
             self._repository.save_measurements_batch(rows)
         except Exception as exc:
-            # Ошибка хранения не превращается в фиктивную телеметрию.
+            # Ошибка хранения не останавливает poller и не подменяет телеметрию.
             self._stats.last_error = f"storage error: {type(exc).__name__}"
 
 

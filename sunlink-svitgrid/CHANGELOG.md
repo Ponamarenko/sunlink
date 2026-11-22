@@ -2,6 +2,15 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.47.0] — 2026-11-22 (повне збереження історії, етап 47)
+- Виправлено падіння batch insert через невідомий confidence: додано verification і безпечне маппінг
+- У SQLite тепер зберігаються всі валідні параметри poller'а + CALCULATED pv_total_power
+- Дедупликація по (inverter, parameter, timestamp); None/NaN/Inf ігноруються
+- Android: pv_total_power в історії, uk/en локалізація
+- Backend 383 PASS, Android 165 PASS; debug APK v2.47.0 (68)
+- Production deployment НЕ виконувався; план підготовлено
+
+
 ## [v2.46.0] — 2026-11-22 (історія та графіки, етап 46)
 - Backend: `/api/history/series` з агрегацією 24h/7d/30d, явними пропусками та валідацією
 - Android: HistoryScreen на реальних series, 15 параметрів, Slider вибору точки, uk/en

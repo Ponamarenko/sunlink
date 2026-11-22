@@ -201,4 +201,5 @@
     <string name="unit_kwh">kWh</string>
     <string name="history_source">Source: %1$s · quality: %2$s</string>
     <string name="history_points">Available points: %1$d · gaps: %2$d</string>
+    <string name="hist_pv_total">Total PV power</string>
 </resources>

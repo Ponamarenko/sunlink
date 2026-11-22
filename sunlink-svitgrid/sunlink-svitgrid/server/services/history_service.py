@@ -21,7 +21,9 @@ PERIODS: Dict[str, Dict[str, Any]] = {
 }
 
 KNOWN_PARAMETERS = sorted(
-    {m.name for m in REGISTER_MAP.values()} | {r.name for r in EXTENDED_REGISTERS.values()}
+    {m.name for m in REGISTER_MAP.values()}
+    | {r.name for r in EXTENDED_REGISTERS.values()}
+    | {"pv_total_power"}
 )
 
 

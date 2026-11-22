@@ -33,6 +33,7 @@ class TelemetryValue:
     quality: str
     raw_value: Optional[int] = None
     register_address: Optional[int] = None
+    verification: Optional[str] = None
 
     @property
     def present(self) -> bool:
@@ -47,6 +48,7 @@ class TelemetryValue:
             "quality": self.quality,
             "address": self.register_address,
             "timestamp": self.timestamp,
+            "verification": self.verification,
         }
 
 

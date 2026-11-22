@@ -57,7 +57,8 @@ class TestHistoryStorage(unittest.TestCase):
         removed = self.repo.prune_before("inv", now - timedelta(days=30))
         self.assertEqual(removed, 1)
         history = self.repo.get_history("inv", "battery_soc", old - timedelta(days=1), now + timedelta(days=1))
-        self.assertEqual(len(history), 2)
+        # Stage 47: одинаковое измерение не дублируется.
+        self.assertEqual(len(history), 1)
 
 
 class TestHistorySeries(unittest.TestCase):

@@ -45,7 +45,7 @@ import com.sunlink.svitgrid.viewmodel.MainViewModel
 private val PERIODS = listOf("24h", "7d", "30d")
 private val PARAMETERS = listOf(
     "battery_soc", "battery_voltage", "battery_current", "battery_power",
-    "pv1_power", "pv2_power", "pv3_power", "daily_pv_energy",
+    "pv1_power", "pv2_power", "pv3_power", "pv_total_power", "daily_pv_energy",
     "grid_voltage_l1", "grid_frequency", "load_power",
     "daily_grid_import", "daily_grid_export",
     "daily_battery_charge", "daily_battery_discharge"
@@ -215,6 +215,7 @@ private fun labelRes(parameter: String): Int = when (parameter) {
     "pv1_power" -> R.string.hist_pv1
     "pv2_power" -> R.string.hist_pv2
     "pv3_power" -> R.string.hist_pv3
+    "pv_total_power" -> R.string.hist_pv_total
     "daily_pv_energy" -> R.string.hist_daily_pv
     "grid_voltage_l1" -> R.string.hist_grid_voltage
     "grid_frequency" -> R.string.hist_grid_freq

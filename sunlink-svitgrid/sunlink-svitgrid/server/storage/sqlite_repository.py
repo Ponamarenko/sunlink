@@ -141,6 +141,22 @@ class SQLiteMeasurementRepository(MeasurementRepository):
         conn = self._ensure_open()
         if not measurements:
             return 0
+        # Одно и то же измерение не должно дублироваться при повторной обработке.
+        fresh: List[Measurement] = []
+        seen: set[tuple] = set()
+        for m in measurements:
+            key = (m.inverter_id, m.parameter_name, m.timestamp.isoformat())
+            if key in seen:
+                continue
+            seen.add(key)
+            if conn.execute(
+                "SELECT 1 FROM measurements WHERE inverter_id=? AND parameter_name=? AND timestamp=? LIMIT 1",
+                key,
+            ).fetchone():
+                continue
+            fresh.append(m)
+        if not fresh:
+            return 0
         rows = [
             (
                 m.inverter_id,
@@ -155,7 +171,7 @@ class SQLiteMeasurementRepository(MeasurementRepository):
                 m.source.value,
                 m.description,
             )
-            for m in measurements
+            for m in fresh
         ]
         try:
             with conn:
@@ -171,7 +187,7 @@ class SQLiteMeasurementRepository(MeasurementRepository):
                 )
         except sqlite3.Error as exc:
             raise RuntimeError(f"failed to persist measurements: {exc}") from exc
-        return len(measurements)
+        return len(fresh)
 
     @_thread_safe
     def get_latest(
