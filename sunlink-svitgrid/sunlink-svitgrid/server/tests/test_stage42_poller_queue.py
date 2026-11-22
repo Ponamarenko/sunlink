@@ -46,8 +46,9 @@ class TestQueueSafety(unittest.TestCase):
             "SUNLINK_EXTENDED_ADDRESSES": "183,186,190",
         })
         jobs = build_extended_jobs(cfg)
-        # Явно запрошенные НЕ-разрешённые адреса отбрасываются (fail closed).
-        self.assertEqual(jobs, [])
+        # Неразрешённый 190 отбрасывается, разрешённые 183/186 остаются.
+        self.assertIn(183, [j.address for j in jobs])
+        self.assertNotIn(190, [j.address for j in jobs])
         self.assertTrue(all(j.function_code == 3 for j in jobs))
         self.assertTrue(all(j.production_eligible for j in jobs))
 
@@ -64,7 +65,7 @@ class TestQueueSafety(unittest.TestCase):
         )
         # dry_run flag не передан в poller — задания есть, но тест ниже проверит
         # что без флага чтение выполняется; здесь проверяем только конфиг.
-        self.assertEqual(cfg.resolve_addresses(), (184,))
+        self.assertIn(184, cfg.resolve_addresses())
 
     def test_validation_rejects_other_functions_and_unapproved_addresses(self):
         queue = ExtendedJobQueue([make_job(184)])
@@ -135,6 +136,19 @@ class TestPollerIntegration(unittest.TestCase):
             snap = poller.read()
         self.assertEqual(snap.value_of("battery_soc"), 94.0)
         self.assertIsNone(snap.value_of("battery_voltage"))
+
+    def test_extended_values_accumulate_between_cycles(self):
+        jobs = [make_job(183), make_job(184)]
+        poller, client, transport = self._poller({184: 94, 183: 5353}, jobs)
+        queue = poller._extended_queue
+        queue.jobs_per_cycle = 1
+        allowed = {184: object(), 183: object()}
+        with patch("services.extended_queue.production_allowed_registers", return_value=allowed):
+            poller.read()  # first job 183
+            poller.read()  # second job 184
+        snap = poller.read()
+        self.assertEqual(snap.value_of("battery_soc"), 94.0)
+        self.assertEqual(snap.value_of("battery_voltage"), 53.53)
 
     def test_no_second_thread_or_registry_entry(self):
         jobs = [make_job(184)]

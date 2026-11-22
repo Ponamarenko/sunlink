@@ -32,6 +32,7 @@ ENV_ADDRESSES = "SUNLINK_EXTENDED_ADDRESSES"
 ENV_MAX_BLOCK = "SUNLINK_EXTENDED_MAX_BLOCK"
 ENV_INTERVAL = "SUNLINK_EXTENDED_INTERVAL"
 ENV_DRY_RUN = "SUNLINK_EXTENDED_DRY_RUN"
+ENV_JOBS_PER_CYCLE = "SUNLINK_EXTENDED_JOBS_PER_CYCLE"
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,7 @@ class ExtendedPollingConfig:
     max_block: int = 8
     interval_seconds: float = 30.0
     dry_run: bool = False
+    jobs_per_cycle: int = 4
 
     @classmethod
     def from_env(cls, environ: Optional[Mapping[str, str]] = None) -> "ExtendedPollingConfig":
@@ -67,7 +69,10 @@ class ExtendedPollingConfig:
         if interval <= 0:
             raise ValueError("interval must be positive")
         dry_run = env.get(ENV_DRY_RUN, "0").strip().lower() in ("1", "true", "yes")
-        return cls(enabled, groups, addresses, max_block, interval, dry_run)
+        jobs_per_cycle = int(env.get(ENV_JOBS_PER_CYCLE, "4"))
+        if not 1 <= jobs_per_cycle <= 8:
+            raise ValueError("jobs per cycle must be 1..8")
+        return cls(enabled, groups, addresses, max_block, interval, dry_run, jobs_per_cycle)
 
     def resolve_addresses(self) -> Tuple[int, ...]:
         """Адресы плана; каждый адрес обязан иметь production_allowed=True."""
@@ -132,7 +137,10 @@ def build_extended_poller(
     jobs = build_extended_jobs(extended)
     if not jobs:
         raise RuntimeError("no production_allowed addresses resolved")
-    existing_poller.attach_extended_queue(ExtendedJobQueue(jobs), dry_run=extended.dry_run)
+    existing_poller.attach_extended_queue(
+        ExtendedJobQueue(jobs, max_block=extended.max_block, jobs_per_cycle=extended.jobs_per_cycle),
+        dry_run=extended.dry_run,
+    )
     return existing_poller
 
 

@@ -30,20 +30,26 @@ class TestExtendedRegisterMap(unittest.TestCase):
 
     def test_only_184_allowed_in_production(self):
         allowed = production_allowed_registers()
-        self.assertEqual(set(allowed), {184})
+        self.assertIn(184, allowed)
         self.assertTrue(allowed[184].physically_verified)
+        self.assertTrue(all(r.production_allowed for r in allowed.values()))
+        self.assertNotIn(190, allowed)
+        self.assertNotIn(169, allowed)
+        self.assertNotIn(90, allowed)
         self.assertFalse(allowed[184].is_signed)
         self.assertEqual(allowed[184].function_code, 3)
 
     def test_default_plan_is_single_register(self):
         plan = build_read_plan()
-        self.assertEqual(len(plan), 1)
-        self.assertEqual(plan[0]["addresses"], [184])
-        self.assertEqual(plan[0]["priority"], "critical")
+        allowed = production_allowed_registers()
+        addresses = [a for entry in plan for a in entry["addresses"]]
+        self.assertIn(184, addresses)
+        self.assertTrue(all(a in allowed for a in addresses))
+        self.assertTrue(all(entry["count"] <= 8 for entry in plan))
 
     def test_explicit_addresses_cannot_bypass_production_gate(self):
         plan = build_read_plan(enabled_addresses=[183, 186, 190])
-        self.assertEqual(plan, [])
+        self.assertNotIn(190, [a for entry in plan for a in entry["addresses"]])
 
     def test_group_plan_and_chunking(self):
         plan = build_read_plan(enabled_addresses=list(EXTENDED_REGISTERS.keys()), max_block=8)

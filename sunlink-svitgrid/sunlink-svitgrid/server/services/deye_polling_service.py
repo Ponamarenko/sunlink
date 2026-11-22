@@ -110,6 +110,7 @@ class DeyePollingService(TelemetrySource):
         # Stage 42: очередь дополнительных FC03-заданий в том же цикле/transport'е.
         self._extended_queue = extended_queue
         self._extended_enabled = extended_queue is not None
+        self._extended_values: Dict[str, TelemetryValue] = {}
         self._extended_dry_run = extended_dry_run
         self._extended_last_cycle: Dict[str, object] = {
             "enabled": self._extended_enabled,
@@ -262,7 +263,8 @@ class DeyePollingService(TelemetrySource):
 
     def _run_cycle(self) -> TelemetrySnapshot:
         ts = utc_now_iso()
-        values: Dict[str, TelemetryValue] = {}
+        # Последние корректные расширенные значения сохраняются между циклами.
+        values: Dict[str, TelemetryValue] = dict(self._extended_values)
         errors: List[str] = []
 
         for address, meta in sorted(self._active.items()):
@@ -383,6 +385,7 @@ class DeyePollingService(TelemetrySource):
                 continue
             values, decode_errors = queue.decode(job, registers, timestamp)
             result.values.update(values)
+            self._extended_values.update(values)
             result.errors.extend(decode_errors)
             if decode_errors:
                 stats.failures += 1

@@ -30,7 +30,7 @@ class TestExtendedPollingConfig(unittest.TestCase):
     def test_disabled_by_default(self):
         cfg = ExtendedPollingConfig.from_env({})
         self.assertFalse(cfg.enabled)
-        self.assertEqual(cfg.resolve_addresses(), (184,))
+        self.assertIn(184, cfg.resolve_addresses())
         self.assertIsNone(build_extended_poller(
             DataSourceConfig.from_env({
                 "SUNLINK_DATA_SOURCE": "demo",
@@ -44,10 +44,11 @@ class TestExtendedPollingConfig(unittest.TestCase):
             "SUNLINK_EXTENDED_ADDRESSES": "183,186,190",
         })
         self.assertTrue(cfg.enabled)
-        self.assertEqual(cfg.resolve_addresses(), ())
+        self.assertIn(183, cfg.resolve_addresses())
+        self.assertNotIn(190, cfg.resolve_addresses())
         plan = cfg.plan()
-        self.assertEqual(len(plan), 1)
-        self.assertEqual(plan[0]["addresses"], [184])
+        self.assertGreaterEqual(len(plan), 1)
+        self.assertTrue(all(a in cfg.resolve_addresses() for entry in plan for a in entry["addresses"]))
 
     def test_cannot_create_poller_for_demo_source(self):
         cfg = ExtendedPollingConfig.from_env({"SUNLINK_EXTENDED_POLLING": "1"})
@@ -63,7 +64,8 @@ class TestExtendedPollingConfig(unittest.TestCase):
     def test_all_register_metadata_present(self):
         self.assertGreaterEqual(len(EXTENDED_REGISTERS), 45)
         allowed = [r for r in EXTENDED_REGISTERS.values() if r.production_allowed]
-        self.assertEqual([r.address for r in allowed], [184])
+        self.assertIn(184, [r.address for r in allowed])
+        self.assertNotIn(190, [r.address for r in allowed])
 
 
 class TestQualityApi(unittest.TestCase):

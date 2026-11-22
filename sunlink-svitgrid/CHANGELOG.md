@@ -2,6 +2,14 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.43.0] — 2026-11-22 (реальний запуск телеметрії, етап 43)
+- Розширене FC03-читання активовано через існуючий poller (один transport, без другого master)
+- Отримано реальні значення: SOC, батарея V/I, PV1–3 V/I/P, енергія, мережа V/Hz, навантаження
+- REST/WS передають реальні значення; provisional/calculated явно марковані
+- Backend 364 PASS, Android 147 PASS; debug APK v2.43.0 (64)
+- Production: backup, restart тільки sunlink-https.service, rollback не знадобився
+
+
 ## [v2.42.0] — 2026-11-22 (інтеграція черги в poller, етап 42)
 - Черга FC03-завдань виконується всередині існуючого pollerа; другий transport/master заборонений
 - Round-robin, пріоритети, dry-run, retry, валідація production allowlist
