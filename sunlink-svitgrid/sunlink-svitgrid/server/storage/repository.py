@@ -54,6 +54,10 @@ class MeasurementRepository(ABC):
     def get_all_latest(self, inverter_id: str) -> List[Measurement]:
         """Return the latest measurement for every parameter of an inverter."""
 
+    def prune_before(self, inverter_id: str, cutoff: datetime) -> int:
+        """Delete measurements older than cutoff. Optional for implementations."""
+        raise NotImplementedError("pruning is not supported by this repository")
+
     @abstractmethod
     def close(self) -> None:
         """Close the underlying connection."""

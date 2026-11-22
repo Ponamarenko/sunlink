@@ -1,327 +1,224 @@
 package com.sunlink.svitgrid.ui.history
 
-import com.sunlink.svitgrid.R
-
-import androidx.compose.ui.res.stringResource
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
 import android.content.Context
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sunlink.svitgrid.data.model.HistoryPoint
+import com.sunlink.svitgrid.R
+import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.model.InverterData
 import com.sunlink.svitgrid.data.model.InverterUiState
-import com.sunlink.svitgrid.viewmodel.HistoryUiState
+import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
+import com.sunlink.svitgrid.ui.designsystem.PowerValue
+import com.sunlink.svitgrid.ui.designsystem.SunLinkDimensions
+import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.designsystem.TelemetryChart
 import com.sunlink.svitgrid.viewmodel.MainViewModel
+
+private val PERIODS = listOf("24h", "7d", "30d")
+private val PARAMETERS = listOf(
+    "battery_soc", "battery_voltage", "battery_current", "battery_power",
+    "pv1_power", "pv2_power", "pv3_power", "daily_pv_energy",
+    "grid_voltage_l1", "grid_frequency", "load_power",
+    "daily_grid_import", "daily_grid_export",
+    "daily_battery_charge", "daily_battery_discharge"
+)
 
 @Composable
 fun HistoryScreen(vm: MainViewModel = viewModel()) {
-    val uiState by vm.uiState.collectAsState()
-    val historyState by vm.historyState.collectAsState()
-    val loading by vm.refreshing.collectAsState()
-
-    val uiStateValue = uiState
-    val currentData = when (uiStateValue) {
-        is InverterUiState.Success -> uiStateValue.data
-        else -> InverterData()
-    }
-    val historyStateValue = historyState
     val context = LocalContext.current
+    val colors = LocalSunLinkColors.current
+    val uiState by vm.uiState.collectAsState()
+    val series by vm.series.collectAsState()
+    val seriesLoading by vm.seriesLoading.collectAsState()
+    val seriesError by vm.seriesError.collectAsState()
 
-    var selectedParameter by remember { mutableStateOf("battery_soc") }
-    val periods = listOf(
-        "1h" to java.time.Duration.ofHours(1),
-        "6h" to java.time.Duration.ofHours(6),
-        "24h" to java.time.Duration.ofDays(1),
-        "7d" to java.time.Duration.ofDays(7),
-        "30d" to java.time.Duration.ofDays(30)
-    )
-    var selectedPeriod by remember { mutableStateOf(periods[2]) }
-    val end = remember { java.time.Instant.now().toString() }
-    val start = remember(selectedPeriod) {
-        java.time.Instant.now().minus(selectedPeriod.second).toString()
-    }
+    var selectedParameter by remember { mutableStateOf(PARAMETERS.first()) }
+    var selectedPeriod by remember { mutableStateOf(PERIODS.first()) }
+    var selectedIndex by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) { vm.loadData() }
     LaunchedEffect(selectedParameter, selectedPeriod) {
-        vm.loadHistory(selectedParameter, start, end)
+        selectedIndex = 0
+        vm.loadSeries(selectedParameter, selectedPeriod)
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = SunLinkDimensions.spaceXl),
+        verticalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceMd)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.history_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Button(
-                onClick = {
-                    vm.loadData()
-                    vm.loadHistory(selectedParameter, start, end)
-                },
-                enabled = !loading,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text("🔄")
-            }
-        }
-
-        if (loading) {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(300.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        }
-
-        val currentValue = currentParameterValue(context, selectedParameter, currentData)
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = parameterLabel(context, selectedParameter),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = currentValue,
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = parameterUnit(context, selectedParameter),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                )
-            }
-        }
-
         Text(
-            text = stringResource(R.string.history_period),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            periods.forEach { (label, duration) ->
-                FilterChip(
-                    selected = selectedPeriod.second == duration,
-                    onClick = { selectedPeriod = label to duration },
-                    label = { Text(label) }
-                )
-            }
-        }
-
-        Text(
-            text = stringResource(R.string.history_parameter),
-            style = MaterialTheme.typography.titleMedium,
+            stringResource(R.string.history_title),
+            style = MaterialTheme.typography.titleLarge,
+            color = colors.primary,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 8.dp)
+            modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
         )
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Modifier.padding(horizontal = SunLinkDimensions.spaceLg).horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)
         ) {
-            listOf("battery_soc", "pv1_power", "pv2_power", "pv3_power", "battery_power",
-                "battery_voltage", "battery_current", "dc_temperature", "grid_voltage_l1",
-                "grid_frequency", "load_power", "daily_pv_energy", "daily_grid_import",
-                "daily_grid_export", "daily_battery_charge", "daily_battery_discharge").forEach { param ->
-                Button(
-                    onClick = { selectedParameter = param },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(parameterShortLabel(context, param), style = MaterialTheme.typography.bodySmall)
-                }
+            PERIODS.forEach { period ->
+                FilterChip(
+                    selected = selectedPeriod == period,
+                    onClick = { selectedPeriod = period },
+                    label = { Text(period) }
+                )
+            }
+        }
+        Row(
+            Modifier.padding(horizontal = SunLinkDimensions.spaceLg).horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)
+        ) {
+            PARAMETERS.forEach { parameter ->
+                FilterChip(
+                    selected = selectedParameter == parameter,
+                    onClick = { selectedParameter = parameter },
+                    label = { Text(parameterShortLabel(context, parameter)) }
+                )
             }
         }
 
-        when (historyStateValue) {
-            is HistoryUiState.Loading -> {
-                Box(
-                    modifier = Modifier.fillMaxWidth().height(300.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-            is HistoryUiState.Error -> {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Помилка завантаження історії", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onErrorContainer)
-                        Text(historyStateValue.message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onErrorContainer)
-                    }
-                }
-            }
-            HistoryUiState.Empty -> {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "⚡",
-                            style = MaterialTheme.typography.displaySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = stringResource(R.string.history_no_data),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "Ендпоінт /api/measurements/history не повернув точок для параметру $selectedParameter. Можливо, сервер ще не накопичив вимірювань або параметр не підтримується.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
-                    }
-                }
-            }
-            is HistoryUiState.Success -> {
-                val points = historyStateValue.points
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "${parameterLabel(context, selectedParameter)} —/${parameterUnit(context, selectedParameter)}",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Точок: ${points.size} • період: ${formatPeriod(points)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    // Список точок замість Canvas-графіка
-                    Column(
-                        modifier = Modifier.fillMaxWidth().height(300.dp)
-                    ) {
-                        points.forEachIndexed { index, point ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = point.timestamp,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.width(120.dp)
-                                )
-                                Text(
-                                    text = "${point.value?.toString() ?: "—"} ${point.unit}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            if (index < points.lastIndex) Divider()
-                        }
-                    }
-                }
-            }
+        when {
+            seriesLoading -> CircularProgressIndicator(
+                modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            )
+            seriesError != null -> Text(
+                seriesError!!,
+                color = colors.error,
+                style = SunLinkTypography.body,
+                modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            )
+            series == null || series!!.points.isEmpty() -> Text(
+                stringResource(R.string.history_no_data),
+                color = colors.textSecondary,
+                style = SunLinkTypography.body,
+                modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            )
+            else -> SeriesContent(
+                series = series!!,
+                parameter = selectedParameter,
+                selectedIndex = selectedIndex,
+                onIndexChange = { selectedIndex = it },
+                context = context
+            )
         }
 
-        when (uiStateValue) {
-            is InverterUiState.Success -> {
-                Text(
-                    text = "Джерело: ${uiStateValue.data.source} • якість: ${uiStateValue.data.quality} • достовірність: ${uiStateValue.data.confidence}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            is InverterUiState.Error -> {
-                Text(
-                    text = "Помилка: ${uiStateValue.message}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
+        when (val state = uiState) {
+            is InverterUiState.Success -> Text(
+                stringResource(R.string.history_source, state.data.source, state.data.quality),
+                style = SunLinkTypography.caption,
+                color = colors.textTertiary,
+                modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            )
             else -> {}
         }
     }
 }
 
-private fun currentParameterValue(context: Context, parameter: String, data: InverterData): String {
-    val value: Float? = when (parameter) {
-        "battery_soc" -> data.batterySoc
-        "pv1_power" -> data.pv1Power
-        "pv2_power" -> data.pv2Power
-        "pv3_power" -> data.pv3Power
-        "battery_power" -> data.pBatt
-        "battery_voltage" -> data.batteryVoltage
-        "battery_current" -> data.batteryCurrent
-        "dc_temperature" -> data.dcTemperature
-        "grid_voltage_l1" -> data.gridVoltageL1
-        "grid_frequency" -> data.gridFrequency
-        "load_power" -> data.pLoad
-        "daily_pv_energy" -> data.dailyPvEnergy
-        "daily_grid_import" -> data.dailyGridImport
-        "daily_grid_export" -> data.dailyGridExport
-        "daily_battery_charge" -> data.dailyBatteryCharge
-        "daily_battery_discharge" -> data.dailyBatteryDischarge
-        else -> null
-    }
-    if (value == null) return "—"
-    return when (parameter) {
-        "battery_soc" -> "${value.toInt()}${context.getString(R.string.unit_percent)}"
-        "battery_voltage", "grid_voltage_l1" -> String.format("%.1f %s", value, context.getString(R.string.unit_volt))
-        "battery_current" -> String.format("%.2f %s", value, context.getString(R.string.unit_amp))
-        "grid_frequency" -> String.format("%.2f %s", value, context.getString(R.string.unit_hz))
-        "dc_temperature" -> String.format("%.1f %s", value, context.getString(R.string.unit_celsius))
-        "daily_pv_energy", "daily_grid_import", "daily_grid_export", "daily_battery_charge", "daily_battery_discharge" ->
-            String.format("%.1f %s", value, context.getString(R.string.unit_kwh))
-        else -> "${value.toInt()} ${context.getString(R.string.unit_watt)}"
+@Composable
+private fun SeriesContent(
+    series: HistorySeriesDto,
+    parameter: String,
+    selectedIndex: Int,
+    onIndexChange: (Int) -> Unit,
+    context: Context
+) {
+    val colors = LocalSunLinkColors.current
+    val values = series.points.map { it.value?.toFloat() }
+    val safeIndex = selectedIndex.coerceIn(0, values.lastIndex)
+    val selected = series.points[safeIndex]
+
+    Card(
+        modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg),
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
+    ) {
+        Column(modifier = Modifier.padding(SunLinkDimensions.spaceMd)) {
+            Text(
+                "${parameterLabel(context, parameter)} · ${series.period}",
+                style = SunLinkTypography.title,
+                color = colors.textPrimary
+            )
+            TelemetryChart(values, parameterLabel(context, parameter))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = selected.timestamp,
+                    style = SunLinkTypography.caption,
+                    color = colors.textTertiary
+                )
+                PowerValue(
+                    value = selected.value?.toFloat(),
+                    unit = parameterUnit(context, parameter),
+                    decimals = 2,
+                    color = colors.primary,
+                    style = SunLinkTypography.label
+                )
+            }
+            Slider(
+                value = safeIndex.toFloat(),
+                valueRange = 0f..values.lastIndex.coerceAtLeast(1).toFloat(),
+                steps = values.lastIndex.coerceAtLeast(1),
+                onValueChange = { onIndexChange(it.toInt()) }
+            )
+            Text(
+                stringResource(
+                    R.string.history_points,
+                    series.available_points,
+                    series.missing_points
+                ),
+                style = SunLinkTypography.caption,
+                color = colors.textTertiary
+            )
+        }
     }
 }
 
 private fun labelRes(parameter: String): Int = when (parameter) {
     "battery_soc" -> R.string.hist_soc
+    "battery_voltage" -> R.string.hist_batt_voltage
+    "battery_current" -> R.string.hist_batt_current
+    "battery_power" -> R.string.hist_batt_power
     "pv1_power" -> R.string.hist_pv1
     "pv2_power" -> R.string.hist_pv2
     "pv3_power" -> R.string.hist_pv3
-    "battery_power" -> R.string.hist_batt_power
-    "battery_voltage" -> R.string.hist_batt_voltage
-    "battery_current" -> R.string.hist_batt_current
-    "dc_temperature" -> R.string.hist_dc_temp
+    "daily_pv_energy" -> R.string.hist_daily_pv
     "grid_voltage_l1" -> R.string.hist_grid_voltage
     "grid_frequency" -> R.string.hist_grid_freq
     "load_power" -> R.string.hist_load_power
-    "daily_pv_energy" -> R.string.hist_daily_pv
     "daily_grid_import" -> R.string.hist_daily_import
     "daily_grid_export" -> R.string.hist_daily_export
     "daily_battery_charge" -> R.string.hist_daily_charge
@@ -337,10 +234,7 @@ private fun parameterUnit(context: Context, parameter: String): String = when (p
     "battery_current" -> context.getString(R.string.unit_amp)
     "grid_frequency" -> context.getString(R.string.unit_hz)
     "dc_temperature" -> context.getString(R.string.unit_celsius)
-    "daily_pv_energy", "daily_grid_import", "daily_grid_export", "daily_battery_charge", "daily_battery_discharge" -> context.getString(R.string.unit_kwh)
+    "daily_pv_energy", "daily_grid_import", "daily_grid_export",
+    "daily_battery_charge", "daily_battery_discharge" -> context.getString(R.string.unit_kwh)
     else -> context.getString(R.string.unit_watt)
-}
-
-private fun formatPeriod(points: List<HistoryPoint>): String {
-    return if (points.isEmpty()) "—" else "${points.first().timestamp} → ${points.last().timestamp}"
 }

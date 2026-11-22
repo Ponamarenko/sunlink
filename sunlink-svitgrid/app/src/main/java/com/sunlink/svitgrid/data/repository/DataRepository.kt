@@ -174,6 +174,19 @@ open class DataRepository(private val apiService: ApiService? = null) {
             }
         }
 
+    open suspend fun loadHistorySeries(parameter: String, period: String): Result<HistorySeriesDto> =
+        withContext(Dispatchers.IO) {
+            try {
+                val response = apiService!!.getHistorySeries(parameter, period)
+                if (response.isSuccessful) {
+                    response.body()?.let { success(it) }
+                        ?: error(Exception("Пустой ответ /api/history/series"))
+                } else error(Exception("HTTP ${response.code()}"))
+            } catch (e: Exception) {
+                error(e)
+            }
+        }
+
     open suspend fun loadTelemetryQuality(): Result<TelemetryQualityDto> =
         withContext(Dispatchers.IO) {
             try {

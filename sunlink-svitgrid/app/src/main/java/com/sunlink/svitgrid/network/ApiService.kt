@@ -3,6 +3,7 @@ package com.sunlink.svitgrid.network
 import com.google.gson.JsonElement
 import com.sunlink.svitgrid.data.dto.InvertersDto
 import com.sunlink.svitgrid.data.dto.HealthDto
+import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.LiveRawDto
 import com.sunlink.svitgrid.data.dto.MeasurementDto
 import com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto
@@ -82,6 +83,12 @@ interface ApiService {
     // Comprehensive stage — категориальная модель и статистика.
     @GET("api/telemetry/full")
     suspend fun getTelemetryFull(): Response<TelemetryFullDto>
+
+    @GET("api/history/series")
+    suspend fun getHistorySeries(
+        @Query("parameter") parameter: String,
+        @Query("period") period: String
+    ): Response<HistorySeriesDto>
 
     @GET("api/telemetry/quality")
     suspend fun getTelemetryQuality(): Response<TelemetryQualityDto>

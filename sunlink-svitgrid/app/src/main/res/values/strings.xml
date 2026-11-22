@@ -199,4 +199,6 @@
     <string name="hist_daily_discharge">Розряд за день</string>
     <string name="unit_hz">Гц</string>
     <string name="unit_kwh">кВт·год</string>
+    <string name="history_source">Джерело: %1$s · якість: %2$s</string>
+    <string name="history_points">Доступно точок: %1$d · пропусків: %2$d</string>
 </resources>

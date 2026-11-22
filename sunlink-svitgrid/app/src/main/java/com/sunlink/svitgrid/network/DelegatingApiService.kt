@@ -3,6 +3,7 @@ package com.sunlink.svitgrid.network
 import com.google.gson.JsonElement
 import com.sunlink.svitgrid.data.dto.InvertersDto
 import com.sunlink.svitgrid.data.dto.HealthDto
+import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.LiveRawDto
 import com.sunlink.svitgrid.data.dto.MeasurementDto
 import com.sunlink.svitgrid.data.dto.MeasurementsHistoryDto
@@ -52,6 +53,8 @@ class DelegatingApiService(private val provider: () -> ApiService) : ApiService 
     ): Response<MeasurementsHistoryDto> = api.getHistoryDto(parameter, start, end)
     override suspend fun getTelemetryFull(): Response<TelemetryFullDto> = api.getTelemetryFull()
     override suspend fun getTelemetryQuality(): Response<TelemetryQualityDto> = api.getTelemetryQuality()
+    override suspend fun getHistorySeries(parameter: String, period: String): Response<HistorySeriesDto> =
+        api.getHistorySeries(parameter, period)
     override suspend fun getStatsSummary(
         parameter: String,
         start: String,

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sunlink.svitgrid.data.dto.HealthDto
+import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.LiveDataFullMapper
 import com.sunlink.svitgrid.data.dto.InvertersDto
 import com.sunlink.svitgrid.data.dto.StatsSummaryDto
@@ -58,6 +59,12 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     val fullTelemetryLoading: StateFlow<Boolean> = _fullTelemetryLoading
     private val _telemetryQuality = MutableStateFlow<TelemetryQualityDto?>(null)
     val telemetryQuality: StateFlow<TelemetryQualityDto?> = _telemetryQuality
+    private val _series = MutableStateFlow<HistorySeriesDto?>(null)
+    val series: StateFlow<HistorySeriesDto?> = _series
+    private val _seriesLoading = MutableStateFlow(false)
+    val seriesLoading: StateFlow<Boolean> = _seriesLoading
+    private val _seriesError = MutableStateFlow<String?>(null)
+    val seriesError: StateFlow<String?> = _seriesError
 
     private val _stats = MutableStateFlow<StatsSummaryDto?>(null)
     val stats: StateFlow<StatsSummaryDto?> = _stats
@@ -366,6 +373,26 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                 _fullTelemetryError.value = (result as? Result.Error)?.exception?.message
             }
             _fullTelemetryLoading.value = false
+        }
+    }
+
+    /** Реальный временной ряд из SQLite backend. */
+    fun loadSeries(parameter: String, period: String) {
+        viewModelScope.launch {
+            _seriesLoading.value = true
+            _seriesError.value = null
+            val result = try {
+                repository.loadHistorySeries(parameter, period)
+            } catch (e: Exception) {
+                Log.w(tag, "loadSeries failed", e)
+                null
+            }
+            if (result is Result.Success) {
+                _series.value = result.data
+            } else {
+                _seriesError.value = (result as? Result.Error)?.exception?.message
+            }
+            _seriesLoading.value = false
         }
     }
 

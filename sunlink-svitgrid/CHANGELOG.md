@@ -2,6 +2,13 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.46.0] — 2026-11-22 (історія та графіки, етап 46)
+- Backend: `/api/history/series` з агрегацією 24h/7d/30d, явними пропусками та валідацією
+- Android: HistoryScreen на реальних series, 15 параметрів, Slider вибору точки, uk/en
+- Backend 375 PASS, Android 160 PASS; debug APK v2.46.0 (67)
+- Production deployment і міграції НЕ виконувались; план підготовлено
+
+
 ## [v2.45.0] — 2026-11-22 (реальні функції, етап 45)
 - Розгорнуто backend-фікси Stage44: коректні energy totals у telemetry та блокування /read (403)
 - Android: 16 параметрів історії, 15 параметрів статистики, Ukrainian/English labels, енергія на Dashboard, схема потоків

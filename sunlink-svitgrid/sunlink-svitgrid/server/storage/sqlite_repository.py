@@ -263,6 +263,19 @@ class SQLiteMeasurementRepository(MeasurementRepository):
         }
 
     @_thread_safe
+    def prune_before(self, inverter_id: str, cutoff: datetime) -> int:
+        conn = self._ensure_open()
+        try:
+            cursor = conn.execute(
+                "DELETE FROM measurements WHERE inverter_id = ? AND timestamp < ?",
+                (inverter_id, cutoff.isoformat()),
+            )
+            conn.commit()
+            return int(cursor.rowcount or 0)
+        except sqlite3.Error as exc:
+            raise RuntimeError(f"failed to prune history: {exc}") from exc
+
+    @_thread_safe
     def get_all_latest(self, inverter_id: str) -> List[Measurement]:
         conn = self._ensure_open()
         try:

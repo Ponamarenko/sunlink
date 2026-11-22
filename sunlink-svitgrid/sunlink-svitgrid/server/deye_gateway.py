@@ -730,6 +730,23 @@ async def get_measurement_history(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/history/series")
+async def get_history_series(
+    parameter: str = Query(..., description="Parameter name"),
+    period: str = Query(..., description="24h | 7d | 30d"),
+    end: Optional[str] = Query(None, description="ISO-8601 UTC end, default now"),
+):
+    """Временной ряд с агрегацией и явными пропусками (null points)."""
+    try:
+        from services.history_service import build_series
+        return build_series(_repository, INVERTER_ID, parameter, period, end)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        logger.error(f"Failed to build history series: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 # ------------------------------------------------------------------
 # Weather (без изменений — для прогноза на экране Android)
 # ------------------------------------------------------------------
