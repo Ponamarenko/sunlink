@@ -151,6 +151,11 @@ fun BatteryDetailScreen(vm: MainViewModel = viewModel()) {
             ValueCard(stringResource(R.string.battery_daily_charge), value(dto, "battery", "daily_charge_energy"), colors.success, Modifier.weight(1f))
             ValueCard(stringResource(R.string.battery_daily_discharge), value(dto, "battery", "daily_discharge_energy"), colors.load, Modifier.weight(1f))
         }
+        Row(Modifier.padding(horizontal = SunLinkDimensions.spaceLg), horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
+            ValueCard(stringResource(R.string.battery_status), value(dto, "battery", "status"), colors.battery, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.battery_total_charge), value(dto, "battery", "total_charge_energy"), colors.success, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.battery_total_discharge), value(dto, "battery", "total_discharge_energy"), colors.load, Modifier.weight(1f))
+        }
     }
 }
 
@@ -162,6 +167,7 @@ fun PvDetailScreen(vm: MainViewModel = viewModel()) {
             ValueCard(stringResource(R.string.pv_total), value(dto, "pv", "total_power"), colors.solar, Modifier.weight(1f))
             ValueCard(stringResource(R.string.pv_daily), value(dto, "pv", "daily_energy"), colors.solar, Modifier.weight(1f))
             ValueCard(stringResource(R.string.pv_total_energy), value(dto, "pv", "total_energy"), colors.solar, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.pv_status), value(dto, "pv", "status"), colors.solar, Modifier.weight(1f))
         }
         listOf("pv1", "pv2", "pv3").forEach { mppt ->
             SectionHeader(mppt.uppercase(), Modifier.padding(horizontal = SunLinkDimensions.spaceLg))
@@ -188,6 +194,16 @@ fun GridDetailScreen(vm: MainViewModel = viewModel()) {
             ValueCard(stringResource(R.string.grid_export), value(dto, "grid", "export_energy"), colors.gridExport, Modifier.weight(1f))
             ValueCard(stringResource(R.string.grid_connection), value(dto, "grid", "connected"), colors.grid, Modifier.weight(1f))
         }
+        Row(Modifier.padding(horizontal = SunLinkDimensions.spaceLg), horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
+            ValueCard(stringResource(R.string.metric_current) + " L1", value(dto, "grid", "current_l1"), colors.grid, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.metric_current) + " L2", value(dto, "grid", "current_l2"), colors.grid, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.grid_import_power), value(dto, "grid", "import_power"), colors.gridImport, Modifier.weight(1f))
+        }
+        Row(Modifier.padding(horizontal = SunLinkDimensions.spaceLg), horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
+            ValueCard(stringResource(R.string.grid_export_power), value(dto, "grid", "export_power"), colors.gridExport, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.grid_voltage) + " L2", value(dto, "grid", "voltage_l2"), colors.grid, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.grid_ct), value(dto, "grid", "internal_ct_l1"), colors.grid, Modifier.weight(1f))
+        }
     }
 }
 
@@ -202,6 +218,8 @@ fun LoadDetailScreen(vm: MainViewModel = viewModel()) {
         }
         Row(Modifier.padding(horizontal = SunLinkDimensions.spaceLg), horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
             ValueCard(stringResource(R.string.load_daily_energy), value(dto, "load", "energy"), colors.load, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.load_frequency), value(dto, "load", "frequency"), colors.load, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.load_power_factor), value(dto, "load", "power_factor"), colors.load, Modifier.weight(1f))
         }
     }
 }
@@ -227,6 +245,40 @@ fun EnergyFlowScreen(vm: MainViewModel = viewModel()) {
         Row(Modifier.padding(horizontal = SunLinkDimensions.spaceLg), horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
             ValueCard(stringResource(R.string.node_grid), grid, colors.grid, Modifier.weight(1f))
             ValueCard(stringResource(R.string.node_home), load, colors.load, Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+fun InverterDetailScreen(vm: MainViewModel = viewModel()) {
+    val colors = LocalSunLinkColors.current
+    CategoryScaffold(stringResource(R.string.screen_inverter), vm) { dto ->
+        val fields = listOf(
+            R.string.inverter_operating_state to "operating_state",
+            R.string.inverter_dc_voltage to "dc_voltage",
+            R.string.inverter_ac_voltage to "ac_voltage",
+            R.string.inverter_ac_current to "ac_current",
+            R.string.inverter_ac_frequency to "ac_frequency",
+            R.string.inverter_active_power to "active_power",
+            R.string.inverter_reactive_power to "reactive_power",
+            R.string.inverter_apparent_power to "apparent_power",
+            R.string.inverter_power_factor to "power_factor",
+            R.string.inverter_dc_temperature to "dc_temperature",
+            R.string.inverter_ac_temperature to "ac_temperature",
+            R.string.inverter_efficiency to "efficiency",
+            R.string.inverter_fault_code to "fault_code",
+            R.string.inverter_warning_code to "warning_code",
+            R.string.inverter_communication_status to "communication_status"
+        )
+        fields.chunked(3).forEach { row ->
+            Row(
+                Modifier.padding(horizontal = SunLinkDimensions.spaceLg),
+                horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)
+            ) {
+                row.forEach { (label, field) ->
+                    ValueCard(stringResource(label), value(dto, "inverter", field), colors.primary, Modifier.weight(1f))
+                }
+            }
         }
     }
 }

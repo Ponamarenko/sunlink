@@ -140,4 +140,30 @@
     <string name="debug_health_missing">health = відсутній</string>
     <string name="debug_stats_missing">system/stats = відсутній</string>
     <string name="debug_missing">відсутній</string>
+    <string name="battery_status">Стан батареї</string>
+    <string name="battery_total_charge">Заряд всього</string>
+    <string name="battery_total_discharge">Розряд всього</string>
+    <string name="pv_status">Стан PV</string>
+    <string name="grid_current_l1">Струм L1</string>
+    <string name="grid_current_l2">Струм L2</string>
+    <string name="grid_import_power">Імпорт (потужність)</string>
+    <string name="grid_export_power">Експорт (потужність)</string>
+    <string name="grid_ct">Внутрішній CT</string>
+    <string name="load_frequency">Частота навантаження</string>
+    <string name="load_power_factor">Коефіцієнт потужності</string>
+    <string name="screen_inverter">ІНВЕРТОР</string>
+    <string name="inverter_operating_state">Робочий стан</string>
+    <string name="inverter_dc_voltage">DC напруга</string>
+    <string name="inverter_ac_voltage">AC напруга</string>
+    <string name="inverter_ac_current">AC струм</string>
+    <string name="inverter_ac_frequency">AC частота</string>
+    <string name="inverter_active_power">Активна потужність</string>
+    <string name="inverter_reactive_power">Реактивна потужність</string>
+    <string name="inverter_apparent_power">Повна потужність</string>
+    <string name="inverter_power_factor">Коефіцієнт потужності</string>
+    <string name="inverter_dc_temperature">Температура DC</string>
+    <string name="inverter_ac_temperature">Температура AC</string>
+    <string name="inverter_fault_code">Код помилки</string>
+    <string name="inverter_warning_code">Код попередження</string>
+    <string name="inverter_communication_status">Стан з\'вязку</string>
 </resources>

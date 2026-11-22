@@ -140,4 +140,30 @@
     <string name="debug_health_missing">health = missing</string>
     <string name="debug_stats_missing">system/stats = missing</string>
     <string name="debug_missing">missing</string>
+    <string name="battery_status">Battery status</string>
+    <string name="battery_total_charge">Total charge</string>
+    <string name="battery_total_discharge">Total discharge</string>
+    <string name="pv_status">PV status</string>
+    <string name="grid_current_l1">Current L1</string>
+    <string name="grid_current_l2">Current L2</string>
+    <string name="grid_import_power">Import power</string>
+    <string name="grid_export_power">Export power</string>
+    <string name="grid_ct">Internal CT</string>
+    <string name="load_frequency">Load frequency</string>
+    <string name="load_power_factor">Power factor</string>
+    <string name="screen_inverter">INVERTER</string>
+    <string name="inverter_operating_state">Operating state</string>
+    <string name="inverter_dc_voltage">DC voltage</string>
+    <string name="inverter_ac_voltage">AC voltage</string>
+    <string name="inverter_ac_current">AC current</string>
+    <string name="inverter_ac_frequency">AC frequency</string>
+    <string name="inverter_active_power">Active power</string>
+    <string name="inverter_reactive_power">Reactive power</string>
+    <string name="inverter_apparent_power">Apparent power</string>
+    <string name="inverter_power_factor">Power factor</string>
+    <string name="inverter_dc_temperature">DC temperature</string>
+    <string name="inverter_ac_temperature">AC temperature</string>
+    <string name="inverter_fault_code">Fault code</string>
+    <string name="inverter_warning_code">Warning code</string>
+    <string name="inverter_communication_status">Communication status</string>
 </resources>
