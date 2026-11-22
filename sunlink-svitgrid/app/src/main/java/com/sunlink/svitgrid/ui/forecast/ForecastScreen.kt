@@ -1,5 +1,9 @@
 package com.sunlink.svitgrid.ui.forecast
 
+import com.sunlink.svitgrid.R
+
+import androidx.compose.ui.res.stringResource
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -129,7 +133,7 @@ fun ForecastScreen(vm: MainViewModel = viewModel()) {
                             Text("День $i", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                             Text("☁️", style = MaterialTheme.typography.headlineSmall)
                             Text("15-22°C", style = MaterialTheme.typography.bodySmall)
-                            Text("Вітер 3-5 м/с", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.forecast_wind), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -137,7 +141,7 @@ fun ForecastScreen(vm: MainViewModel = viewModel()) {
             
             // Енергетичний прогноз
             Text(
-                text = "Енергетичний прогноз",
+                text = stringResource(R.string.forecast_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -214,7 +218,7 @@ fun ForecastScreen(vm: MainViewModel = viewModel()) {
                 }
             }
         } else {
-            Text("Немає даних для прогнозу", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.forecast_no_data), style = MaterialTheme.typography.bodyLarge)
         }
     }
 }

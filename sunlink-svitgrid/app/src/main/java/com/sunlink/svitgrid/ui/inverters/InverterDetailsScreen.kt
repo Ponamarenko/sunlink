@@ -1,5 +1,9 @@
 package com.sunlink.svitgrid.ui.inverters
 
+import com.sunlink.svitgrid.R
+
+import androidx.compose.ui.res.stringResource
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,7 +47,7 @@ fun InverterDetailsScreen(vm: MainViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "ІНВЕРТОР",
+                text = stringResource(R.string.inverter_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -52,7 +56,7 @@ fun InverterDetailsScreen(vm: MainViewModel = viewModel()) {
                 onClick = { vm.loadData() },
                 enabled = !loading
             ) {
-                Text("Оновити")
+                Text(stringResource(R.string.refresh))
             }
         }
 
@@ -136,7 +140,7 @@ fun InverterDetailsScreen(vm: MainViewModel = viewModel()) {
 
         if (data.batterySoc != null || data.batteryVoltage != null || data.batteryCurrent != null || data.pBatt != null) {
             ParameterGroup(
-                title = "Батерея",
+                title = stringResource(R.string.screen_battery),
                 icon = { Text("🔋") },
                 items = listOf(
                     DetailItem("SOC", data.batterySoc, "%"),
@@ -170,7 +174,7 @@ fun InverterDetailsScreen(vm: MainViewModel = viewModel()) {
 
         if (data.pLoad != null) {
             ParameterGroup(
-                title = "Бутова навантаження",
+                title = stringResource(R.string.inverter_load),
                 icon = { Text("🏠") },
                 items = listOf(DetailItem("Потужність", data.pLoad, "Вт")),
                 source = "p_load (calculate)",

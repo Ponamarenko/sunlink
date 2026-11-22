@@ -1,5 +1,9 @@
 package com.sunlink.svitgrid.ui.debug
 
+import com.sunlink.svitgrid.R
+
+import androidx.compose.ui.res.stringResource
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -144,7 +148,7 @@ fun DebugScreen() {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         Text("health", color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold)
                         val h = health
-                        if (h == null) Text("health = ОТСУТСТВУЄ", color = Color(0xFFE57373), fontFamily = Mono, fontSize = 11.sp)
+                        if (h == null) Text(stringResource(R.string.debug_health_missing), color = Color(0xFFE57373), fontFamily = Mono, fontSize = 11.sp)
                         else h.toSortedMap().forEach { (k,v) -> Text("$k = ${fmt(v)}", color = Color.LightGray, fontFamily = Mono, fontSize = 11.sp) }
                     }
                 }
@@ -154,7 +158,7 @@ fun DebugScreen() {
                     Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         Text("system/stats", color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold)
                         val s = stats
-                        if (s == null) Text("system/stats = ОТСУТСТВУЄ", color = Color(0xFFE57373), fontFamily = Mono, fontSize = 11.sp)
+                        if (s == null) Text(stringResource(R.string.debug_stats_missing), color = Color(0xFFE57373), fontFamily = Mono, fontSize = 11.sp)
                         else s.toSortedMap().forEach { (k,v) -> Text("$k = ${fmt(v)}", color = Color.LightGray, fontFamily = Mono, fontSize = 11.sp) }
                     }
                 }
@@ -165,10 +169,10 @@ fun DebugScreen() {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                             Text(id, color = Color.White, fontFamily = Mono, fontWeight = FontWeight.Bold)
                             val m = invData[id]
-                            if (m == null) Text("$id/data = ОТСУТСТВУЄ", color = Color(0xFFE57373), fontFamily = Mono, fontSize = 11.sp)
+                            if (m == null) Text("$id/data = " + stringResource(R.string.debug_missing), color = Color(0xFFE57373), fontFamily = Mono, fontSize = 11.sp)
                             else {
                                 val keys = listOf("p_string1","p_string2","p_string3","pv1_voltage","pv1_current","pv2_voltage","pv2_current","pv3_voltage","pv3_current","p_sun","p_load","p_batt","p_grid","batt_soc","battery_soc","battery_voltage","battery_current","battery_temp","grid_voltage","grid_voltage_l1")
-                                keys.forEach { k -> Text("$k = ${if (m.containsKey(k)) fmt(m[k]) else "ОТСУТСТВУЄ"}", color = if (m.containsKey(k)) Color.LightGray else Color(0xFFE57373), fontFamily = Mono, fontSize = 11.sp) }
+                                keys.forEach { k -> Text("$k = ${if (m.containsKey(k)) fmt(m[k]) else stringResource(R.string.debug_missing)}", color = if (m.containsKey(k)) Color.LightGray else Color(0xFFE57373), fontFamily = Mono, fontSize = 11.sp) }
                                 Spacer(Modifier.height(4.dp))
                                 Text("ВСІ ПОЛЯ:", color = Color.White, fontFamily = Mono)
                                 m.toSortedMap().forEach { (k,v) -> Text("$k = ${fmt(v)}", color = Color(0xFFB0BEC5), fontFamily = Mono, fontSize = 10.sp) }

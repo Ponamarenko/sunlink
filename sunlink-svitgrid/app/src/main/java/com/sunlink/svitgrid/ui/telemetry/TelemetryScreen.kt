@@ -31,6 +31,7 @@ import com.sunlink.svitgrid.viewmodel.MainViewModel
 @Composable
 fun TelemetryScreen(vm: MainViewModel = viewModel()) {
     val full by vm.fullTelemetry.collectAsState()
+    val loadError by vm.fullTelemetryError.collectAsState()
     val colors = LocalSunLinkColors.current
 
     LaunchedEffect(Unit) { vm.loadFullTelemetry() }
@@ -48,7 +49,7 @@ fun TelemetryScreen(vm: MainViewModel = viewModel()) {
         )
         if (full == null) {
             Text(
-                stringResource(R.string.telemetry_unavailable),
+                loadError ?: stringResource(R.string.telemetry_unavailable),
                 style = SunLinkTypography.body,
                 color = colors.textSecondary,
                 modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)

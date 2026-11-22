@@ -79,6 +79,7 @@ private fun CategoryScaffold(
     content: @Composable (TelemetryFullDto?) -> Unit
 ) {
     val full by vm.fullTelemetry.collectAsState()
+    val loadError by vm.fullTelemetryError.collectAsState()
     val colors = LocalSunLinkColors.current
     LaunchedEffect(Unit) { vm.loadFullTelemetry() }
     Column(
@@ -91,11 +92,15 @@ private fun CategoryScaffold(
         SectionHeader(title, Modifier.padding(horizontal = SunLinkDimensions.spaceLg))
         if (full == null) {
             Text(
-                stringResource(R.string.telemetry_unavailable),
+                loadError ?: stringResource(R.string.telemetry_unavailable),
                 style = SunLinkTypography.body,
-                color = colors.textSecondary,
+                color = if (loadError != null) colors.error else colors.textSecondary,
                 modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
             )
+            androidx.compose.material3.TextButton(
+                onClick = { vm.loadFullTelemetry() },
+                modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+            ) { Text(stringResource(R.string.refresh)) }
         } else {
             LastUpdatedLabel(full!!.timestamp)
             if (full!!.stale == true) {

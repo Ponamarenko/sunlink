@@ -1,5 +1,9 @@
 package com.sunlink.svitgrid.ui.history
 
+import com.sunlink.svitgrid.R
+
+import androidx.compose.ui.res.stringResource
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -60,7 +64,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "ІСТОРІЯ",
+                text = stringResource(R.string.history_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -118,7 +122,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
         }
 
         Text(
-            text = "Період",
+            text = stringResource(R.string.history_period),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
@@ -136,7 +140,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
         }
 
         Text(
-            text = "Параметр",
+            text = stringResource(R.string.history_parameter),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 8.dp)
@@ -191,7 +195,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
                         )
                         Spacer(Modifier.height(12.dp))
                         Text(
-                            text = "Немає даних історії",
+                            text = stringResource(R.string.history_no_data),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

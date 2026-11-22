@@ -2,6 +2,14 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.38.0] — 2026-11-22 (якість Android та UI-тести, етап 38)
+- Додано Compose UI-тести з fake repository (навігація, Dashboard, Battery/PV/Grid/Load/Energy Flow); скомпільовані, запуск на пристрої NOT RUN
+- Завершено локалізацію uk/en: ~80 рядків перенесено в resources, виправлено російські залишки, паритет ключів перевірено тестом
+- Додано стан помилки завантаження повної телеметрії та кнопку повтору
+- Backend 330 PASS, Android 130 PASS, lint PASS; debug APK v2.38.0 (59)
+- Production не змінювався; Modbus read/write NOT RUN
+
+
 ## [v2.37.0] — 2026-11-21 (завершення Android-додатка, етап 37)
 - Нові екрани Battery/PV/Grid/Load/Energy Flow на базі категориальної моделі `/api/telemetry/full`
 - Dashboard: блок швидкого доступу до всіх енергетичних розділів

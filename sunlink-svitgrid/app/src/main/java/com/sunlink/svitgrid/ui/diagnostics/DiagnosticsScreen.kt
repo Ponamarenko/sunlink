@@ -1,5 +1,9 @@
 package com.sunlink.svitgrid.ui.diagnostics
 
+import com.sunlink.svitgrid.R
+
+import androidx.compose.ui.res.stringResource
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -44,7 +48,7 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "ДІАГНОСТИКА",
+            text = stringResource(R.string.diagnostics_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -58,15 +62,15 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
             if (loading) {
                 CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                 Spacer(Modifier.width(8.dp))
-                Text("Перевірка підключення...")
+                Text(stringResource(R.string.diagnostics_checking))
             } else {
-                Text("Перевірити підключення до сервера")
+                Text(stringResource(R.string.diagnostics_check_server))
             }
         }
 
         DiagnosticCard(
-            title = "Доступність сервера",
-            status = if (status.online) "Доступний" else "Недоступний",
+            title = stringResource(R.string.diagnostics_server),
+            status = if (status.online) stringResource(R.string.diagnostics_available) else stringResource(R.string.diagnostics_unavailable),
             statusColor = if (status.online) Color(0xFF66BB6A) else Color(0xFFEF5350),
             details = listOf(
                 "Інвертор: ${status.inverterId}",
@@ -80,7 +84,7 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
             title = "Мережеві запити (UPDATE / REST / WEBSOCKET)",
             status = "Останній успіх: ${lastSuccess ?: "—"}",
             statusColor = Color(0xFF66BB6A),
-            details = if (events.isEmpty()) listOf("Запитів ще не було")
+            details = if (events.isEmpty()) listOf(stringResource(R.string.diagnostics_no_requests))
             else events.take(10).map { e ->
                 "${e.type} · ${e.stage} · ${e.endpoint} · HTTP ${e.httpCode ?: "—"} · ${e.errorType ?: "OK"} · ${e.atUtc.take(19)}"
             }
@@ -99,7 +103,7 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
         )
 
         DiagnosticCard(
-            title = "Якість даних",
+            title = stringResource(R.string.diagnostics_quality),
             status = data.quality,
             statusColor = when (data.quality) {
                 "valid" -> Color(0xFF66BB6A)

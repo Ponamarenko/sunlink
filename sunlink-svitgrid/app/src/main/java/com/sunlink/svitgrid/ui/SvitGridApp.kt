@@ -51,7 +51,7 @@ import com.sunlink.svitgrid.ui.telemetry.EnergyFlowScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SvitGridApp() {
+fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getApiService())) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         val repo = SettingsRepository(context)
@@ -77,7 +77,7 @@ fun SvitGridApp() {
                 Spacer(Modifier.height(8.dp))
                 val currentRoute = navController.currentBackStackEntry?.destination?.route
                 listOf(
-                    "dashboard" to ("Головна" to Icons.Default.Home),
+                    "dashboard" to (stringResource(R.string.nav_home) to Icons.Default.Home),
                     "battery" to (stringResource(R.string.screen_battery) to Icons.Default.Favorite),
                     "pv" to (stringResource(R.string.screen_pv) to Icons.Default.Info),
                     "grid" to (stringResource(R.string.screen_grid) to Icons.Default.Build),
@@ -85,14 +85,14 @@ fun SvitGridApp() {
                     "energy-flow" to (stringResource(R.string.screen_energy_flow) to Icons.Default.Info),
                     "telemetry" to (stringResource(R.string.nav_telemetry) to Icons.Default.Info),
                     "statistics" to (stringResource(R.string.statistics) to Icons.Default.DateRange),
-                    "history" to ("Історія" to Icons.Default.List),
-                    "inverter-details" to ("Інвертор" to Icons.Default.Info),
-                    "diagnostics" to ("Діагностика" to Icons.Default.Build),
+                    "history" to (stringResource(R.string.nav_history) to Icons.Default.List),
+                    "inverter-details" to (stringResource(R.string.nav_inverter) to Icons.Default.Info),
+                    "diagnostics" to (stringResource(R.string.nav_diagnostics) to Icons.Default.Build),
                     "live" to ("Live моніторинг" to Icons.Default.Info),
-                    "forecast" to ("Прогноз" to Icons.Default.DateRange),
-                    "debug" to ("Відладка / Сирі дані" to Icons.Default.Info),
-                    "settings" to ("Налаштування" to Icons.Default.Settings),
-                    "about" to ("Про додаток" to Icons.Default.Info)
+                    "forecast" to (stringResource(R.string.nav_forecast) to Icons.Default.DateRange),
+                    "debug" to (stringResource(R.string.nav_debug) to Icons.Default.Info),
+                    "settings" to (stringResource(R.string.nav_settings) to Icons.Default.Settings),
+                    "about" to (stringResource(R.string.nav_about) to Icons.Default.Info)
                 ).forEach { (route, pair) ->
                     val (label, icon) = pair
                     NavigationDrawerItem(
@@ -141,7 +141,7 @@ fun SvitGridApp() {
                     title = { Text("SunLink") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Меню")
+                            Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.nav_menu))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -151,9 +151,7 @@ fun SvitGridApp() {
             }
         ) { innerPadding ->
             val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(
-                    repository = DataRepository(RetrofitClient.getApiService())
-                )
+                factory = MainViewModelFactory(repository = repository)
             )
             // Stage 29: один WebSocket-клієнт на весь час роботи екрана.
             DisposableEffect(viewModel) {
@@ -204,7 +202,7 @@ fun LiveScreen(vm: MainViewModel = viewModel(factory = MainViewModelFactory(repo
     }
     LaunchedEffect(Unit) { vm.loadData() }
     Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Моніторинг в реальному часі", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Text(stringResource(R.string.live_monitoring), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         if (loading) CircularProgressIndicator()
         error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         val d = data
@@ -240,7 +238,7 @@ fun LiveScreen(vm: MainViewModel = viewModel(factory = MainViewModelFactory(repo
                 }
             }
         } else {
-            Text("Немає даних", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.dash_no_data), style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -287,7 +285,7 @@ fun BatteryScreen(vm: MainViewModel = viewModel()) {
                 }
             }
         } else {
-            Text("Немає даних", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.dash_no_data), style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -366,12 +364,12 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
 
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Підключення до сервера", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_server), style = MaterialTheme.typography.titleMedium)
 
                 OutlinedTextField(
                     value = serverAddress,
                     onValueChange = { serverAddress = it; settingsError = null },
-                    label = { Text("Адреса сервера") },
+                    label = { Text(stringResource(R.string.settings_address)) },
                     placeholder = { Text(com.sunlink.svitgrid.data.BackendDefaults.HOST) },
                     supportingText = { Text("Публічний: https://sunlink.pp.ua:9443/ • Debug LAN: http://192.168.25.20:18800/") },
                     modifier = Modifier.fillMaxWidth(),
@@ -389,14 +387,14 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = useHttps, onCheckedChange = { useHttps = it })
-                    Text("Використовувати HTTPS")
+                    Text(stringResource(R.string.settings_use_https))
                 }
 
                 Button(
                     onClick = {
                         val endpoint = SettingsRepository.parseEndpoint(serverAddress)
                         if (endpoint == null) {
-                            settingsError = "Некоректна адреса сервера"
+                            settingsError = context.getString(R.string.settings_invalid_address)
                             return@Button
                         }
                         val finalPort = endpoint.port?.toString() ?: serverPort
@@ -423,7 +421,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Зберегти та застосувати")
+                    Text(stringResource(R.string.settings_save_apply))
                 }
 
                 settingsError?.let {
@@ -441,12 +439,12 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     onClick = { vm.checkConnection() },
                     enabled = !connectionLoading,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text(if (connectionLoading) "Перевірка..." else "Перевірити з'єднання") }
+                ) { Text(if (connectionLoading) stringResource(R.string.checking) else "Перевірити з'єднання") }
                 connError?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                 val diag by vm.connectionDiagnostic.collectAsState()
                 diag?.let { d ->
                     Divider()
-                    Text("Діагностика з'єднання", style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.settings_connection_diagnostics), style = MaterialTheme.typography.titleSmall)
                     Text("URL: ${d.url}", style = MaterialTheme.typography.bodySmall)
                     Text("Хост: ${d.host} • порт: ${d.port ?: "—"} • HTTPS: ${if (d.https) "так" else "ні"}",
                         style = MaterialTheme.typography.bodySmall)
@@ -464,7 +462,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
 
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Оновлення", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_updates), style = MaterialTheme.typography.titleMedium)
                 Text("Поточна версія: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", style = MaterialTheme.typography.bodySmall)
                 Button(
                     onClick = {
@@ -480,7 +478,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                                     Toast.makeText(context, "У вас остання версія", Toast.LENGTH_SHORT).show()
                                 }
                             }.onFailure {
-                                Toast.makeText(context, "Не вдалося перевірити оновлення", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, context.getString(R.string.update_check_failed), Toast.LENGTH_LONG).show()
                             }
                         }
                     },
@@ -491,7 +489,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp))
                     }
-                    Text(if (checkingUpdate) "Перевірка..." else "Перевірити оновлення")
+                    Text(if (checkingUpdate) stringResource(R.string.checking) else stringResource(R.string.check_updates))
                 }
                 if (downloading) {
                     LinearProgressIndicator(progress = { downloadProgress / 100f }, modifier = Modifier.fillMaxWidth())
@@ -503,7 +501,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
 
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Інформація", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_info), style = MaterialTheme.typography.titleMedium)
                 Text(
                     "Сервер за замовчуванням: ${com.sunlink.svitgrid.data.BackendDefaults.HOST}:${com.sunlink.svitgrid.data.BackendDefaults.PORT} (deye_gateway.py)",
                     style = MaterialTheme.typography.bodySmall
@@ -552,6 +550,7 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
 
 @Composable
 fun AboutScreen() {
+    val context = LocalContext.current
     var updateStatus by remember { mutableStateOf("Натисніть кнопку для перевірки") }
     var isChecking by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -560,7 +559,7 @@ fun AboutScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Про додаток", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Text(stringResource(R.string.nav_about), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
         
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -576,20 +575,20 @@ fun AboutScreen() {
 
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Опис", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_description), style = MaterialTheme.typography.titleMedium)
                 Text("SunLink — сучасний додаток для моніторингу сонячних систем. Підтримує різні типи підключення: RS485, ESP32, Solarman WiFi, Ethernet.", style = MaterialTheme.typography.bodyMedium)
             }
         }
 
         Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Оновлення", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_updates), style = MaterialTheme.typography.titleMedium)
                 Text(updateStatus, style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
                 Button(
                     onClick = {
                         isChecking = true
-                        updateStatus = "Перевірка..."
+                        updateStatus = context.getString(R.string.checking)
                         scope.launch {
                             try {
                                 val client = okhttp3.OkHttpClient()
@@ -613,7 +612,7 @@ fun AboutScreen() {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                         Spacer(Modifier.width(8.dp))
                     }
-                    Text(if (isChecking) "Перевірка..." else "Перевірити оновлення")
+                    Text(if (isChecking) stringResource(R.string.checking) else stringResource(R.string.check_updates))
                 }
             }
         }

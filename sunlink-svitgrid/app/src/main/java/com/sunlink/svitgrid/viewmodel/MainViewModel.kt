@@ -50,6 +50,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     /** Comprehensive stage: категориальная модель, статистика и диагностика backend. */
     private val _fullTelemetry = MutableStateFlow<TelemetryFullDto?>(null)
     val fullTelemetry: StateFlow<TelemetryFullDto?> = _fullTelemetry
+    private val _fullTelemetryError = MutableStateFlow<String?>(null)
+    val fullTelemetryError: StateFlow<String?> = _fullTelemetryError
 
     private val _stats = MutableStateFlow<StatsSummaryDto?>(null)
     val stats: StateFlow<StatsSummaryDto?> = _stats
@@ -343,7 +345,12 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                 Log.w(tag, "loadFullTelemetry failed", e)
                 null
             }
-            if (result is Result.Success) _fullTelemetry.value = result.data
+            if (result is Result.Success) {
+                _fullTelemetry.value = result.data
+                _fullTelemetryError.value = null
+            } else {
+                _fullTelemetryError.value = (result as? Result.Error)?.exception?.message
+            }
         }
     }
 
