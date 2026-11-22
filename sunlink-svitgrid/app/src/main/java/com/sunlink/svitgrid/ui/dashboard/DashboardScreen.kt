@@ -340,6 +340,11 @@ private fun RealTelemetrySection(data: InverterData) {
                 TelemetryValue("T91", data.acTemperature, stringResource(R.string.unit_celsius), 1, colors.warning, "ac_temperature" in provisional, Modifier.weight(1f))
                 TelemetryValue("SOC", data.batterySoc, stringResource(R.string.unit_percent), 0, colors.success, false, Modifier.weight(1f))
             }
+            Row(horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceLg)) {
+                TelemetryValue(stringResource(R.string.grid_voltage), data.gridVoltageL1, stringResource(R.string.unit_volt), 1, colors.grid, false, Modifier.weight(1f))
+                TelemetryValue(stringResource(R.string.grid_frequency), data.gridFrequency, stringResource(R.string.unit_hz), 2, colors.grid, false, Modifier.weight(1f))
+                TelemetryValue(stringResource(R.string.hist_load_power), data.pLoad, stringResource(R.string.unit_watt), 0, colors.load, false, Modifier.weight(1f))
+            }
             if (provisional.isNotEmpty()) {
                 Text(
                     stringResource(R.string.dash_provisional_note),

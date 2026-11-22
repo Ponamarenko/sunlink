@@ -181,4 +181,22 @@
     <string name="quality_active">Активні: %1$s</string>
     <string name="extended_polling_status">Розширений polling: %1$s</string>
     <string name="energy_summary">ЕНЕРГІЯ ЗА ДЕНЬ</string>
+    <string name="hist_soc">Заряд батареї (SOC)</string>
+    <string name="hist_pv1">Потужність PV1</string>
+    <string name="hist_pv2">Потужність PV2</string>
+    <string name="hist_pv3">Потужність PV3</string>
+    <string name="hist_batt_power">Потужність батареї</string>
+    <string name="hist_batt_voltage">Напруга батареї</string>
+    <string name="hist_batt_current">Струм батареї</string>
+    <string name="hist_dc_temp">Температура DC</string>
+    <string name="hist_grid_voltage">Напруга мережі</string>
+    <string name="hist_grid_freq">Частота мережі</string>
+    <string name="hist_load_power">Потужність навантаження</string>
+    <string name="hist_daily_pv">Генерація за день</string>
+    <string name="hist_daily_import">Імпорт за день</string>
+    <string name="hist_daily_export">Експорт за день</string>
+    <string name="hist_daily_charge">Заряд за день</string>
+    <string name="hist_daily_discharge">Розряд за день</string>
+    <string name="unit_hz">Гц</string>
+    <string name="unit_kwh">кВт·год</string>
 </resources>

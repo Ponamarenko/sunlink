@@ -10,7 +10,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import android.content.Context
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,6 +36,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
         else -> InverterData()
     }
     val historyStateValue = historyState
+    val context = LocalContext.current
 
     var selectedParameter by remember { mutableStateOf("battery_soc") }
     val periods = listOf(
@@ -90,7 +93,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
-        val currentValue = currentParameterValue(currentData, selectedParameter)
+        val currentValue = currentParameterValue(context, selectedParameter, currentData)
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -102,7 +105,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = parameterLabel(selectedParameter),
+                    text = parameterLabel(context, selectedParameter),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -114,7 +117,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = parameterUnit(selectedParameter),
+                    text = parameterUnit(context, selectedParameter),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                 )
@@ -149,12 +152,15 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            listOf("battery_soc", "pv1_power", "pv2_power", "pv3_power", "battery_power", "battery_voltage", "battery_current", "dc_temperature").forEach { param ->
+            listOf("battery_soc", "pv1_power", "pv2_power", "pv3_power", "battery_power",
+                "battery_voltage", "battery_current", "dc_temperature", "grid_voltage_l1",
+                "grid_frequency", "load_power", "daily_pv_energy", "daily_grid_import",
+                "daily_grid_export", "daily_battery_charge", "daily_battery_discharge").forEach { param ->
                 Button(
                     onClick = { selectedParameter = param },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(parameterShortLabel(param), style = MaterialTheme.typography.bodySmall)
+                    Text(parameterShortLabel(context, param), style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
@@ -214,7 +220,7 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "${parameterLabel(selectedParameter)} —/${parameterUnit(selectedParameter)}",
+                        text = "${parameterLabel(context, selectedParameter)} —/${parameterUnit(context, selectedParameter)}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -270,57 +276,69 @@ fun HistoryScreen(vm: MainViewModel = viewModel()) {
     }
 }
 
-private fun currentParameterValue(data: InverterData, parameter: String): String {
+private fun currentParameterValue(context: Context, parameter: String, data: InverterData): String {
+    val value: Float? = when (parameter) {
+        "battery_soc" -> data.batterySoc
+        "pv1_power" -> data.pv1Power
+        "pv2_power" -> data.pv2Power
+        "pv3_power" -> data.pv3Power
+        "battery_power" -> data.pBatt
+        "battery_voltage" -> data.batteryVoltage
+        "battery_current" -> data.batteryCurrent
+        "dc_temperature" -> data.dcTemperature
+        "grid_voltage_l1" -> data.gridVoltageL1
+        "grid_frequency" -> data.gridFrequency
+        "load_power" -> data.pLoad
+        "daily_pv_energy" -> data.dailyPvEnergy
+        "daily_grid_import" -> data.dailyGridImport
+        "daily_grid_export" -> data.dailyGridExport
+        "daily_battery_charge" -> data.dailyBatteryCharge
+        "daily_battery_discharge" -> data.dailyBatteryDischarge
+        else -> null
+    }
+    if (value == null) return "—"
     return when (parameter) {
-        "battery_soc" -> data.batterySoc?.let { "${it.toInt()}%" } ?: "—"
-        "pv1_power" -> data.pv1Power?.let { "${it.toInt()} Вт" } ?: "—"
-        "pv2_power" -> data.pv2Power?.let { "${it.toInt()} Вт" } ?: "—"
-        "pv3_power" -> data.pv3Power?.let { "${it.toInt()} Вт" } ?: "—"
-        "battery_power" -> data.pBatt?.let { "${it.toInt()} Вт" } ?: "—"
-        "battery_voltage" -> data.batteryVoltage?.let { String.format("%.1f", it) } ?: "—"
-        "battery_current" -> data.batteryCurrent?.let { String.format("%.2f", it) } ?: "—"
-        "dc_temperature" -> data.dcTemperature?.let { String.format("%.1f", it) } ?: "—"
-        else -> "—"
+        "battery_soc" -> "${value.toInt()}${context.getString(R.string.unit_percent)}"
+        "battery_voltage", "grid_voltage_l1" -> String.format("%.1f %s", value, context.getString(R.string.unit_volt))
+        "battery_current" -> String.format("%.2f %s", value, context.getString(R.string.unit_amp))
+        "grid_frequency" -> String.format("%.2f %s", value, context.getString(R.string.unit_hz))
+        "dc_temperature" -> String.format("%.1f %s", value, context.getString(R.string.unit_celsius))
+        "daily_pv_energy", "daily_grid_import", "daily_grid_export", "daily_battery_charge", "daily_battery_discharge" ->
+            String.format("%.1f %s", value, context.getString(R.string.unit_kwh))
+        else -> "${value.toInt()} ${context.getString(R.string.unit_watt)}"
     }
 }
 
-private fun parameterLabel(parameter: String): String {
-    return when (parameter) {
-        "battery_soc" -> "Заряд батареї (SOC)"
-        "pv1_power" -> "Потужність PV1"
-        "pv2_power" -> "Потужність PV2"
-        "pv3_power" -> "Потужність PV3"
-        "battery_power" -> "Потужність батареї"
-        "battery_voltage" -> "Напруга батареї"
-        "battery_current" -> "Ток батареї"
-        "dc_temperature" -> "Температура DC"
-        else -> parameter
-    }
+private fun labelRes(parameter: String): Int = when (parameter) {
+    "battery_soc" -> R.string.hist_soc
+    "pv1_power" -> R.string.hist_pv1
+    "pv2_power" -> R.string.hist_pv2
+    "pv3_power" -> R.string.hist_pv3
+    "battery_power" -> R.string.hist_batt_power
+    "battery_voltage" -> R.string.hist_batt_voltage
+    "battery_current" -> R.string.hist_batt_current
+    "dc_temperature" -> R.string.hist_dc_temp
+    "grid_voltage_l1" -> R.string.hist_grid_voltage
+    "grid_frequency" -> R.string.hist_grid_freq
+    "load_power" -> R.string.hist_load_power
+    "daily_pv_energy" -> R.string.hist_daily_pv
+    "daily_grid_import" -> R.string.hist_daily_import
+    "daily_grid_export" -> R.string.hist_daily_export
+    "daily_battery_charge" -> R.string.hist_daily_charge
+    "daily_battery_discharge" -> R.string.hist_daily_discharge
+    else -> R.string.history_parameter
 }
 
-private fun parameterShortLabel(parameter: String): String {
-    return when (parameter) {
-        "battery_soc" -> "SOC"
-        "pv1_power" -> "PV1"
-        "pv2_power" -> "PV2"
-        "pv3_power" -> "PV3"
-        "battery_power" -> "Batt"
-        "battery_voltage" -> "Batt V"
-        "battery_current" -> "Batt I"
-        "dc_temperature" -> "Темп."
-        else -> parameter
-    }
-}
-
-private fun parameterUnit(parameter: String): String {
-    return when (parameter) {
-        "battery_soc" -> "%"
-        "pv1_power", "pv2_power", "pv3_power", "battery_power" -> "Вт"
-        "battery_voltage" -> "В"
-        "battery_current" -> "А"
-        "dc_temperature" -> "°C"
-        else -> ""
-    }
+private fun parameterLabel(context: Context, parameter: String): String = context.getString(labelRes(parameter))
+private fun parameterShortLabel(context: Context, parameter: String): String = parameterLabel(context, parameter)
+private fun parameterUnit(context: Context, parameter: String): String = when (parameter) {
+    "battery_soc" -> context.getString(R.string.unit_percent)
+    "battery_voltage", "grid_voltage_l1" -> context.getString(R.string.unit_volt)
+    "battery_current" -> context.getString(R.string.unit_amp)
+    "grid_frequency" -> context.getString(R.string.unit_hz)
+    "dc_temperature" -> context.getString(R.string.unit_celsius)
+    "daily_pv_energy", "daily_grid_import", "daily_grid_export", "daily_battery_charge", "daily_battery_discharge" -> context.getString(R.string.unit_kwh)
+    else -> context.getString(R.string.unit_watt)
 }
 
 private fun formatPeriod(points: List<HistoryPoint>): String {

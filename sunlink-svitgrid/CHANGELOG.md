@@ -2,6 +2,13 @@
 
 Ключові віхи розвитку SunLink (Android + deye_gateway). Формат — за основними подіями/версіями.
 
+## [v2.45.0] — 2026-11-22 (реальні функції, етап 45)
+- Розгорнуто backend-фікси Stage44: коректні energy totals у telemetry та блокування /read (403)
+- Android: 16 параметрів історії, 15 параметрів статистики, Ukrainian/English labels, енергія на Dashboard, схема потоків
+- Backend 367 PASS, Android 156 PASS; debug APK v2.45.0 (66)
+- Production: backup, restart тільки sunlink-https.service; інші сервіси й обладнання не змінювались
+
+
 ## [v2.44.0] — 2026-11-22 (глобальний аудит і виправлення, етап 44)
 - Виправлено маппінг 7 реальних полів, які губилися між telemetry API та full-моделлю
 - Відключено unsafe `/read` (створював другий Modbus master) — тепер 403

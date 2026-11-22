@@ -228,23 +228,34 @@ fun LoadDetailScreen(vm: MainViewModel = viewModel()) {
 fun EnergyFlowScreen(vm: MainViewModel = viewModel()) {
     val colors = LocalSunLinkColors.current
     CategoryScaffold(stringResource(R.string.screen_energy_flow), vm) { dto ->
-        val pv = value(dto, "pv", "total_power")
-        val battery = value(dto, "battery", "power")
-        val grid = value(dto, "grid", "power")
-        val load = value(dto, "load", "power")
+        fun num(category: String, field: String): Float? =
+            value(dto, category, field)?.normalized_value?.toFloat()
+
         Text(
             stringResource(R.string.flow_hint),
             style = SunLinkTypography.body,
             color = colors.textSecondary,
             modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
         )
+        com.sunlink.svitgrid.ui.designsystem.EnergyFlowDiagram(
+            pvPower = num("pv", "total_power"),
+            pv1Power = num("pv", "pv1_power"),
+            pv2Power = num("pv", "pv2_power"),
+            pv3Power = num("pv", "pv3_power"),
+            batteryPower = num("battery", "power"),
+            gridPower = num("grid", "power"),
+            loadPower = num("load", "power"),
+            soc = num("battery", "soc"),
+            state = com.sunlink.svitgrid.ui.designsystem.DashboardState.ONLINE,
+            modifier = Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+        )
         Row(Modifier.padding(horizontal = SunLinkDimensions.spaceLg), horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
-            ValueCard(stringResource(R.string.node_solar), pv, colors.solar, Modifier.weight(1f))
-            ValueCard(stringResource(R.string.node_battery), battery, colors.battery, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.node_solar), value(dto, "pv", "total_power"), colors.solar, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.node_battery), value(dto, "battery", "power"), colors.battery, Modifier.weight(1f))
         }
         Row(Modifier.padding(horizontal = SunLinkDimensions.spaceLg), horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)) {
-            ValueCard(stringResource(R.string.node_grid), grid, colors.grid, Modifier.weight(1f))
-            ValueCard(stringResource(R.string.node_home), load, colors.load, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.node_grid), value(dto, "grid", "power"), colors.grid, Modifier.weight(1f))
+            ValueCard(stringResource(R.string.node_home), value(dto, "load", "power"), colors.load, Modifier.weight(1f))
         }
     }
 }

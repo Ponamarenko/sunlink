@@ -181,4 +181,22 @@
     <string name="quality_active">Active: %1$s</string>
     <string name="extended_polling_status">Extended polling: %1$s</string>
     <string name="energy_summary">ENERGY TODAY</string>
+    <string name="hist_soc">Battery SOC</string>
+    <string name="hist_pv1">PV1 power</string>
+    <string name="hist_pv2">PV2 power</string>
+    <string name="hist_pv3">PV3 power</string>
+    <string name="hist_batt_power">Battery power</string>
+    <string name="hist_batt_voltage">Battery voltage</string>
+    <string name="hist_batt_current">Battery current</string>
+    <string name="hist_dc_temp">DC temperature</string>
+    <string name="hist_grid_voltage">Grid voltage</string>
+    <string name="hist_grid_freq">Grid frequency</string>
+    <string name="hist_load_power">Load power</string>
+    <string name="hist_daily_pv">Daily generation</string>
+    <string name="hist_daily_import">Daily import</string>
+    <string name="hist_daily_export">Daily export</string>
+    <string name="hist_daily_charge">Daily charge</string>
+    <string name="hist_daily_discharge">Daily discharge</string>
+    <string name="unit_hz">Hz</string>
+    <string name="unit_kwh">kWh</string>
 </resources>

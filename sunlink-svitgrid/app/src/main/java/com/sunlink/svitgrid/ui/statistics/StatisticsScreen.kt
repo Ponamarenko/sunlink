@@ -1,5 +1,6 @@
 package com.sunlink.svitgrid.ui.statistics
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,7 +40,10 @@ private val PERIODS = listOf(
     Period(1, "24h"), Period(7, "7d"), Period(30, "30d"), Period(365, "365d")
 )
 private val PARAMETERS = listOf(
-    "battery_soc", "pv1_power", "battery_power", "grid_power", "load_power"
+    "battery_soc", "battery_voltage", "battery_current", "battery_power",
+    "pv1_power", "pv2_power", "pv3_power", "grid_voltage_l1", "grid_frequency",
+    "load_power", "daily_pv_energy", "daily_grid_import", "daily_grid_export",
+    "daily_battery_charge", "daily_battery_discharge"
 )
 
 @Composable
@@ -82,10 +86,11 @@ fun StatisticsScreen(vm: MainViewModel = viewModel()) {
             }
         }
         Row(
-            Modifier.padding(horizontal = SunLinkDimensions.spaceLg),
+            Modifier.padding(horizontal = SunLinkDimensions.spaceLg)
+                .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(SunLinkDimensions.spaceSm)
         ) {
-            PARAMETERS.take(3).forEach { p ->
+            PARAMETERS.forEach { p ->
                 FilterChip(
                     selected = p == parameter,
                     onClick = { parameter = p },
