@@ -3,6 +3,7 @@ package com.sunlink.svitgrid
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -20,6 +21,8 @@ import com.sunlink.svitgrid.ui.theme.ThemeMode
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Stage 49: контент під статус-баром і системною навігацією.
+        enableEdgeToEdge()
         val settings = SettingsRepository(this)
         setContent {
             val mode = remember {

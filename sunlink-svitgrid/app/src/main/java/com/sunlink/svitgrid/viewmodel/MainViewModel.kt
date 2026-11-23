@@ -65,6 +65,8 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
     val seriesLoading: StateFlow<Boolean> = _seriesLoading
     private val _seriesError = MutableStateFlow<String?>(null)
     val seriesError: StateFlow<String?> = _seriesError
+    private val _seriesByParam = MutableStateFlow<Map<String, HistorySeriesDto>>(emptyMap())
+    val seriesByParam: StateFlow<Map<String, HistorySeriesDto>> = _seriesByParam
 
     private val _stats = MutableStateFlow<StatsSummaryDto?>(null)
     val stats: StateFlow<StatsSummaryDto?> = _stats
@@ -393,6 +395,21 @@ class MainViewModel(private val repository: DataRepository) : ViewModel() {
                 _seriesError.value = (result as? Result.Error)?.exception?.message
             }
             _seriesLoading.value = false
+        }
+    }
+
+    /** Мини-ряд для карточек и экранов оборудования (без замены состояния History). */
+    fun loadSeriesFor(parameter: String, period: String = "24h") {
+        viewModelScope.launch {
+            val result = try {
+                repository.loadHistorySeries(parameter, period)
+            } catch (e: Exception) {
+                Log.w(tag, "loadSeriesFor $parameter failed", e)
+                null
+            }
+            if (result is Result.Success) {
+                _seriesByParam.value = _seriesByParam.value + (parameter to result.data)
+            }
         }
     }
 

@@ -202,4 +202,19 @@
     <string name="history_source">Джерело: %1$s · якість: %2$s</string>
     <string name="history_points">Доступно точок: %1$d · пропусків: %2$d</string>
     <string name="hist_pv_total">Загальна потужність PV</string>
+
+    <!-- Stage 49: навігація та нові екрани -->
+    <string name="tab_battery">Батарея</string>
+    <string name="tab_solar">Сонце</string>
+    <string name="drawer_monitoring">МОНІТОРИНГ</string>
+    <string name="drawer_analytics">АНАЛІТИКА</string>
+    <string name="drawer_system">СИСТЕМА</string>
+    <string name="drawer_other">ІНШЕ</string>
+    <string name="more_subtitle">Додаткові розділи та інструменти</string>
+    <string name="energy_subtitle">Потоки, генерація та споживання в реальному часі</string>
+    <string name="energy_balance">Баланс енергії</string>
+    <string name="energy_today">Енергія сьогодні</string>
+    <string name="no_confirmed_data">Немає підтверджених даних</string>
+    <string name="confidence_label">Достовірність: %1$s</string>
+    <string name="gap_notice">Пропуски в графіку позначаються розривом, а не нулем</string>
 </resources>

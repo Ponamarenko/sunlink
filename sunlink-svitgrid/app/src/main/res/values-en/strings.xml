@@ -202,4 +202,19 @@
     <string name="history_source">Source: %1$s · quality: %2$s</string>
     <string name="history_points">Available points: %1$d · gaps: %2$d</string>
     <string name="hist_pv_total">Total PV power</string>
+
+    <!-- Stage 49: navigation and new screens -->
+    <string name="tab_battery">Battery</string>
+    <string name="tab_solar">Solar</string>
+    <string name="drawer_monitoring">MONITORING</string>
+    <string name="drawer_analytics">ANALYTICS</string>
+    <string name="drawer_system">SYSTEM</string>
+    <string name="drawer_other">MORE</string>
+    <string name="more_subtitle">Additional sections and tools</string>
+    <string name="energy_subtitle">Live flows, generation and consumption</string>
+    <string name="energy_balance">Energy balance</string>
+    <string name="energy_today">Energy today</string>
+    <string name="no_confirmed_data">No confirmed data</string>
+    <string name="confidence_label">Confidence: %1$s</string>
+    <string name="gap_notice">Gaps are shown as breaks, not zeros</string>
 </resources>
