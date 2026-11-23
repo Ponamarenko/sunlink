@@ -1,6 +1,5 @@
 package com.sunlink.svitgrid.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -68,20 +67,21 @@ private val LightColorScheme = lightColorScheme(
     onError = Color(0xFFFFFFFF)
 )
 
+/** Hybryd Premium: корінь приложения NEVER light, независимо от сохранённой настройки. */
+fun resolveRootDarkTheme(themeMode: ThemeMode): Boolean = true
+
 /**
- * Единая точка входа в тему. Поддерживает SYSTEM / LIGHT / DARK без перезапуска.
+ * Единая точка входа в тему. SYSTEM/LIGHT сохранены для совместимости настроек,
+ * но не могут включить светлую палитру на основных экранах.
  */
 @Composable
 fun SvitGridTheme(
     themeMode: ThemeMode = ThemeMode.DARK,
     content: @Composable () -> Unit
 ) {
-    val darkTheme = when (themeMode) {
-        // Stage 50.1: SYSTEM не повинен повертати світлу палітру на пристрої зі світлою темою.
-        ThemeMode.SYSTEM -> true
-        ThemeMode.LIGHT -> false
-        ThemeMode.DARK -> true
-    }
+    // Stage 50.2: коренева тема завжди темна. Світла палітра існує тільки
+    // всередині Analytics/Diagnostics через PremiumAnalyticsTheme.
+    val darkTheme = resolveRootDarkTheme(themeMode)
     val sunLinkColors = if (darkTheme) sunLinkDarkColors() else sunLinkLightColors()
     androidx.compose.runtime.CompositionLocalProvider(
         LocalSunLinkColors provides sunLinkColors

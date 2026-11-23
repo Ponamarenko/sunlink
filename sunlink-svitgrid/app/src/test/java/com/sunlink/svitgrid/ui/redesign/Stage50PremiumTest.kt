@@ -99,7 +99,9 @@ class Stage50PremiumTest {
         assertTrue("versionCode must be >= 71, got $code", code != null && code >= 71)
         assertTrue(
             "versionName must be >= 2.50.0",
-            gradle.contains("versionName = \"2.50.0\"") || gradle.contains("versionName = \"2.50.1\"")
+            gradle.contains("versionName = \"2.50.0\"") ||
+                gradle.contains("versionName = \"2.50.1\"") ||
+                gradle.contains("versionName = \"2.50.2\"")
         )
     }
 }

@@ -255,7 +255,7 @@ class SettingsRepositoryTest {
 
 class Stage501ThemeMigrationTest {
     @Test
-    fun `legacy SYSTEM theme migrates to DARK on startup`() {
+    fun `legacy SYSTEM or LIGHT theme migrates to DARK on startup`() {
         val legacy = SettingsRepository(FakePrefsForTheme("SYSTEM"))
         assertEquals("DARK", legacy.migrateLegacyThemeMode())
         assertEquals("DARK", legacy.themeModeName)
@@ -264,7 +264,7 @@ class Stage501ThemeMigrationTest {
         assertEquals("DARK", fresh.migrateLegacyThemeMode())
 
         val explicitLight = SettingsRepository(FakePrefsForTheme("LIGHT"))
-        assertEquals("LIGHT", explicitLight.migrateLegacyThemeMode())
+        assertEquals("DARK", explicitLight.migrateLegacyThemeMode())
 
         val broken = SettingsRepository(FakePrefsForTheme("UNKNOWN"))
         assertEquals("DARK", broken.migrateLegacyThemeMode())

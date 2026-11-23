@@ -51,7 +51,7 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
     }
 
     val powerItem = telemetryValue(full, "load", "power")
-    val power = telemetryNumber(full, "load", "power")
+    val power = displayLoadPower(telemetryNumber(full, "load", "power"))
     val freshness = freshnessOf(full?.stale, powerItem?.quality, powerItem?.confidence, full?.connection_status)
     val loadSeries = series[LoadPowerHistoryParam]
     val values = loadChartValues(loadSeries)
@@ -79,7 +79,8 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
             icon = Icons.Default.Power,
             accent = colors.load,
             modifier = Modifier.fillMaxWidth(),
-            caption = telemetryLabel(powerItem),
+            caption = telemetryLabel(powerItem) +
+                if (power != null && power < 0f) " · знак reg.175 (S_WORD)" else "",
             sparkline = values,
             emphasize = true
         )

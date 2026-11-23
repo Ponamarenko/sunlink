@@ -31,12 +31,10 @@ class MainActivity : ComponentActivity() {
         }
         val settings = SettingsRepository(this)
         setContent {
-            val mode = remember {
-                mutableStateOf(
-                    runCatching { ThemeMode.valueOf(settings.migrateLegacyThemeMode()) }
-                        .getOrDefault(ThemeMode.DARK)
-                )
-            }
+            // Міграція виконується навіть якщо controllers завжди тёмний:
+            // вона очищає застарілі SYSTEM/LIGHT у SharedPreferences.
+            settings.migrateLegacyThemeMode()
+            val mode = remember { mutableStateOf(ThemeMode.DARK) }
             val controller = ThemeController(
                 mode = mode.value,
                 setMode = { next ->

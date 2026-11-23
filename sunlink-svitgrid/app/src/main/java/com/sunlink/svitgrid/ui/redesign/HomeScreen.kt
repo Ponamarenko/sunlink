@@ -143,10 +143,7 @@ private fun TransportPill(
 ) {
     val colors = LocalSunLinkColors.current
     val connected = transport == TelemetryWebSocketClient.WsTransportState.OPEN
-    StatusPill(
-        if (compact) "WS ${transport.name}" else "WS ${transport.name}",
-        if (connected) colors.success else colors.warning
-    )
+    StatusPill(transportLabel(transport), if (connected) colors.success else colors.warning)
 }
 
 @Composable

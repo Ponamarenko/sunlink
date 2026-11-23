@@ -28,12 +28,13 @@ class Stage501VisualCorrectionTest {
     fun `startup never falls back to SYSTEM and bars stay dark`() {
         val activity = File("src/main/java/com/sunlink/svitgrid/MainActivity.kt").readText()
         assertTrue(activity.contains("settings.migrateLegacyThemeMode()"))
-        assertTrue(activity.contains("getOrDefault(ThemeMode.DARK)"))
+        assertTrue(activity.contains("mutableStateOf(ThemeMode.DARK)"))
         assertTrue(activity.contains("isAppearanceLightStatusBars = false"))
         assertTrue(activity.contains("isAppearanceLightNavigationBars = false"))
 
         val theme = File("src/main/java/com/sunlink/svitgrid/ui/theme/SvitGridTheme.kt").readText()
-        assertTrue(theme.contains("ThemeMode.SYSTEM -> true"))
+        assertTrue(theme.contains("fun resolveRootDarkTheme"))
+        assertTrue(theme.contains("ThemeMode.SYSTEM -> true") == false)
         assertTrue(theme.contains("fun PremiumAnalyticsTheme"))
         assertTrue(theme.contains("fun PremiumDiagnosticsTheme"))
 
@@ -52,7 +53,7 @@ class Stage501VisualCorrectionTest {
         assertTrue(home.contains("compact = true"))
 
         val ds = File("src/main/java/com/sunlink/svitgrid/ui/redesign/DesignSystem.kt").readText()
-        assertTrue(ds.contains("Spacer(Modifier.height(32.dp))"))
+        assertTrue(ds.contains("bottom = PremiumTokens.spaceXl"))
         assertTrue(ds.contains("navigationBarsPadding()"))
         assertTrue(ds.contains("compact: Boolean = false"))
     }
@@ -70,7 +71,8 @@ class Stage501VisualCorrectionTest {
     @Test
     fun `version is bumped to stage 50 dot 1`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 72"))
-        assertTrue(gradle.contains("versionName = \"2.50.1\""))
+        val code = Regex("versionCode = (\\d+)").find(gradle)?.groupValues?.get(1)?.toIntOrNull()
+        assertTrue("versionCode must be >= 72, got $code", code != null && code >= 72)
+        assertTrue(gradle.contains("versionName = \"2.50.2\""))
     }
 }

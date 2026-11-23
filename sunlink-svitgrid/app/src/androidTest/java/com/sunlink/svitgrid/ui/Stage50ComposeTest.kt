@@ -3,6 +3,7 @@ package com.sunlink.svitgrid.ui
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
@@ -119,6 +120,12 @@ class Stage50ComposeTest {
         compose.onNodeWithText("PV").assertIsDisplayed()
         compose.onNodeWithText("HOME").assertIsDisplayed()
         compose.onNodeWithText("0 W").assertDoesNotExist()
+    }
+
+    @Test
+    fun daily_energy_card_is_reachable_by_scrolling() {
+        render { HomeScreen(vm = vm()) }
+        compose.onNodeWithText("Енергія сьогодні").performScrollTo().assertIsDisplayed()
     }
 
     @Test

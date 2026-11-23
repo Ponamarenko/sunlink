@@ -2,6 +2,7 @@ package com.sunlink.svitgrid.ui.redesign
 
 import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
+import com.sunlink.svitgrid.network.TelemetryWebSocketClient
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -79,3 +80,15 @@ fun formatTelemetryTimestamp(
         iso.take(19).replace('T', ' ')
     }
 }
+
+
+/** WS OPEN тільки після підтвердженого OPEN; CONNECTING ніколи не позначається як OPEN. */
+fun transportLabel(state: TelemetryWebSocketClient.WsTransportState): String =
+    if (state == TelemetryWebSocketClient.WsTransportState.OPEN) "WS OPEN" else "WS ${state.name}"
+
+/**
+ * Регістр 175 (p_load) — S_WORD, is_signed=true, scale=1.0. Від'ємне значення є
+ * справжнім підписаним вимірюванням, а не помилкою UI. Ми НЕ застосовуємо abs()
+ * і не змінюємо знак без підтвердженої семантики джерела.
+ */
+fun displayLoadPower(value: Float?): Float? = value

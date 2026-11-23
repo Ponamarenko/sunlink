@@ -87,7 +87,12 @@ fun SunLinkScreen(
                 )
             )
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = PremiumTokens.spaceLg, vertical = PremiumTokens.spaceMd),
+            .padding(
+                start = PremiumTokens.spaceLg,
+                end = PremiumTokens.spaceLg,
+                top = PremiumTokens.spaceMd,
+                bottom = PremiumTokens.spaceXl
+            ),
         verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceMd)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -108,7 +113,6 @@ fun SunLinkScreen(
             }
         }
         content()
-        Spacer(Modifier.height(32.dp))
     }
 }
 
