@@ -1,6 +1,6 @@
 # Stage 49 — Android UX/UI Redesign
 
-Статус: код/тесты в процессе. Production deployment НЕ выполняется и не планируется.
+Статус: PASS (код/тесты/APK). Production deployment НЕ выполнялся и не планируется.
 
 ## Цель
 Профессиональный тёмный энергетический интерфейс на реальной производственной телеметрии,
@@ -42,8 +42,14 @@
 ## Тесты
 - `app/src/test/java/com/sunlink/svitgrid/ui/redesign/Stage49RedesignTest.kt`:
   mapping/null/stale/quality/gap, ViewModel `loadSeriesFor`, навигация, версия.
-- Все предыдущие Android unit-тесты сохраняются.
-- UI на устройстве/эмуляторе: NOT VERIFIED до появления доступного устройства.
+- `app/src/androidTest/java/com/sunlink/svitgrid/ui/Stage49ComposeTest.kt`:
+  Home і More на ізольованих тестових даних.
+- Android unit tests: 179/179 PASS. `lintDebug`, `assembleDebug`,
+  `assembleDebugAndroidTest`: PASS.
+- UI на фізичному пристрої/емуляторі: NOT VERIFIED (ADB/AVD відсутні).
+  Синтетичні скріншоти не створювалися.
 
-## Deploy
-Не выполняется. APK публикуется в GitHub Releases как debug/prerelease.
+## Release
+`android-v2.49.0-stage49-redesign-debug`, debug/prerelease; APK `app-debug.apk`,
+SHA-256 `57b53b53305e991dc1ac7a5ab85b9d08f64a3822f25cfa41682bd8cc15d74a5b`.
+Production не изменений: backend залишається на Stage 48.
