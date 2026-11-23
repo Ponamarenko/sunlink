@@ -181,14 +181,8 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
             containerColor = colors.background,
             topBar = {
                 TopAppBar(
-                    title = {
-                        Column {
-                            Text("SunLink", style = SunLinkTypography.title, color = colors.textPrimary)
-                            tabs.find { it.route == currentRoute }?.let {
-                                Text(stringResource(it.labelRes), style = SunLinkTypography.caption, color = colors.textTertiary)
-                            }
-                        }
-                    },
+                    // Один рядок: дволінійний заголовок обрізався стандартною висотою TopAppBar.
+                    title = { Text("SunLink", style = SunLinkTypography.title, color = colors.textPrimary) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(

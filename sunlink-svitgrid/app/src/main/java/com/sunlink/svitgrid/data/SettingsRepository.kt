@@ -179,4 +179,20 @@ class SettingsRepository(private val prefs: SharedPreferences) {
     var themeModeName: String
         get() = prefs.getString(KEY_THEME_MODE, "DARK") ?: "DARK"
         set(value) { prefs.edit().putString(KEY_THEME_MODE, value).apply() }
+
+    /**
+     * Stage 50.1: старые установки сохранили "SYSTEM" или некорректное значение.
+     * Приводим их к тёмной теме один раз при запуске — основные экраны обязаны
+     * запускаться в Hybrid Premium независимо от системной светлой темы Android.
+     */
+    fun migrateLegacyThemeMode(): String {
+        val saved = prefs.getString(KEY_THEME_MODE, "DARK") ?: "DARK"
+        val valid = runCatching { com.sunlink.svitgrid.ui.theme.ThemeMode.valueOf(saved) }.getOrNull()
+        return if (valid == null || valid == com.sunlink.svitgrid.ui.theme.ThemeMode.SYSTEM) {
+            themeModeName = com.sunlink.svitgrid.ui.theme.ThemeMode.DARK.name
+            com.sunlink.svitgrid.ui.theme.ThemeMode.DARK.name
+        } else {
+            saved
+        }
+    }
 }

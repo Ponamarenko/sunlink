@@ -80,13 +80,13 @@ fun HomeScreen(vm: MainViewModel = viewModel()) {
 
     SunLinkScreen(
         title = stringResource(R.string.nav_home),
-        subtitle = "$freshnessLabel · ${stringResource(R.string.dash_last_update, full?.timestamp ?: "—")}",
+        subtitle = "$freshnessLabel · ${stringResource(R.string.dash_last_update, formatTelemetryTimestamp(full?.timestamp))}",
         refreshing = loading,
         onRefresh = { vm.loadData(); vm.loadFullTelemetry() }
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            DataFreshnessIndicator(freshness, full?.timestamp, Modifier.weight(1f))
-            TransportPill(transport)
+            DataFreshnessIndicator(freshness, full?.timestamp, Modifier.weight(1f), compact = true)
+            TransportPill(transport, compact = true)
         }
         error?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
 
@@ -137,10 +137,16 @@ fun HomeScreen(vm: MainViewModel = viewModel()) {
 }
 
 @Composable
-private fun TransportPill(transport: TelemetryWebSocketClient.WsTransportState) {
+private fun TransportPill(
+    transport: TelemetryWebSocketClient.WsTransportState,
+    compact: Boolean = false
+) {
     val colors = LocalSunLinkColors.current
     val connected = transport == TelemetryWebSocketClient.WsTransportState.OPEN
-    StatusPill("WS ${transport.name}", if (connected) colors.success else colors.warning)
+    StatusPill(
+        if (compact) "WS ${transport.name}" else "WS ${transport.name}",
+        if (connected) colors.success else colors.warning
+    )
 }
 
 @Composable

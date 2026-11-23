@@ -108,7 +108,7 @@ fun SunLinkScreen(
             }
         }
         content()
-        Spacer(Modifier.height(PremiumTokens.spaceLg))
+        Spacer(Modifier.height(32.dp))
     }
 }
 
@@ -186,7 +186,8 @@ fun freshnessOf(
 fun DataFreshnessIndicator(
     freshness: Freshness,
     timestamp: String? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
 ) {
     val colors = LocalSunLinkColors.current
     val (label, color) = when (freshness) {
@@ -199,13 +200,16 @@ fun DataFreshnessIndicator(
     Row(
         modifier = modifier
             .background(color.copy(alpha = 0.12f), PremiumTokens.pill)
-            .padding(horizontal = PremiumTokens.spaceSm, vertical = PremiumTokens.spaceXs),
+            .padding(
+                horizontal = if (compact) PremiumTokens.spaceSm else PremiumTokens.spaceSm,
+                vertical = if (compact) 2.dp else PremiumTokens.spaceXs
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)
     ) {
-        Box(Modifier.size(7.dp).background(color, CircleShape))
+        Box(Modifier.size(if (compact) 6.dp else 7.dp).background(color, CircleShape))
         Text(label, style = SunLinkTypography.caption, color = color, fontWeight = FontWeight.SemiBold)
-        if (!timestamp.isNullOrBlank()) {
+        if (!timestamp.isNullOrBlank() && !compact) {
             Text(timestamp, style = SunLinkTypography.caption, color = colors.textTertiary)
         }
     }

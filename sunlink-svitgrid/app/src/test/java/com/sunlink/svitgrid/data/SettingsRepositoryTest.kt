@@ -252,3 +252,50 @@ class SettingsRepositoryTest {
         assertEquals("LIGHT", repo.themeModeName)
     }
 }
+
+class Stage501ThemeMigrationTest {
+    @Test
+    fun `legacy SYSTEM theme migrates to DARK on startup`() {
+        val legacy = SettingsRepository(FakePrefsForTheme("SYSTEM"))
+        assertEquals("DARK", legacy.migrateLegacyThemeMode())
+        assertEquals("DARK", legacy.themeModeName)
+
+        val fresh = SettingsRepository(FakePrefsForTheme(null))
+        assertEquals("DARK", fresh.migrateLegacyThemeMode())
+
+        val explicitLight = SettingsRepository(FakePrefsForTheme("LIGHT"))
+        assertEquals("LIGHT", explicitLight.migrateLegacyThemeMode())
+
+        val broken = SettingsRepository(FakePrefsForTheme("UNKNOWN"))
+        assertEquals("DARK", broken.migrateLegacyThemeMode())
+    }
+
+    private class FakePrefsForTheme(initial: String?) : android.content.SharedPreferences {
+        private val map = mutableMapOf<String, Any?>()
+        init { initial?.let { map["theme_mode"] = it } }
+        override fun getAll(): MutableMap<String, *> = map
+        @Suppress("UNCHECKED_CAST")
+        override fun getString(key: String?, defValue: String?): String? = map[key] as? String ?: defValue
+        override fun getStringSet(key: String?, defValues: MutableSet<String>?): MutableSet<String>? = map[key] as? MutableSet<String> ?: defValues
+        override fun getInt(key: String?, defValue: Int): Int = map[key] as? Int ?: defValue
+        override fun getLong(key: String?, defValue: Long): Long = map[key] as? Long ?: defValue
+        override fun getFloat(key: String?, defValue: Float): Float = map[key] as? Float ?: defValue
+        override fun getBoolean(key: String?, defValue: Boolean): Boolean = map[key] as? Boolean ?: defValue
+        override fun contains(key: String?): Boolean = map.containsKey(key)
+        override fun edit(): android.content.SharedPreferences.Editor = object : android.content.SharedPreferences.Editor {
+            private val pending = mutableMapOf<String, Any?>()
+            override fun putString(key: String?, value: String?) = apply { pending[key as String] = value }
+            override fun putStringSet(key: String?, values: MutableSet<String>?) = apply { pending[key as String] = values }
+            override fun putInt(key: String?, value: Int) = apply { pending[key as String] = value }
+            override fun putLong(key: String?, value: Long) = apply { pending[key as String] = value }
+            override fun putFloat(key: String?, value: Float) = apply { pending[key as String] = value }
+            override fun putBoolean(key: String?, value: Boolean) = apply { pending[key as String] = value }
+            override fun remove(key: String?) = apply { pending.remove(key) }
+            override fun clear() = apply { pending.clear() }
+            override fun commit(): Boolean { map.putAll(pending); pending.clear(); return true }
+            override fun apply() { commit() }
+        }
+        override fun registerOnSharedPreferenceChangeListener(listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener?) {}
+        override fun unregisterOnSharedPreferenceChangeListener(listener: android.content.SharedPreferences.OnSharedPreferenceChangeListener?) {}
+    }
+}

@@ -20,7 +20,7 @@ data class ThemeController(
     val setMode: (ThemeMode) -> Unit
 )
 
-val LocalThemeController = compositionLocalOf { ThemeController(ThemeMode.SYSTEM) {} }
+val LocalThemeController = compositionLocalOf { ThemeController(ThemeMode.DARK) {} }
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color(0xFF2DD4BF),
@@ -73,11 +73,12 @@ private val LightColorScheme = lightColorScheme(
  */
 @Composable
 fun SvitGridTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    themeMode: ThemeMode = ThemeMode.DARK,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
-        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        // Stage 50.1: SYSTEM не повинен повертати світлу палітру на пристрої зі світлою темою.
+        ThemeMode.SYSTEM -> true
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
@@ -118,3 +119,8 @@ fun PremiumAnalyticsTheme(content: @Composable () -> Unit) {
         )
     }
 }
+
+
+/** Технічна діагностика використовує ту саму світлу палітру, що й аналітика. */
+@Composable
+fun PremiumDiagnosticsTheme(content: @Composable () -> Unit) = PremiumAnalyticsTheme(content)

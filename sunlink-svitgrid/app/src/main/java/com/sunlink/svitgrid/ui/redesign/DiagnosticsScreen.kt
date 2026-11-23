@@ -24,7 +24,12 @@ import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 
 @Composable
-fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
+fun DiagnosticsScreen(vm: MainViewModel = viewModel()) = com.sunlink.svitgrid.ui.theme.PremiumDiagnosticsTheme {
+    DiagnosticsContent(vm)
+}
+
+@Composable
+private fun DiagnosticsContent(vm: MainViewModel) {
     val uiState by vm.uiState.collectAsState()
     val loading by vm.refreshing.collectAsState()
     val events by NetworkDiagnostics.events.collectAsState()

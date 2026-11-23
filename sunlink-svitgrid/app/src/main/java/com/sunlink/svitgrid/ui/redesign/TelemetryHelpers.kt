@@ -2,6 +2,10 @@ package com.sunlink.svitgrid.ui.redesign
 
 import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 fun telemetryValue(dto: TelemetryFullDto?, category: String, field: String): MeasurementValueDto? =
     dto?.categories?.get(category)?.get(field)
@@ -58,3 +62,20 @@ fun loadFlowDirection(value: Float?, confirmed: Boolean): FlowDirection =
 
 /** Напрямок батареї сервер не підтверджує: конфлікт масштабу reg. 190. */
 fun batteryFlowDirection(): FlowDirection = FlowDirection.UNKNOWN
+
+
+/** Людський формат часу для UI; точний ISO-timestamp залишається в моделі. */
+fun formatTelemetryTimestamp(
+    iso: String?,
+    zoneId: ZoneId = ZoneId.systemDefault(),
+    locale: Locale = Locale.getDefault()
+): String {
+    if (iso.isNullOrBlank()) return "—"
+    return try {
+        val formatter = DateTimeFormatter.ofPattern("d MMM, HH:mm:ss", locale).withZone(zoneId)
+        formatter.format(Instant.parse(iso))
+    } catch (e: Exception) {
+        // Не ламаємо USDA-сумісність: повертаємо стабільний префікс без 'T'/'Z'.
+        iso.take(19).replace('T', ' ')
+    }
+}

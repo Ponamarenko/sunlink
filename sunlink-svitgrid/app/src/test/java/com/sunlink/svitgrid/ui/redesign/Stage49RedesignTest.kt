@@ -154,7 +154,11 @@ class Stage49RedesignTest {
         val gradle = File("build.gradle.kts").readText()
         val code = Regex("versionCode = (\\d+)").find(gradle)?.groupValues?.get(1)?.toIntOrNull()
         assertTrue("versionCode must be >= 70, got $code", code != null && code >= 70)
-        assertTrue("versionName must be >= 2.49.0", gradle.contains("versionName = \"2.50.0\"") ||
-            gradle.contains("versionName = \"2.49.0\""))
+        val name = Regex("versionName = \"([^\"]+)\"").find(gradle)?.groupValues?.get(1) ?: ""
+        val parts = name.split(".").mapNotNull { it.toIntOrNull() }
+        assertTrue(
+            "versionName must be >= 2.49.0, got $name",
+            parts.size >= 2 && (parts[0] > 2 || (parts[0] == 2 && parts[1] >= 49))
+        )
     }
 }

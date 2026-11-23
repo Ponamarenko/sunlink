@@ -93,9 +93,13 @@ class Stage50PremiumTest {
     }
 
     @Test
-    fun `version is bumped to stage 50`() {
+    fun `version is at least stage 50`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 71"))
-        assertTrue(gradle.contains("versionName = \"2.50.0\""))
+        val code = Regex("versionCode = (\\d+)").find(gradle)?.groupValues?.get(1)?.toIntOrNull()
+        assertTrue("versionCode must be >= 71, got $code", code != null && code >= 71)
+        assertTrue(
+            "versionName must be >= 2.50.0",
+            gradle.contains("versionName = \"2.50.0\"") || gradle.contains("versionName = \"2.50.1\"")
+        )
     }
 }

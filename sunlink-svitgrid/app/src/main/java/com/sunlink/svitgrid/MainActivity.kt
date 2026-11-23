@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,12 +24,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Stage 49: контент під статус-баром і системною навігацією.
         enableEdgeToEdge()
+        // Stage 50.1: системні панелі завжди темні, іконки світлі — навіть у edge-to-edge.
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
         val settings = SettingsRepository(this)
         setContent {
             val mode = remember {
                 mutableStateOf(
-                    runCatching { ThemeMode.valueOf(settings.themeModeName) }
-                        .getOrDefault(ThemeMode.SYSTEM)
+                    runCatching { ThemeMode.valueOf(settings.migrateLegacyThemeMode()) }
+                        .getOrDefault(ThemeMode.DARK)
                 )
             }
             val controller = ThemeController(
