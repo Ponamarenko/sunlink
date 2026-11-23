@@ -64,8 +64,7 @@ fun SolarScreen(vm: MainViewModel = viewModel()) {
 
     val totalItem = telemetryValue(full, "pv", "total_power")
     val totalPower = telemetryNumber(full, "pv", "total_power")
-    val dailyEnergy = telemetryNumber(full, "pv", "daily_energy")
-    val totalEnergy = telemetryNumber(full, "pv", "total_energy")
+    val freshness = freshnessOf(full?.stale, totalItem?.quality, totalItem?.confidence, full?.connection_status)
 
     SunLinkScreen(
         title = "Сонячна енергія",
@@ -76,79 +75,42 @@ fun SolarScreen(vm: MainViewModel = viewModel()) {
             reloadHistory(period)
         }
     ) {
-        if (error != null) {
-            Text(error!!, color = colors.error, style = SunLinkTypography.caption)
+        DataFreshnessIndicator(freshness, full?.timestamp)
+        error?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
+
+        // Hero: загальна генерація з реальним спарклайном. Відсутнє значення — «—», а не нуль.
+        MetricCard(
+            title = "Загальна генерація PV",
+            value = totalPower,
+            unit = "W",
+            icon = Icons.Default.SolarPower,
+            accent = colors.solar,
+            modifier = Modifier.fillMaxWidth(),
+            caption = telemetryLabel(totalItem),
+            sparkline = solarChartValues(series[SolarHeroParam]),
+            emphasize = true
+        )
+
+        PremiumCard(accent = colors.solar) {
+            PremiumSectionHeader("Генерація", "Накопичена енергія (кВт·год)")
+            EnergyRow("За день", full, "pv", "daily_energy", colors.solar)
+            EnergyRow("Всього", full, "pv", "total_energy", colors.solar)
         }
 
-        // Hero: загальна потужність PV. Відсутнє значення — «—», а не нуль.
-        SunLinkCard(accent = colors.solar) {
-            Text("ЗАГАЛЬНА ПОТУЖНІСТЬ PV", style = SunLinkTypography.label, color = colors.textSecondary)
-            Spacer(Modifier.height(6.dp))
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    if (totalPower == null) "—" else "%.1f".format(totalPower),
-                    style = SunLinkTypography.display,
-                    color = if (totalPower == null) colors.textTertiary else colors.textPrimary
-                )
-                Text(
-                    if (totalPower == null) "" else "W",
-                    style = SunLinkTypography.label,
-                    color = colors.textTertiary,
-                    modifier = Modifier.padding(bottom = 6.dp, start = 4.dp)
-                )
-            }
-            val heroPoints = series[SolarHeroParam]?.points.orEmpty()
-            if (heroPoints.isEmpty()) {
-                EmptyHint("Немає даних")
-            } else {
-                Sparkline(
-                    heroPoints.map { point -> if (point.gap || point.value == null) null else point.value!!.toFloat() },
-                    colors.solar,
-                    Modifier.fillMaxWidth().height(72.dp)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                StatusPill(telemetryLabel(totalItem), confidenceColor(totalItem, colors))
-                Text(
-                    "Сьогодні: ${if (dailyEnergy == null) "—" else "%.1f kWh".format(dailyEnergy)}",
-                    style = SunLinkTypography.caption,
-                    color = colors.textTertiary
-                )
-            }
-        }
-
-        Text("ГЕНЕРАЦІЯ", style = SunLinkTypography.label, color = colors.textSecondary)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard(
-                "За день", dailyEnergy, "kWh",
-                Icons.Default.SolarPower, colors.solar, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "pv", "daily_energy"))
-            )
-            MetricCard(
-                "Всього", totalEnergy, "kWh",
-                null, colors.solar, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "pv", "total_energy"))
-            )
-        }
-
-        Text("КАНАЛИ PV", style = SunLinkTypography.label, color = colors.textSecondary)
+        PremiumSectionHeader("Канали PV", "Кожен рядок окремо — без об'єднання")
         PvChannelCard("PV1", "pv1", full)
         PvChannelCard("PV2", "pv2", full)
         PvChannelCard("PV3", "pv3", full)
 
-        SunLinkCard(accent = colors.primary) {
-            Text("ІСТОРІЯ КАНАЛІВ", style = SunLinkTypography.label, color = colors.textSecondary)
+        PremiumCard(accent = colors.primary) {
+            PremiumSectionHeader("Історія каналів", "PV1 · PV2 · PV3")
             PeriodSelector(period) { selected ->
                 period = selected
                 reloadHistory(selected)
             }
-            HistoryChart("PV1", series["pv1_power"], "W", colors.solar)
-            HistoryChart("PV2", series["pv2_power"], "W", colors.solar)
-            HistoryChart("PV3", series["pv3_power"], "W", colors.solar)
+            HistoryChart("PV1", series["pv1_power"], colors.solar)
+            HistoryChart("PV2", series["pv2_power"], colors.solar)
+            HistoryChart("PV3", series["pv3_power"], colors.solar)
         }
     }
 }
@@ -162,6 +124,30 @@ private fun confidenceColor(item: MeasurementValueDto?, colors: SunLinkColors): 
     else -> colors.textTertiary
 }
 
+/** gap == true або value == null стає null — графік розриває лінію, а не з'єднує через нуль. */
+private fun solarChartValues(series: HistorySeriesDto?): List<Float?> =
+    series?.points?.map { point ->
+        if (point.gap || point.value == null) null else point.value!!.toFloat()
+    } ?: emptyList()
+
+@Composable
+private fun EnergyRow(label: String, full: TelemetryFullDto?, category: String, field: String, color: Color) {
+    val colors = LocalSunLinkColors.current
+    val value = telemetryNumber(full, category, field)
+    val item = telemetryValue(full, category, field)
+    Column(Modifier.fillMaxWidth().padding(vertical = PremiumTokens.spaceXs)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = SunLinkTypography.body, color = colors.textSecondary)
+            Text(
+                text = if (value == null) "—" else "%.2f kWh".format(value),
+                style = SunLinkTypography.label,
+                color = if (value == null) colors.textTertiary else color
+            )
+        }
+        Text(telemetryLabel(item), style = SunLinkTypography.caption, color = colors.textTertiary)
+    }
+}
+
 @Composable
 private fun PvChannelCard(label: String, prefix: String, full: TelemetryFullDto?) {
     val colors = LocalSunLinkColors.current
@@ -169,41 +155,27 @@ private fun PvChannelCard(label: String, prefix: String, full: TelemetryFullDto?
     val current = telemetryNumber(full, "pv", "${prefix}_current")
     val power = telemetryNumber(full, "pv", "${prefix}_power")
     val powerItem = telemetryValue(full, "pv", "${prefix}_power")
-    val active = power != null && power > 1f
+    val hasData = powerItem != null
 
-    SunLinkCard(accent = if (active) colors.solar else colors.offline) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.SolarPower,
-                    contentDescription = null,
-                    tint = if (active) colors.solar else colors.offline,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(Modifier.size(6.dp))
-                Text(label, style = SunLinkTypography.title, color = colors.textPrimary)
-            }
-            StatusPill(
-                if (active) "Активний" else "Немає даних",
-                if (active) colors.success else colors.offline
-            )
-        }
-        Spacer(Modifier.height(8.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    PremiumCard(accent = if (hasData) colors.solar else colors.offline) {
+        PremiumSectionHeader(
+            title = label,
+            subtitle = "Напруга · струм · потужність",
+            trailing = { StatusPill(telemetryLabel(powerItem), confidenceColor(powerItem, colors)) }
+        )
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
             MetricCard(
                 "Напруга", voltage, "V",
-                null, colors.solar, Modifier.weight(1f)
+                null, colors.solar, Modifier.weight(1f),
+                caption = telemetryLabel(telemetryValue(full, "pv", "${prefix}_voltage"))
             )
             MetricCard(
                 "Струм", current, "A",
-                null, colors.solar, Modifier.weight(1f)
+                null, colors.solar, Modifier.weight(1f),
+                caption = telemetryLabel(telemetryValue(full, "pv", "${prefix}_current"))
             )
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(PremiumTokens.spaceSm))
         MetricCard(
             "Потужність", power, "W",
             Icons.Default.Bolt, colors.solar, Modifier.fillMaxWidth(),
@@ -244,27 +216,18 @@ private fun PeriodSelector(selected: String, onSelect: (String) -> Unit) {
 }
 
 @Composable
-private fun HistoryChart(title: String, series: HistorySeriesDto?, unit: String, color: Color) {
+private fun HistoryChart(title: String, series: HistorySeriesDto?, color: Color) {
     val colors = LocalSunLinkColors.current
-    val points = series?.points.orEmpty()
-    Column(Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+    val values = solarChartValues(series)
+    Column(Modifier.fillMaxWidth().padding(top = PremiumTokens.spaceSm)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(title, style = SunLinkTypography.label, color = colors.textSecondary)
-            Text(series?.unit ?: unit, style = SunLinkTypography.caption, color = colors.textTertiary)
+            Text(series?.unit.orEmpty(), style = SunLinkTypography.caption, color = colors.textTertiary)
         }
-        if (points.isEmpty()) {
-            EmptyHint("Немає даних")
+        if (values.all { it == null }) {
+            EmptyState("Немає даних")
         } else {
-            // gap == true або value == null перетворюємо в null — Sparkline розриває лінію,
-            // а не з'єднує точки через нуль.
-            Sparkline(
-                points.map { point -> if (point.gap || point.value == null) null else point.value!!.toFloat() },
-                color,
-                Modifier.fillMaxWidth().height(64.dp)
-            )
+            AnalyticsChart(values, color, Modifier.fillMaxWidth().height(88.dp))
         }
     }
 }

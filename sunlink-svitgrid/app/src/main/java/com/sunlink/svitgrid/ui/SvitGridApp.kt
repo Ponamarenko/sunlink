@@ -206,24 +206,17 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
                 )
             },
             bottomBar = {
-                NavigationBar(containerColor = colors.surface, contentColor = colors.textSecondary) {
-                    tabs.forEach { tab ->
-                        NavigationBarItem(
-                            selected = currentRoute == tab.route,
-                            onClick = { goTab(tab.route) },
-                            icon = { Icon(tab.icon, contentDescription = null) },
-                            label = { Text(stringResource(tab.labelRes)) },
-                            alwaysShowLabel = true,
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = colors.primary,
-                                selectedTextColor = colors.primary,
-                                unselectedIconColor = colors.textTertiary,
-                                unselectedTextColor = colors.textTertiary,
-                                indicatorColor = colors.primarySoft
-                            )
+                com.sunlink.svitgrid.ui.redesign.PremiumBottomNavigation(
+                    items = tabs.map {
+                        com.sunlink.svitgrid.ui.redesign.PremiumNavItem(
+                            route = it.route,
+                            label = stringResource(it.labelRes),
+                            icon = it.icon
                         )
-                    }
-                }
+                    },
+                    currentRoute = currentRoute,
+                    onSelect = { route -> goTab(route) }
+                )
             }
         ) { innerPadding ->
             val viewModel: MainViewModel = viewModel(
@@ -237,7 +230,9 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
             NavHost(
                 navController = navController,
                 startDestination = "home",
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding),
+                enterTransition = { androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(220)) },
+                exitTransition = { androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(160)) }
             ) {
                 composable("home") {
                     com.sunlink.svitgrid.ui.redesign.HomeScreen(vm = viewModel)

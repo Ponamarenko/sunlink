@@ -177,6 +177,6 @@ class SettingsRepository(private val prefs: SharedPreferences) {
 
     /** Stage 31: SYSTEM / LIGHT / DARK. Значение сохраняется в тех же SharedPreferences. */
     var themeModeName: String
-        get() = prefs.getString(KEY_THEME_MODE, "SYSTEM") ?: "SYSTEM"
+        get() = prefs.getString(KEY_THEME_MODE, "DARK") ?: "DARK"
         set(value) { prefs.edit().putString(KEY_THEME_MODE, value).apply() }
 }

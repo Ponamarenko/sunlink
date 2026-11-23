@@ -39,3 +39,22 @@ fun seriesSegments(values: List<Float?>): List<List<Pair<Int, Float>>> {
     if (current.isNotEmpty()) segments.add(current.toList())
     return segments
 }
+
+/** Генерація PV завжди йде від панелі до інвертора — напрямок підтверджений знаком потужності. */
+fun pvFlowDirection(value: Float?, confirmed: Boolean): FlowDirection =
+    if (confirmed && value != null && value > 1f) FlowDirection.TO_HUB else FlowDirection.UNKNOWN
+
+/** Позитивна потужність мережі = імпорт (мережа → інвертор), негативна = експорт. */
+fun gridFlowDirection(value: Float?, confirmed: Boolean): FlowDirection = when {
+    !confirmed || value == null -> FlowDirection.UNKNOWN
+    value > 1f -> FlowDirection.TO_HUB
+    value < -1f -> FlowDirection.FROM_HUB
+    else -> FlowDirection.UNKNOWN
+}
+
+/** Споживання навантаження йде від інвертора до дому. */
+fun loadFlowDirection(value: Float?, confirmed: Boolean): FlowDirection =
+    if (confirmed && value != null && value > 1f) FlowDirection.FROM_HUB else FlowDirection.UNKNOWN
+
+/** Напрямок батареї сервер не підтверджує: конфлікт масштабу reg. 190. */
+fun batteryFlowDirection(): FlowDirection = FlowDirection.UNKNOWN

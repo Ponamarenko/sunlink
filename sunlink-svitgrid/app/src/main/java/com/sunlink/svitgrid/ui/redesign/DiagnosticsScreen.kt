@@ -2,7 +2,9 @@ package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,9 +42,38 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
     }
 
     val success = uiState as? InverterUiState.Success
+    val errorState = uiState as? InverterUiState.Error
     val online = success?.status?.online == true
     val stale = success?.stale == true || quality?.stale == true
-    val error = (uiState as? InverterUiState.Error)?.message
+    val error = errorState?.message ?: success?.status?.error
+
+    // Стани Fresh / Stale / Unavailable / Offline формуються єдиною функцією freshnessOf.
+    val connectionFreshness = freshnessOf(
+        stale = stale,
+        quality = if (success == null) "unavailable" else "verified",
+        confidence = if (success == null) null else "verified",
+        online = if (error != null) false else if (success == null) null else online
+    )
+    val healthStatus = backendHealth?.status
+    val backendFreshness = freshnessOf(
+        stale = false,
+        quality = when {
+            healthStatus == null -> "unavailable"
+            healthStatus.equals("ok", true) || healthStatus.equals("up", true) -> "verified"
+            else -> "stale"
+        },
+        confidence = if (healthStatus == null) null else "verified"
+    )
+    val qualityFreshness = freshnessOf(
+        stale = quality?.stale,
+        quality = null,
+        confidence = if (quality == null) null else "verified"
+    )
+    val wsFreshness = freshnessOf(
+        stale = false,
+        quality = null,
+        confidence = if (transport == TelemetryWebSocketClient.WsTransportState.OPEN) "verified" else null
+    )
 
     SunLinkScreen(
         title = stringResource(R.string.nav_diagnostics),
@@ -50,60 +81,85 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
         refreshing = loading,
         onRefresh = { vm.loadBackendInfo(); vm.loadTelemetryQuality() }
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StatusPill(
-                if (error != null) stringResource(R.string.state_error)
-                else if (stale) stringResource(R.string.state_stale)
-                else if (online) stringResource(R.string.state_online)
-                else stringResource(R.string.state_offline),
-                if (error != null) colors.error else if (stale) colors.warning else if (online) colors.success else colors.offline,
-                Modifier.weight(1f)
-            )
-            StatusPill("WS $transport", if (transport == TelemetryWebSocketClient.WsTransportState.OPEN) colors.success else colors.warning, Modifier.weight(1f))
-        }
-
-        error?.let {
-            SunLinkCard(accent = colors.error) {
-                Text("Остання помилка", style = SunLinkTypography.label, color = colors.error)
-                Text(it, style = SunLinkTypography.caption, color = colors.textSecondary)
+        PremiumCard(accent = colors.primary) {
+            PremiumSectionHeader(title = stringResource(R.string.diagnostics_title))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                DataFreshnessIndicator(connectionFreshness, modifier = Modifier.weight(1f))
+                DataFreshnessIndicator(backendFreshness, modifier = Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(PremiumTokens.spaceXs))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                DataFreshnessIndicator(qualityFreshness, modifier = Modifier.weight(1f))
+                DataFreshnessIndicator(wsFreshness, modifier = Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            Button(onClick = { vm.checkConnection() }, enabled = !loading, modifier = Modifier.fillMaxWidth()) {
+                Text(if (loading) stringResource(R.string.diagnostics_checking) else stringResource(R.string.diagnostics_check_server))
             }
         }
 
-        Button(onClick = { vm.checkConnection() }, enabled = !loading, modifier = Modifier.fillMaxWidth()) {
-            Text(if (loading) stringResource(R.string.diagnostics_checking) else stringResource(R.string.diagnostics_check_server))
-        }
-
-        SunLinkCard(accent = colors.primary) {
-            Text(stringResource(R.string.diagnostics_server), style = SunLinkTypography.label, color = colors.textSecondary)
+        PremiumCard(accent = colors.grid) {
+            PremiumSectionHeader(title = "З'єднання", trailing = { DataFreshnessIndicator(connectionFreshness) })
             InfoRow("Останнє оновлення", success?.status?.lastUpdate ?: "—")
             InfoRow("Інвертор", success?.status?.inverterId ?: "—")
             InfoRow("Доступних реєстрів", success?.status?.availableRegisters?.toString() ?: "—")
             InfoRow("Останній успішний запит", lastSuccess ?: "—")
+            InfoRow("Транспорт", transport.name)
         }
 
-        SunLinkCard(accent = colors.grid) {
-            Text("Backend", style = SunLinkTypography.label, color = colors.textSecondary)
+        PremiumCard(accent = colors.primary) {
+            PremiumSectionHeader(title = "Backend", trailing = { DataFreshnessIndicator(backendFreshness) })
             InfoRow("Стан", backendHealth?.status ?: "—")
             InfoRow("API / Gateway", listOfNotNull(backendVersion?.api, backendVersion?.gateway).joinToString(" / ").ifBlank { "—" })
             InfoRow("Протокол", backendVersion?.protocol ?: "—")
             InfoRow("Джерело", backendHealth?.source ?: "—")
         }
 
-        SunLinkCard(accent = colors.solar) {
-            Text(stringResource(R.string.quality_title), style = SunLinkTypography.label, color = colors.textSecondary)
+        PremiumCard(accent = colors.solar) {
+            PremiumSectionHeader(title = stringResource(R.string.quality_title), trailing = { DataFreshnessIndicator(qualityFreshness) })
             InfoRow(stringResource(R.string.quality_known, quality?.known_parameters ?: 0), "")
             InfoRow(stringResource(R.string.quality_available, quality?.available_parameters ?: 0), "")
             InfoRow(stringResource(R.string.quality_unavailable, quality?.unavailable_parameters ?: 0), "")
-            InfoRow(stringResource(R.string.quality_active, quality?.active_registers?.joinToString()?.ifBlank { "—" } ?: "—"), "")
             InfoRow("Polling", if (quality?.polling_running == true) "ON" else "OFF")
             InfoRow("Cycles / failed / missed", "${quality?.cycles ?: 0} / ${quality?.failed_cycles ?: 0} / ${quality?.missed_cycles ?: 0}")
             InfoRow("Last cycle", quality?.last_cycle_ms?.let { "%.0f ms".format(it) } ?: "—")
         }
 
-        SunLinkCard(accent = colors.load) {
-            Text("Мережеві події (UPDATE / REST / WS)", style = SunLinkTypography.label, color = colors.textSecondary)
+        PremiumCard(accent = colors.battery) {
+            PremiumSectionHeader(title = "Стан реєстрів")
+            InfoRow("Активні", quality?.active_registers?.joinToString()?.ifBlank { "—" } ?: "—")
+            InfoRow(
+                "Відомо / Доступно / Недоступно",
+                "${quality?.known_parameters ?: 0} / ${quality?.available_parameters ?: 0} / ${quality?.unavailable_parameters ?: 0}"
+            )
+            InfoRow(
+                "Розширений polling",
+                quality?.extended_polling?.let { "jobs=${it.jobs ?: "—"} · executed=${it.executed.size}" } ?: "—"
+            )
+        }
+
+        PremiumCard(accent = colors.error) {
+            PremiumSectionHeader(title = "Попередження та помилки")
+            val messages = mutableListOf<String>().apply {
+                errorState?.message?.let { add(it) }
+                success?.status?.error?.let { add(it) }
+                quality?.by_confidence
+                    ?.filter { (key, count) -> key in setOf("provisional", "unverified") && count > 0 }
+                    ?.forEach { (key, count) -> add("$key: $count") }
+            }
+            if (messages.isEmpty()) {
+                EmptyState("Помилок і попереджень немає")
+            } else {
+                messages.distinct().forEach {
+                    Text("• $it", style = SunLinkTypography.caption, color = colors.textSecondary)
+                }
+            }
+        }
+
+        PremiumCard(accent = colors.load) {
+            PremiumSectionHeader(title = "Мережеві події (UPDATE / REST / WS)")
             if (events.isEmpty()) {
-                Text(stringResource(R.string.diagnostics_no_requests), style = SunLinkTypography.caption, color = colors.textTertiary)
+                EmptyState(stringResource(R.string.diagnostics_no_requests))
             } else {
                 events.take(10).forEach { e ->
                     Text(
@@ -115,9 +171,10 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
-        SunLinkCard(accent = colors.border) {
-            Text("Як читати статуси", style = SunLinkTypography.label, color = colors.textSecondary)
+        PremiumCard(accent = colors.border) {
+            PremiumSectionHeader(title = "Як читати статуси")
             Text("• Онлайн / Офлайн — чи відповідає сервер на запити /api/live/raw.", style = SunLinkTypography.caption, color = colors.textTertiary)
+            Text("• Fresh / Stale / Unavailable / Offline — свіжість і доступність підтверджених значень.", style = SunLinkTypography.caption, color = colors.textTertiary)
             Text("• verified / corroborated — підтверджені значення; provisional — попередні; calculated — розраховані.", style = SunLinkTypography.caption, color = colors.textTertiary)
             Text("• stale — застарілі дані; unavailable — відсутні значення (показуються як «—», не як 0).", style = SunLinkTypography.caption, color = colors.textTertiary)
         }

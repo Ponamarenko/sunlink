@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,11 +23,29 @@ import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.StatsSummaryDto
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.theme.PremiumAnalyticsTheme
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-private val analyticsPeriods = listOf("24h" to "24 год", "7d" to "7 дн", "30d" to "30 дн")
+/**Chip-мітки відповідають perіодам backend: 24h / 7d / 30d / 365d. */
+private val analyticsPeriods = listOf(
+    "24h" to "Daily",
+    "7d" to "Weekly",
+    "30d" to "Monthly",
+    "365d" to "Yearly"
+)
+
+private val chartCards = listOf(
+    "pv_total_power" to "PV · потужність",
+    "load_power" to "Навантаження · потужність",
+    "battery_soc" to "Батарея · SOC",
+    "daily_grid_import" to "Мережа · імпорт",
+    "daily_grid_export" to "Мережа · експорт",
+    "daily_battery_charge" to "Батарея · заряд",
+    "daily_battery_discharge" to "Батарея · розряд"
+)
+
 private val statsParams = listOf(
     "pv_total_power" to "PV",
     "load_power" to "Навантаження",
@@ -38,70 +54,81 @@ private val statsParams = listOf(
 
 @Composable
 fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
-    val series by vm.seriesByParam.collectAsState()
-    val stats by vm.stats.collectAsState()
-    val refreshing by vm.refreshing.collectAsState()
-    val colors = LocalSunLinkColors.current
+    // Увесь екран — у локальній світлій темі; решта застосунку залишається темною.
+    PremiumAnalyticsTheme {
+        val series by vm.seriesByParam.collectAsState()
+        val stats by vm.stats.collectAsState()
+        val refreshing by vm.refreshing.collectAsState()
+        val colors = LocalSunLinkColors.current
 
-    var period by remember { mutableStateOf("24h") }
-    var statsParam by remember { mutableStateOf("pv_total_power") }
+        var period by remember { mutableStateOf("24h") }
+        var statsParam by remember { mutableStateOf("pv_total_power") }
 
-    LaunchedEffect(Unit) {
-        vm.loadFullTelemetry()
-    }
+        LaunchedEffect(Unit) {
+            vm.loadFullTelemetry()
+        }
 
-    LaunchedEffect(period) {
-        vm.loadSeriesFor("pv_total_power", period)
-        vm.loadSeriesFor("load_power", period)
-        vm.loadSeriesFor("battery_soc", period)
-        val (start, end) = isoRange(period)
-        vm.loadStats(statsParam, start, end)
-    }
-
-    LaunchedEffect(statsParam) {
-        val (start, end) = isoRange(period)
-        vm.loadStats(statsParam, start, end)
-    }
-
-    SunLinkScreen(
-        title = "Аналітика",
-        subtitle = "Історія та статистика · ${periodLabel(period)}",
-        refreshing = refreshing,
-        onRefresh = {
-            vm.loadSeriesFor("pv_total_power", period)
-            vm.loadSeriesFor("load_power", period)
-            vm.loadSeriesFor("battery_soc", period)
+        LaunchedEffect(period) {
+            chartCards.forEach { (param, _) -> vm.loadSeriesFor(param, period) }
             val (start, end) = isoRange(period)
             vm.loadStats(statsParam, start, end)
         }
-    ) {
-        SunLinkCard(accent = colors.primary) {
-            Text("ПЕРІОД", style = SunLinkTypography.label, color = colors.textSecondary)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                analyticsPeriods.forEach { (value, label) ->
-                    FilterChip(
-                        selected = period == value,
-                        onClick = { period = value },
-                        label = { Text(label) }
-                    )
-                }
-            }
+
+        LaunchedEffect(statsParam) {
+            val (start, end) = isoRange(period)
+            vm.loadStats(statsParam, start, end)
         }
 
-        SeriesChartCard("PV · потужність", series["pv_total_power"], colors.solar)
-        SeriesChartCard("Навантаження · потужність", series["load_power"], colors.load)
-        SeriesChartCard("Батарея · SOC", series["battery_soc"], colors.battery)
+        SunLinkScreen(
+            title = "Аналітика",
+            subtitle = "Історія та статистика · ${periodLabel(period)}",
+            refreshing = refreshing,
+            onRefresh = {
+                chartCards.forEach { (param, _) -> vm.loadSeriesFor(param, period) }
+                val (start, end) = isoRange(period)
+                vm.loadStats(statsParam, start, end)
+            }
+        ) {
+            PremiumCard(accent = colors.primary) {
+                PremiumSectionHeader(title = "ПЕРІОД")
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    analyticsPeriods.forEach { (value, label) ->
+                        FilterChip(
+                            selected = period == value,
+                            onClick = { period = value },
+                            label = { Text(label) }
+                        )
+                    }
+                }
+            }
 
-        StatsSummaryCard(stats, statsParam, period) { selected ->
-            statsParam = selected
+            chartCards.forEach { (param, title) ->
+                SeriesChartCard(title, series[param], chartColor(param))
+            }
+
+            StatsSummaryCard(stats, statsParam, period) { selected -> statsParam = selected }
         }
     }
 }
 
+@Composable
+private fun chartColor(param: String): Color {
+    val colors = LocalSunLinkColors.current
+    return when {
+        param.startsWith("pv_") -> colors.solar
+        param == "load_power" -> colors.load
+        param == "battery_soc" || param.startsWith("daily_battery") -> colors.battery
+        param.startsWith("daily_grid_import") -> colors.gridImport
+        param.startsWith("daily_grid_export") -> colors.gridExport
+        else -> colors.primary
+    }
+}
+
 private fun periodLabel(period: String): String = when (period) {
-    "7d" -> "7 днів"
-    "30d" -> "30 днів"
-    else -> "24 години"
+    "7d" -> "Тиждень"
+    "30d" -> "Місяць"
+    "365d" -> "Рік"
+    else -> "Доба"
 }
 
 /** ISO-8601 діапазон для запиту статистики за обраний період. */
@@ -110,6 +137,7 @@ private fun isoRange(period: String): Pair<String, String> {
     val start = when (period) {
         "7d" -> end.minus(7, ChronoUnit.DAYS)
         "30d" -> end.minus(30, ChronoUnit.DAYS)
+        "365d" -> end.minus(365, ChronoUnit.DAYS)
         else -> end.minus(24, ChronoUnit.HOURS)
     }
     return start.toString() to end.toString()
@@ -123,23 +151,17 @@ private fun SeriesChartCard(
     modifier: Modifier = Modifier
 ) {
     val colors = LocalSunLinkColors.current
-    SunLinkCard(accent = color, modifier = modifier) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(title, style = SunLinkTypography.title, color = colors.textPrimary)
-            Text(
-                text = data?.unit ?: "",
-                style = SunLinkTypography.caption,
-                color = colors.textTertiary
-            )
-        }
-        val values = data?.points?.map { point ->
-            if (point.gap) null else point.value?.toFloat()
-        } ?: emptyList()
+    PremiumCard(accent = color, modifier = modifier) {
+        PremiumSectionHeader(
+            title = title,
+            trailing = { Text(data?.unit ?: "", style = SunLinkTypography.caption, color = colors.textTertiary) }
+        )
+        // gap / null перетворені на null — AnalyticsChart малює розрив, а не нуль.
+        val values = data?.points?.map { point -> if (point.gap) null else point.value?.toFloat() } ?: emptyList()
         if (values.isEmpty() || values.all { it == null }) {
-            EmptyHint("Немає даних")
+            EmptyState("Немає даних")
         } else {
-            // null та gap=null перетворені на null — Sparkline малює розрив, а не нуль.
-            Sparkline(values, color, Modifier.fillMaxWidth().height(110.dp))
+            AnalyticsChart(values, color, Modifier.fillMaxWidth().height(110.dp), showGrid = true)
             Text(
                 text = "Доступно: ${data?.available_points ?: 0} · Пропуски: ${data?.missing_points ?: 0}",
                 style = SunLinkTypography.caption,
@@ -159,8 +181,8 @@ private fun StatsSummaryCard(
     onParamChange: (String) -> Unit
 ) {
     val colors = LocalSunLinkColors.current
-    SunLinkCard(accent = colors.primary) {
-        Text("СТАТИСТИКА", style = SunLinkTypography.label, color = colors.textSecondary)
+    PremiumCard(accent = colors.primary) {
+        PremiumSectionHeader(title = "СТАТИСТИКА")
         Text("Параметр", style = SunLinkTypography.caption, color = colors.textTertiary)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             statsParams.forEach { (value, label) ->
@@ -174,7 +196,7 @@ private fun StatsSummaryCard(
 
         val matching = stats?.parameter == expectedParam && hasAnyValue(stats)
         if (!matching) {
-            EmptyHint("Немає даних")
+            EmptyState("Немає даних")
         } else {
             Text(
                 text = "Період: ${periodLabel(period)} · Вимірювань: ${stats!!.count}",

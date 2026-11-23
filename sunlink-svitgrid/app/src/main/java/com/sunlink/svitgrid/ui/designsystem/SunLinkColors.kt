@@ -37,30 +37,30 @@ data class SunLinkColors(
 )
 
 fun sunLinkDarkColors() = SunLinkColors(
-    background = Color(0xFF0B1014),
-    surface = Color(0xFF121A20),
-    surfaceElevated = Color(0xFF1A242C),
-    border = Color(0xFF2A3A44),
-    textPrimary = Color(0xFFF2F7F9),
-    textSecondary = Color(0xFFB4C6CF),
-    textTertiary = Color(0xFF7F97A3),
+    background = Color(0xFF070B14),
+    surface = Color(0xFF0F1726),
+    surfaceElevated = Color(0xFF16223A),
+    border = Color(0xFF24324A),
+    textPrimary = Color(0xFFF8FAFC),
+    textSecondary = Color(0xFFA8B8C8),
+    textTertiary = Color(0xFF6B7F93),
     primary = Color(0xFF2DD4BF),
     onPrimary = Color(0xFF04211D),
     primarySoft = Color(0x1F2DD4BF),
     solar = Color(0xFFF5B942),
-    battery = Color(0xFF34D399),
-    batteryCharge = Color(0xFF34D399),
-    batteryDischarge = Color(0xFFFF9A5C),
-    grid = Color(0xFFA78BFA),
-    gridImport = Color(0xFFA78BFA),
-    gridExport = Color(0xFF22D3EE),
-    load = Color(0xFFF59E5B),
-    success = Color(0xFF34D399),
+    battery = Color(0xFF10B981),
+    batteryCharge = Color(0xFF10B981),
+    batteryDischarge = Color(0xFFFB923C),
+    grid = Color(0xFF3B82F6),
+    gridImport = Color(0xFF3B82F6),
+    gridExport = Color(0xFF38BDF8),
+    load = Color(0xFFF59E0B),
+    success = Color(0xFF10B981),
     warning = Color(0xFFFBBF24),
     error = Color(0xFFF87171),
-    offline = Color(0xFF94A3B8),
-    disabled = Color(0xFF54636C),
-    flowIdle = Color(0xFF3A4A54)
+    offline = Color(0xFF64748B),
+    disabled = Color(0xFF475569),
+    flowIdle = Color(0xFF334155)
 )
 
 fun sunLinkLightColors() = SunLinkColors(
@@ -88,6 +88,34 @@ fun sunLinkLightColors() = SunLinkColors(
     offline = Color(0xFF5C6B73),
     disabled = Color(0xFFA5B1B7),
     flowIdle = Color(0xFFCBD6DC)
+)
+
+/** Светлая аналитическая тема, предусмотренная макетом Hybrid Premium. */
+fun sunLinkAnalyticsColors() = SunLinkColors(
+    background = Color(0xFFEDF2F9),
+    surface = Color(0xFFFFFFFF),
+    surfaceElevated = Color(0xFFF8FAFD),
+    border = Color(0xFFD9E2EE),
+    textPrimary = Color(0xFF16243A),
+    textSecondary = Color(0xFF4B5F79),
+    textTertiary = Color(0xFF8496AC),
+    primary = Color(0xFF2563EB),
+    onPrimary = Color(0xFFFFFFFF),
+    primarySoft = Color(0x1A2563EB),
+    solar = Color(0xFFD97706),
+    battery = Color(0xFF047857),
+    batteryCharge = Color(0xFF047857),
+    batteryDischarge = Color(0xFFC2410C),
+    grid = Color(0xFF2563EB),
+    gridImport = Color(0xFF2563EB),
+    gridExport = Color(0xFF0891B2),
+    load = Color(0xFFEA580C),
+    success = Color(0xFF047857),
+    warning = Color(0xFFB45309),
+    error = Color(0xFFDC2626),
+    offline = Color(0xFF64748B),
+    disabled = Color(0xFFCBD5E1),
+    flowIdle = Color(0xFFCBD5E1)
 )
 
 val LocalSunLinkColors = compositionLocalOf { sunLinkDarkColors() }

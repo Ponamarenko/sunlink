@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
@@ -26,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sunlink.svitgrid.R
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
@@ -68,11 +68,12 @@ fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
         subtitle = stringResource(R.string.more_subtitle)
     ) {
         groups.forEach { (title, items) ->
-            Text(title, style = SunLinkTypography.caption, color = colors.primary, modifier = Modifier.padding(top = 4.dp))
+            PremiumSectionHeader(title = title)
             items.forEach { item ->
-                SunLinkCard(
+                val selected = currentRoute == item.route
+                PremiumCard(
                     modifier = Modifier.clickable { onNavigate(item.route) },
-                    accent = if (currentRoute == item.route) colors.primary else colors.border
+                    accent = if (selected) colors.primary else colors.border
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -80,13 +81,23 @@ fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Icon(item.icon, contentDescription = null, tint = colors.primary, modifier = Modifier.size(22.dp))
-                        Text(item.label, style = SunLinkTypography.body, color = colors.textPrimary, modifier = Modifier.weight(1f))
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = colors.textTertiary,
-                            modifier = Modifier.size(14.dp)
+                        Text(
+                            item.label,
+                            style = SunLinkTypography.body,
+                            color = if (selected) colors.primary else colors.textPrimary,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                            modifier = Modifier.weight(1f)
                         )
+                        if (selected) {
+                            StatusPill("Поточний", colors.primary)
+                        } else {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null,
+                                tint = colors.textTertiary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
                     }
                 }
             }

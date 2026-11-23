@@ -245,7 +245,7 @@ class SettingsRepositoryTest {
     @Test
     fun `theme mode is persisted and defaults to system`() {
         val repo = SettingsRepository(FakePrefs())
-        assertEquals("SYSTEM", repo.themeModeName)
+        assertEquals("DARK", repo.themeModeName)
         repo.themeModeName = "DARK"
         assertEquals("DARK", repo.themeModeName)
         repo.themeModeName = "LIGHT"

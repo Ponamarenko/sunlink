@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.MeasurementValueDto
+import com.sunlink.svitgrid.data.dto.TelemetryFullDto
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
@@ -58,6 +60,7 @@ fun BatteryScreen(vm: MainViewModel = viewModel()) {
 
     val socItem = telemetryValue(full, "battery", "soc")
     val soc = telemetryNumber(full, "battery", "soc")
+    val freshness = freshnessOf(full?.stale, socItem?.quality, socItem?.confidence, full?.connection_status)
 
     SunLinkScreen(
         title = "Батарея",
@@ -68,87 +71,72 @@ fun BatteryScreen(vm: MainViewModel = viewModel()) {
             reloadHistory(period)
         }
     ) {
-        if (error != null) {
-            Text(error!!, color = colors.error, style = SunLinkTypography.caption)
-        }
+        DataFreshnessIndicator(freshness, full?.timestamp)
+        error?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
 
-        // Hero: великий індикатор SOC. Відсутнє значення — «—», а не нуль.
-        SunLinkCard(accent = colors.battery) {
-            Text("РІВЕНЬ ЗАРЯДУ (SOC)", style = SunLinkTypography.label, color = colors.textSecondary)
-            Box(Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
-                ArcGauge(soc, Modifier.size(180.dp), colors.battery)
+        // Hero: великий анімований SOC-ринг. Відсутнє значення — «—», а не нуль.
+        PremiumCard(accent = colors.battery) {
+            PremiumSectionHeader("Рівень заряду (SOC)", telemetryLabel(socItem))
+            Box(Modifier.fillMaxWidth().height(196.dp), contentAlignment = Alignment.Center) {
+                BatterySocIndicator(soc, Modifier.size(196.dp), colors.battery)
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 StatusPill(telemetryLabel(socItem), confidenceColor(socItem, colors))
                 Text(full?.timestamp ?: "—", style = SunLinkTypography.caption, color = colors.textTertiary)
             }
         }
 
-        Text("ЕЛЕКТРИЧНІ ПАРАМЕТРИ", style = SunLinkTypography.label, color = colors.textSecondary)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard(
-                "Напруга", telemetryNumber(full, "battery", "voltage"), "V",
-                Icons.Default.Bolt, colors.battery, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "battery", "voltage"))
-            )
-            MetricCard(
-                "Струм", telemetryNumber(full, "battery", "current"), "A",
-                null, colors.battery, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "battery", "current"))
-            )
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard(
-                "Потужність", telemetryNumber(full, "battery", "power"), "W",
-                Icons.Default.BatteryChargingFull, colors.batteryCharge, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "battery", "power"))
-            )
-            MetricCard(
-                "Температура", telemetryNumber(full, "battery", "temperature"), "°C",
-                null, colors.warning, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "battery", "temperature"))
-            )
-        }
-
-        Text("ЕНЕРГІЯ", style = SunLinkTypography.label, color = colors.textSecondary)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard(
-                "Заряд за день", telemetryNumber(full, "battery", "daily_charge_energy"), "kWh",
-                null, colors.batteryCharge, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "battery", "daily_charge_energy"))
-            )
-            MetricCard(
-                "Розряд за день", telemetryNumber(full, "battery", "daily_discharge_energy"), "kWh",
-                null, colors.batteryDischarge, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "battery", "daily_discharge_energy"))
-            )
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard(
-                "Заряд всього", telemetryNumber(full, "battery", "total_charge_energy"), "kWh",
-                null, colors.batteryCharge, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "battery", "total_charge_energy"))
-            )
-            MetricCard(
-                "Розряд всього", telemetryNumber(full, "battery", "total_discharge_energy"), "kWh",
-                null, colors.batteryDischarge, Modifier.weight(1f),
-                caption = telemetryLabel(telemetryValue(full, "battery", "total_discharge_energy"))
-            )
+        PremiumCard(accent = colors.battery) {
+            PremiumSectionHeader("Електричні параметри", "Миттєві вимірювання")
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                MetricCard(
+                    "Напруга", telemetryNumber(full, "battery", "voltage"), "V",
+                    Icons.Default.Bolt, colors.battery, Modifier.weight(1f),
+                    caption = telemetryLabel(telemetryValue(full, "battery", "voltage"))
+                )
+                MetricCard(
+                    "Струм", telemetryNumber(full, "battery", "current"), "A",
+                    null, colors.battery, Modifier.weight(1f),
+                    caption = telemetryLabel(telemetryValue(full, "battery", "current"))
+                )
+            }
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                MetricCard(
+                    "Потужність", telemetryNumber(full, "battery", "power"), "W",
+                    Icons.Default.BatteryChargingFull, colors.batteryCharge, Modifier.weight(1f),
+                    caption = telemetryLabel(telemetryValue(full, "battery", "power")),
+                    emphasize = true
+                )
+                MetricCard(
+                    "Температура", telemetryNumber(full, "battery", "temperature"), "°C",
+                    null, colors.warning, Modifier.weight(1f),
+                    caption = telemetryLabel(telemetryValue(full, "battery", "temperature"))
+                )
+            }
         }
 
-        SunLinkCard(accent = colors.primary) {
-            Text("ІСТОРІЯ", style = SunLinkTypography.label, color = colors.textSecondary)
+        PremiumCard(accent = colors.batteryCharge) {
+            PremiumSectionHeader("Заряд і розряд", "Накопичена енергія (кВт·год)")
+            EnergyRow("Заряд за день", full, "battery", "daily_charge_energy", colors.batteryCharge)
+            EnergyRow("Розряд за день", full, "battery", "daily_discharge_energy", colors.batteryDischarge)
+            EnergyRow("Заряд всього", full, "battery", "total_charge_energy", colors.batteryCharge)
+            EnergyRow("Розряд всього", full, "battery", "total_discharge_energy", colors.batteryDischarge)
+        }
+
+        PremiumCard(accent = colors.primary) {
+            PremiumSectionHeader("Історія", "SOC · напруга · струм")
             PeriodSelector(period) { selected ->
                 period = selected
                 reloadHistory(selected)
             }
-            HistoryChart("SOC", series["battery_soc"], "%", colors.battery)
-            HistoryChart("Напруга", series["battery_voltage"], "V", colors.battery)
-            HistoryChart("Струм", series["battery_current"], "A", colors.battery)
+            HistoryChart("SOC", series["battery_soc"], colors.battery)
+            HistoryChart("Напруга", series["battery_voltage"], colors.battery)
+            HistoryChart("Струм", series["battery_current"], colors.battery)
         }
     }
 }
@@ -160,6 +148,30 @@ private fun confidenceColor(item: MeasurementValueDto?, colors: SunLinkColors): 
     item.confidence == "calculated" -> colors.warning
     item.confidence == "provisional" -> colors.warning
     else -> colors.textTertiary
+}
+
+/** gap == true або value == null стає null —graph розриває лінію, а не з'єднує через нуль. */
+private fun batteryChartValues(series: HistorySeriesDto?): List<Float?> =
+    series?.points?.map { point ->
+        if (point.gap || point.value == null) null else point.value!!.toFloat()
+    } ?: emptyList()
+
+@Composable
+private fun EnergyRow(label: String, full: TelemetryFullDto?, category: String, field: String, color: Color) {
+    val colors = LocalSunLinkColors.current
+    val value = telemetryNumber(full, category, field)
+    val item = telemetryValue(full, category, field)
+    Column(Modifier.fillMaxWidth().padding(vertical = PremiumTokens.spaceXs)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = SunLinkTypography.body, color = colors.textSecondary)
+            Text(
+                text = if (value == null) "—" else "%.2f kWh".format(value),
+                style = SunLinkTypography.label,
+                color = if (value == null) colors.textTertiary else color
+            )
+        }
+        Text(telemetryLabel(item), style = SunLinkTypography.caption, color = colors.textTertiary)
+    }
 }
 
 @Composable
@@ -194,27 +206,18 @@ private fun PeriodSelector(selected: String, onSelect: (String) -> Unit) {
 }
 
 @Composable
-private fun HistoryChart(title: String, series: HistorySeriesDto?, unit: String, color: Color) {
+private fun HistoryChart(title: String, series: HistorySeriesDto?, color: Color) {
     val colors = LocalSunLinkColors.current
-    val points = series?.points.orEmpty()
-    Column(Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+    val values = batteryChartValues(series)
+    Column(Modifier.fillMaxWidth().padding(top = PremiumTokens.spaceSm)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(title, style = SunLinkTypography.label, color = colors.textSecondary)
-            Text(series?.unit ?: unit, style = SunLinkTypography.caption, color = colors.textTertiary)
+            Text(series?.unit.orEmpty(), style = SunLinkTypography.caption, color = colors.textTertiary)
         }
-        if (points.isEmpty()) {
-            EmptyHint("Немає даних")
+        if (values.all { it == null }) {
+            EmptyState("Немає даних")
         } else {
-            // gap == true або value == null перетворюємо в null — Sparkline розриває лінію,
-            // а не з'єднує точки через нуль.
-            Sparkline(
-                points.map { point -> if (point.gap || point.value == null) null else point.value!!.toFloat() },
-                color,
-                Modifier.fillMaxWidth().height(64.dp)
-            )
+            AnalyticsChart(values, color, Modifier.fillMaxWidth().height(88.dp))
         }
     }
 }
