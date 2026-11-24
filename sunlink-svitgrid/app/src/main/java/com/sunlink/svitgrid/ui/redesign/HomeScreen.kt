@@ -1,5 +1,6 @@
 package com.sunlink.svitgrid.ui.redesign
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,7 +28,7 @@ import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 
 @Composable
-fun HomeScreen(vm: MainViewModel = viewModel()) {
+fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {}) {
     val full by vm.fullTelemetry.collectAsState()
     val error by vm.fullTelemetryError.collectAsState()
     val loading by vm.refreshing.collectAsState()
@@ -90,7 +91,10 @@ fun HomeScreen(vm: MainViewModel = viewModel()) {
         }
         error?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
 
-        PremiumCard(accent = colors.primary) {
+        PremiumCard(
+            modifier = Modifier.clickable { onNavigate("energy") },
+            accent = colors.primary
+        ) {
             PremiumSectionHeader(stringResource(R.string.energy_balance), stringResource(R.string.flow_hint))
             PremiumEnergyFlow(pvNode, batteryNode, gridNode, loadNode)
         }
@@ -98,22 +102,22 @@ fun HomeScreen(vm: MainViewModel = viewModel()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             MetricCard(
                 "PV Power", pvValue, "W", Icons.Default.SolarPower, colors.solar,
-                Modifier.weight(1f), emphasize = true,
+                Modifier.weight(1f).clickable { onNavigate("solar") }, emphasize = true,
                 caption = telemetryLabel(pvItem),
                 sparkline = series["pv_total_power"]?.points?.map { p -> if (p.gap) null else p.value?.toFloat() } ?: emptyList()
             )
             MetricCard(
                 "Battery SOC", telemetryNumber(full, "battery", "soc"), "%",
-                Icons.Default.BatteryChargingFull, colors.battery, Modifier.weight(1f),
+                Icons.Default.BatteryChargingFull, colors.battery, Modifier.weight(1f).clickable { onNavigate("battery") },
                 emphasize = true,
                 sparkline = series["battery_soc"]?.points?.map { p -> if (p.gap) null else p.value?.toFloat() } ?: emptyList()
             )
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard("Battery", batteryValue, "W", null, colors.batteryCharge, Modifier.weight(1f))
-            MetricCard("Grid", gridValue, "W", null, colors.grid, Modifier.weight(1f))
-            MetricCard("Load", loadValue, "W", Icons.Default.Power, colors.load, Modifier.weight(1f))
+            MetricCard("Battery", batteryValue, "W", null, colors.batteryCharge, Modifier.weight(1f).clickable { onNavigate("battery") })
+            MetricCard("Grid", gridValue, "W", null, colors.grid, Modifier.weight(1f).clickable { onNavigate("grid") })
+            MetricCard("Load", loadValue, "W", Icons.Default.Power, colors.load, Modifier.weight(1f).clickable { onNavigate("load") })
         }
 
         PremiumCard(accent = colors.solar) {

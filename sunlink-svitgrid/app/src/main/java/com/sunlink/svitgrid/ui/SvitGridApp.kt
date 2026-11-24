@@ -1,6 +1,9 @@
 package com.sunlink.svitgrid.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -41,18 +44,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
-import com.sunlink.svitgrid.ui.dashboard.DashboardScreen
-import com.sunlink.svitgrid.ui.history.HistoryScreen
 import com.sunlink.svitgrid.ui.inverters.InverterDetailsScreen
-import com.sunlink.svitgrid.ui.diagnostics.DiagnosticsScreen
-import com.sunlink.svitgrid.ui.telemetry.TelemetryScreen
-import com.sunlink.svitgrid.ui.statistics.StatisticsScreen
-import com.sunlink.svitgrid.ui.telemetry.BatteryDetailScreen
-import com.sunlink.svitgrid.ui.telemetry.PvDetailScreen
-import com.sunlink.svitgrid.ui.telemetry.GridDetailScreen
-import com.sunlink.svitgrid.ui.telemetry.LoadDetailScreen
-import com.sunlink.svitgrid.ui.telemetry.EnergyFlowScreen
-import com.sunlink.svitgrid.ui.telemetry.InverterDetailScreen
 import com.sunlink.svitgrid.ui.telemetry.AllParametersScreen
 
 private data class NavTarget(
@@ -70,11 +62,10 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
         RetrofitClient.setBaseUrl(repo.getBaseUrl())
     }
     val navController = rememberNavController()
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
     val colors = LocalSunLinkColors.current
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
+    // Єдина основна навігація — п'ять вкладок. Додаткові розділи живуть тільки в More.
     val tabs = listOf(
         NavTarget("home", R.string.nav_home, Icons.Default.Home),
         NavTarget("energy", R.string.nav_energy, Icons.Default.Bolt),
@@ -83,249 +74,100 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
         NavTarget("more", R.string.nav_more, Icons.Default.MoreVert)
     )
 
-    val sections = listOf(
-        stringResource(R.string.drawer_monitoring) to listOf(
-            NavTarget("home", R.string.nav_home, Icons.Default.Home),
-            NavTarget("energy", R.string.nav_energy, Icons.Default.Bolt),
-            NavTarget("battery", R.string.tab_battery, Icons.Default.BatteryChargingFull),
-            NavTarget("solar", R.string.tab_solar, Icons.Default.SolarPower),
-            NavTarget("grid", R.string.screen_grid, Icons.Default.GridOn),
-            NavTarget("load", R.string.screen_load, Icons.Default.Power)
-        ),
-        stringResource(R.string.drawer_analytics) to listOf(
-            NavTarget("analytics", R.string.statistics, Icons.Default.Analytics),
-            NavTarget("history", R.string.nav_history, Icons.Default.History),
-            NavTarget("statistics", R.string.nav_statistics, Icons.Default.ShowChart)
-        ),
-        stringResource(R.string.drawer_system) to listOf(
-            NavTarget("diagnostics", R.string.nav_diagnostics, Icons.Default.Build),
-            NavTarget("settings", R.string.nav_settings, Icons.Default.Settings),
-            NavTarget("about", R.string.nav_about, Icons.Default.Info)
-        ),
-        stringResource(R.string.drawer_other) to listOf(
-            NavTarget("inverter-details", R.string.nav_inverter, Icons.Default.Memory),
-            NavTarget("energy-flow", R.string.screen_energy_flow, Icons.Default.Bolt),
-            NavTarget("telemetry", R.string.nav_telemetry, Icons.Default.DataObject),
-            NavTarget("inverter-status", R.string.screen_inverter, Icons.Default.Memory),
-            NavTarget("all-parameters", R.string.all_parameters, Icons.Default.List),
-            NavTarget("live", R.string.live_monitoring, Icons.Default.Stream),
-            NavTarget("forecast", R.string.nav_forecast, Icons.Default.DateRange),
-            NavTarget("debug", R.string.nav_debug, Icons.Default.BugReport)
-        )
-    )
-
     fun goTab(route: String) {
         navController.navigate(route) {
             popUpTo("home") { saveState = true }
             launchSingleTop = true
             restoreState = true
         }
-        scope.launch { drawerState.close() }
     }
 
     fun go(route: String) {
         navController.navigate(route) { launchSingleTop = true }
-        scope.launch { drawerState.close() }
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = colors.surface,
-                drawerContentColor = colors.textPrimary
-            ) {
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = "SunLink",
-                    style = SunLinkTypography.display,
-                    color = colors.textPrimary,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp)
-                )
-                Text(
-                    text = "Svitgrid · Deye SUN-12K",
-                    style = SunLinkTypography.caption,
-                    color = colors.textTertiary,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-                Divider(color = colors.border, modifier = Modifier.padding(vertical = 12.dp))
-                sections.forEach { (title, items) ->
-                    Text(
-                        text = title,
-                        style = SunLinkTypography.caption,
-                        color = colors.primary,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+    Scaffold(
+        containerColor = colors.background,
+        // Статус-бар обробляє Scaffold; нижню панель обробляє PremiumBottomNavigation
+        // через navigationBarsPadding(), щоб не подвоювати системний inset.
+        contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
+        bottomBar = {
+            com.sunlink.svitgrid.ui.redesign.PremiumBottomNavigation(
+                items = tabs.map {
+                    com.sunlink.svitgrid.ui.redesign.PremiumNavItem(
+                        route = it.route,
+                        label = stringResource(it.labelRes),
+                        icon = it.icon
                     )
-                    items.forEach { item ->
-                        NavigationDrawerItem(
-                            icon = { Icon(item.icon, contentDescription = null) },
-                            label = { Text(stringResource(item.labelRes)) },
-                            selected = currentRoute == item.route,
-                            onClick = { go(item.route) },
-                            colors = NavigationDrawerItemDefaults.colors(
-                                selectedContainerColor = colors.primarySoft,
-                                selectedTextColor = colors.textPrimary,
-                                selectedIconColor = colors.primary,
-                                unselectedTextColor = colors.textSecondary,
-                                unselectedIconColor = colors.textTertiary
-                            ),
-                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                        )
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
-            }
-        }
-    ) {
-        Scaffold(
-            containerColor = colors.background,
-            topBar = {
-                TopAppBar(
-                    // Один рядок: дволінійний заголовок обрізався стандартною висотою TopAppBar.
-                    title = { Text("SunLink", style = SunLinkTypography.title, color = colors.textPrimary) },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(
-                                Icons.Default.Menu,
-                                contentDescription = stringResource(R.string.nav_menu),
-                                tint = colors.textPrimary
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = colors.surface,
-                        titleContentColor = colors.textPrimary,
-                        navigationIconContentColor = colors.textPrimary
-                    )
-                )
-            },
-            bottomBar = {
-                com.sunlink.svitgrid.ui.redesign.PremiumBottomNavigation(
-                    items = tabs.map {
-                        com.sunlink.svitgrid.ui.redesign.PremiumNavItem(
-                            route = it.route,
-                            label = stringResource(it.labelRes),
-                            icon = it.icon
-                        )
-                    },
-                    currentRoute = currentRoute,
-                    onSelect = { route -> goTab(route) }
-                )
-            }
-        ) { innerPadding ->
-            val viewModel: MainViewModel = viewModel(
-                factory = MainViewModelFactory(repository = repository)
+                },
+                currentRoute = currentRoute,
+                onSelect = { route -> goTab(route) }
             )
-            // Один WebSocket-клієнт на весь час роботи екрана.
-            DisposableEffect(viewModel) {
-                viewModel.startLiveUpdates()
-                onDispose { viewModel.stopLiveUpdates() }
+        }
+    ) { innerPadding ->
+        val viewModel: MainViewModel = viewModel(
+            factory = MainViewModelFactory(repository = repository)
+        )
+        DisposableEffect(viewModel) {
+            viewModel.startLiveUpdates()
+            onDispose { viewModel.stopLiveUpdates() }
+        }
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = { fadeIn(androidx.compose.animation.core.tween(220)) },
+            exitTransition = { androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(160)) }
+        ) {
+            composable("home") {
+                com.sunlink.svitgrid.ui.redesign.HomeScreen(vm = viewModel, onNavigate = { go(it) })
             }
-            NavHost(
-                navController = navController,
-                startDestination = "home",
-                modifier = Modifier.padding(innerPadding),
-                enterTransition = { androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(220)) },
-                exitTransition = { androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(160)) }
-            ) {
-                composable("home") {
-                    com.sunlink.svitgrid.ui.redesign.HomeScreen(vm = viewModel)
-                }
-                composable("energy") {
-                    com.sunlink.svitgrid.ui.redesign.EnergyScreen(vm = viewModel)
-                }
-                composable("battery") { com.sunlink.svitgrid.ui.redesign.BatteryScreen(vm = viewModel) }
-                composable("solar") { com.sunlink.svitgrid.ui.redesign.SolarScreen(vm = viewModel) }
-                composable("more") {
-                    com.sunlink.svitgrid.ui.redesign.MoreScreen(
-                        currentRoute = currentRoute ?: "home",
-                        onNavigate = { go(it) }
-                    )
-                }
-                composable("grid") { com.sunlink.svitgrid.ui.redesign.GridScreen(vm = viewModel) }
-                composable("load") { com.sunlink.svitgrid.ui.redesign.LoadScreen(vm = viewModel) }
-                composable("analytics") { com.sunlink.svitgrid.ui.redesign.AnalyticsScreen(vm = viewModel) }
-                composable("diagnostics") {
-                    com.sunlink.svitgrid.ui.redesign.DiagnosticsScreen(vm = viewModel)
-                }
-                composable("dashboard") { DashboardScreen(vm = viewModel, onNavigate = { go(it) }) }
-                composable("pv") { PvDetailScreen(vm = viewModel) }
-                composable("energy-flow") { EnergyFlowScreen(vm = viewModel) }
-                composable("inverter-status") { InverterDetailScreen(vm = viewModel) }
-                composable("all-parameters") { AllParametersScreen(vm = viewModel) }
-                composable("telemetry") { TelemetryScreen(vm = viewModel) }
-                composable("statistics") { StatisticsScreen(vm = viewModel) }
-                composable("history") { HistoryScreen(vm = viewModel) }
-                composable("inverter-details") { InverterDetailsScreen(vm = viewModel) }
-                composable("live") { LiveScreen(vm = viewModel) }
-                composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen(vm = viewModel) }
-                composable("debug") { DebugScreen() }
-                composable("settings") { SettingsScreen(vm = viewModel) }
-                composable("about") { AboutScreen() }
+            composable("energy") { com.sunlink.svitgrid.ui.redesign.EnergyScreen(vm = viewModel) }
+            composable("battery") { com.sunlink.svitgrid.ui.redesign.BatteryScreen(vm = viewModel) }
+            composable("solar") { com.sunlink.svitgrid.ui.redesign.SolarScreen(vm = viewModel) }
+            composable("more") {
+                com.sunlink.svitgrid.ui.redesign.MoreScreen(
+                    currentRoute = currentRoute ?: "home",
+                    onNavigate = { go(it) }
+                )
             }
+            composable("grid") { com.sunlink.svitgrid.ui.redesign.GridScreen(vm = viewModel) }
+            composable("load") { com.sunlink.svitgrid.ui.redesign.LoadScreen(vm = viewModel) }
+            composable("analytics") { com.sunlink.svitgrid.ui.redesign.AnalyticsScreen(vm = viewModel) }
+            composable("diagnostics") { com.sunlink.svitgrid.ui.redesign.DiagnosticsScreen(vm = viewModel) }
+
+            // Корисні додаткові розділи — доступні лише з More.
+            composable("inverter-details") { InverterDetailsScreen(vm = viewModel) }
+            composable("all-parameters") { AllParametersScreen(vm = viewModel) }
+            composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen(vm = viewModel) }
+            composable("debug") { DebugScreen() }
+            composable("settings") { SettingsScreen(vm = viewModel) }
+            composable("about") { AboutScreen() }
+
+            // Безпечні аліаси старих маршрутів: deep links не ламаються,
+            // користувач потрапляє на актуальний екран.
+            composable("dashboard") { LegacyRedirect(navController, "dashboard", "home") }
+            composable("pv") { LegacyRedirect(navController, "pv", "solar") }
+            composable("energy-flow") { LegacyRedirect(navController, "energy-flow", "energy") }
+            composable("telemetry") { LegacyRedirect(navController, "telemetry", "all-parameters") }
+            composable("statistics") { LegacyRedirect(navController, "statistics", "analytics") }
+            composable("history") { LegacyRedirect(navController, "history", "analytics") }
+            composable("inverter-status") { LegacyRedirect(navController, "inverter-status", "inverter-details") }
+            composable("live") { LegacyRedirect(navController, "live", "home") }
         }
     }
 }
-// Старий DashboardScreen видалено, використовується новий з пакета dashboard
 
 @Composable
-fun LiveScreen(vm: MainViewModel = viewModel(factory = MainViewModelFactory(repository = DataRepository(RetrofitClient.getApiService())))) {
-    val uiState by vm.uiState.collectAsState()
-    val loading by vm.refreshing.collectAsState()
-
-    val uiStateValue = uiState
-    val error = when (uiStateValue) {
-        is InverterUiState.Error -> uiStateValue.message
-        else -> null
-    }
-    val data = when (uiStateValue) {
-        is InverterUiState.Success -> uiStateValue.data.toMap()
-        else -> emptyMap<String, Any?>()
-    }
-    LaunchedEffect(Unit) { vm.loadData() }
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.live_monitoring), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        if (loading) CircularProgressIndicator()
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        val d = data
-        if (d.isNotEmpty()) {
-            val items = listOf(
-                "Потужність AC" to "${d["power_ac"]} Вт",
-                "Потужність DC" to "${d["power_dc"]} Вт",
-                "Напруга AC" to "${d["voltage_ac"]} В",
-                "Напруга DC" to "${d["voltage_dc"]} В",
-                "Струм AC" to "${d["current_ac"]} А",
-                "Струм DC" to "${d["current_dc"]} А",
-                "Частота" to "${d["frequency"]} Гц",
-                "Температура" to "${d["temperature"]} °C",
-                "Ефективність" to "${d["efficiency"]} %",
-                "Енергія сьогодні" to "${d["energy_today"]} кВт·год",
-                "Енергія всього" to "${d["energy_total"]} кВт·год",
-                "Стан" to "${d["state"]}"
-            )
-            items.forEachIndexed { index, (label, value) ->
-                var visible by remember { mutableStateOf(false) }
-                LaunchedEffect(Unit) { kotlinx.coroutines.delay(index * 80L); visible = true }
-                AnimatedVisibility(visible = visible, enter = fadeIn() + slideInVertically()) {
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(label, style = MaterialTheme.typography.titleMedium)
-                            }
-                            Text(value, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            }
-        } else {
-            Text(stringResource(R.string.dash_no_data), style = MaterialTheme.typography.bodyLarge)
+private fun LegacyRedirect(navController: NavHostController, from: String, to: String) {
+    LaunchedEffect(from) {
+        navController.navigate(to) {
+            popUpTo(from) { inclusive = true }
+            launchSingleTop = true
         }
     }
 }
-
-
+// Старий DashboardScreen видалено, використовується новий з пакета redesign
 
 
 @Composable

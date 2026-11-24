@@ -97,11 +97,11 @@ class Stage50PremiumTest {
         val gradle = File("build.gradle.kts").readText()
         val code = Regex("versionCode = (\\d+)").find(gradle)?.groupValues?.get(1)?.toIntOrNull()
         assertTrue("versionCode must be >= 71, got $code", code != null && code >= 71)
+        val name = Regex("versionName = \"([^\"]+)\"").find(gradle)?.groupValues?.get(1) ?: ""
+        val parts = name.split(".").mapNotNull { it.toIntOrNull() }
         assertTrue(
-            "versionName must be >= 2.50.0",
-            gradle.contains("versionName = \"2.50.0\"") ||
-                gradle.contains("versionName = \"2.50.1\"") ||
-                gradle.contains("versionName = \"2.50.2\"")
+            "versionName must be >= 2.50.0, got $name",
+            parts.size >= 2 && (parts[0] > 2 || (parts[0] == 2 && parts[1] >= 50))
         )
     }
 }

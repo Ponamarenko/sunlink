@@ -11,13 +11,11 @@ import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.GridOn
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Power
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Stream
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,16 +34,14 @@ private data class MoreItem(val route: String, val label: String, val icon: Imag
 @Composable
 fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
     val colors = LocalSunLinkColors.current
+    // Тільки додаткові розділи. П'ять головних вкладок тут не дублюються.
     val groups = listOf(
         stringResource(R.string.drawer_monitoring) to listOf(
             MoreItem("grid", stringResource(R.string.screen_grid), Icons.Default.GridOn),
-            MoreItem("load", stringResource(R.string.screen_load), Icons.Default.Power),
-            MoreItem("energy-flow", stringResource(R.string.screen_energy_flow), Icons.Default.Analytics)
+            MoreItem("load", stringResource(R.string.screen_load), Icons.Default.Power)
         ),
         stringResource(R.string.drawer_analytics) to listOf(
-            MoreItem("analytics", stringResource(R.string.statistics), Icons.Default.Analytics),
-            MoreItem("history", stringResource(R.string.nav_history), Icons.Default.History),
-            MoreItem("statistics", stringResource(R.string.nav_statistics), Icons.Default.List)
+            MoreItem("analytics", stringResource(R.string.statistics), Icons.Default.Analytics)
         ),
         stringResource(R.string.drawer_system) to listOf(
             MoreItem("diagnostics", stringResource(R.string.nav_diagnostics), Icons.Default.Memory),
@@ -54,10 +50,7 @@ fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
         ),
         stringResource(R.string.drawer_other) to listOf(
             MoreItem("inverter-details", stringResource(R.string.nav_inverter), Icons.Default.Memory),
-            MoreItem("telemetry", stringResource(R.string.nav_telemetry), Icons.Default.List),
-            MoreItem("inverter-status", stringResource(R.string.screen_inverter), Icons.Default.Memory),
             MoreItem("all-parameters", stringResource(R.string.all_parameters), Icons.Default.List),
-            MoreItem("live", stringResource(R.string.live_monitoring), Icons.Default.Stream),
             MoreItem("forecast", stringResource(R.string.nav_forecast), Icons.Default.DateRange),
             MoreItem("debug", stringResource(R.string.nav_debug), Icons.Default.BugReport)
         )

@@ -66,9 +66,11 @@ class Stage502RootCauseTest {
     }
 
     @Test
-    fun `version is bumped to stage 50 dot 2`() {
+    fun `version is at least stage 50 dot 2`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 73"))
-        assertTrue(gradle.contains("versionName = \"2.50.2\""))
+        val code = Regex("versionCode = (\\d+)").find(gradle)?.groupValues?.get(1)?.toIntOrNull()
+        assertTrue("versionCode must be >= 73, got $code", code != null && code >= 73)
+        val name = Regex("versionName = \"([^\"]+)\"").find(gradle)?.groupValues?.get(1) ?: ""
+        assertTrue("versionName must be >= 2.50.2, got $name", name >= "2.50.2")
     }
 }

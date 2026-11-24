@@ -43,10 +43,11 @@ class Stage501VisualCorrectionTest {
     }
 
     @Test
-    fun `home fixes title clipping time and bottom overlap`() {
+    fun `home time and bottom overlap stay fixed after navigation cleanup`() {
         val app = File("src/main/java/com/sunlink/svitgrid/ui/SvitGridApp.kt").readText()
-        assertTrue(app.contains("Один рядок"))
-        assertFalse(app.contains("tabs.find { it.route == currentRoute }?.let"))
+        assertFalse(app.contains("TopAppBar("))
+        assertFalse(app.contains("ModalNavigationDrawer("))
+        assertTrue(app.contains("WindowInsets.systemBars.only(WindowInsetsSides.Top)"))
 
         val home = File("src/main/java/com/sunlink/svitgrid/ui/redesign/HomeScreen.kt").readText()
         assertTrue(home.contains("formatTelemetryTimestamp(full?.timestamp)"))
@@ -73,6 +74,8 @@ class Stage501VisualCorrectionTest {
         val gradle = File("build.gradle.kts").readText()
         val code = Regex("versionCode = (\\d+)").find(gradle)?.groupValues?.get(1)?.toIntOrNull()
         assertTrue("versionCode must be >= 72, got $code", code != null && code >= 72)
-        assertTrue(gradle.contains("versionName = \"2.50.2\""))
+        val name = Regex("versionName = \"([^\"]+)\"").find(gradle)?.groupValues?.get(1) ?: ""
+        assertTrue("versionName must be >= 2.50.0, got $name", name == "2.50.0" || name == "2.50.1" ||
+            name == "2.50.2" || name == "2.51.0")
     }
 }

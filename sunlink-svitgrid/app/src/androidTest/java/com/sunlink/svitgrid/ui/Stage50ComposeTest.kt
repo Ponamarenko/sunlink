@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performClick
 import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
@@ -120,6 +121,22 @@ class Stage50ComposeTest {
         compose.onNodeWithText("PV").assertIsDisplayed()
         compose.onNodeWithText("HOME").assertIsDisplayed()
         compose.onNodeWithText("0 W").assertDoesNotExist()
+    }
+
+    @Test
+    fun home_cards_navigate_to_detailed_screens() {
+        var route: String? = null
+        compose.setContent { SvitGridTheme { HomeScreen(vm = vm(), onNavigate = { route = it }) } }
+        compose.onNodeWithText("PV Power").performClick()
+        org.junit.Assert.assertEquals("solar", route)
+        compose.onNodeWithText("Battery SOC").performClick()
+        org.junit.Assert.assertEquals("battery", route)
+        compose.onNodeWithText("Grid").performClick()
+        org.junit.Assert.assertEquals("grid", route)
+        compose.onNodeWithText("Load").performClick()
+        org.junit.Assert.assertEquals("load", route)
+        compose.onNodeWithText("Баланс енергії").performClick()
+        org.junit.Assert.assertEquals("energy", route)
     }
 
     @Test
