@@ -24,7 +24,7 @@ import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 
 @Composable
-fun DiagnosticsScreen(vm: MainViewModel = viewModel()) = com.sunlink.svitgrid.ui.theme.PremiumDiagnosticsTheme {
+fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
     DiagnosticsContent(vm)
 }
 

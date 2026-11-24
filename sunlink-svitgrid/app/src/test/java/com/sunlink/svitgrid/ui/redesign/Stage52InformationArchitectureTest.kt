@@ -95,7 +95,7 @@ class Stage52InformationArchitectureTest {
     @Test
     fun `version is bumped to stage 52`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 76"))
-        assertTrue(gradle.contains("versionName = \"2.53.0\""))
+        assertTrue(gradle.contains("versionCode = 77"))
+        assertTrue(gradle.contains("versionName = \"2.53.1\""))
     }
 }

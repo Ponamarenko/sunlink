@@ -90,32 +90,4 @@ fun sunLinkLightColors() = SunLinkColors(
     flowIdle = Color(0xFFCBD6DC)
 )
 
-/** Светлая аналитическая тема, предусмотренная макетом Hybrid Premium. */
-fun sunLinkAnalyticsColors() = SunLinkColors(
-    background = Color(0xFFEDF2F9),
-    surface = Color(0xFFFFFFFF),
-    surfaceElevated = Color(0xFFF8FAFD),
-    border = Color(0xFFD9E2EE),
-    textPrimary = Color(0xFF16243A),
-    textSecondary = Color(0xFF4B5F79),
-    textTertiary = Color(0xFF8496AC),
-    primary = Color(0xFF2563EB),
-    onPrimary = Color(0xFFFFFFFF),
-    primarySoft = Color(0x1A2563EB),
-    solar = Color(0xFFD97706),
-    battery = Color(0xFF047857),
-    batteryCharge = Color(0xFF047857),
-    batteryDischarge = Color(0xFFC2410C),
-    grid = Color(0xFF2563EB),
-    gridImport = Color(0xFF2563EB),
-    gridExport = Color(0xFF0891B2),
-    load = Color(0xFFEA580C),
-    success = Color(0xFF047857),
-    warning = Color(0xFFB45309),
-    error = Color(0xFFDC2626),
-    offline = Color(0xFF64748B),
-    disabled = Color(0xFFCBD5E1),
-    flowIdle = Color(0xFFCBD5E1)
-)
-
 val LocalSunLinkColors = compositionLocalOf { sunLinkDarkColors() }

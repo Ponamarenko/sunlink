@@ -1,9 +1,7 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.ui.graphics.Color
-import com.sunlink.svitgrid.ui.designsystem.sunLinkAnalyticsColors
 import com.sunlink.svitgrid.ui.designsystem.sunLinkDarkColors
-import com.sunlink.svitgrid.ui.theme.PremiumAnalyticsTheme
 import org.junit.Assert.*
 import org.junit.Test
 import java.io.File
@@ -22,13 +20,13 @@ class Stage50PremiumTest {
     }
 
     @Test
-    fun `analytics palette stays light for the analytics screen`() {
-        val light = sunLinkAnalyticsColors()
-        assertNotEquals(sunLinkDarkColors().background, light.background)
-        assertEquals(Color(0xFFFFFFFF), light.surface)
-        assertEquals(Color(0xFF16243A), light.textPrimary)
+    fun `all screens share one dark theme`() {
         val theme = File("src/main/java/com/sunlink/svitgrid/ui/theme/SvitGridTheme.kt").readText()
-        assertTrue(theme.contains("fun PremiumAnalyticsTheme"))
+        assertFalse(theme.contains("PremiumAnalyticsTheme"))
+        assertFalse(theme.contains("PremiumDiagnosticsTheme"))
+        assertFalse(theme.contains("lightColorScheme"))
+        assertFalse(theme.contains("sunLinkLightColors"))
+        assertTrue(theme.contains("sunLinkDarkColors()"))
     }
 
     @Test

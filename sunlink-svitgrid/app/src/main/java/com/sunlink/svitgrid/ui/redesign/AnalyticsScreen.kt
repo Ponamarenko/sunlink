@@ -23,7 +23,6 @@ import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.StatsSummaryDto
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
-import com.sunlink.svitgrid.ui.theme.PremiumAnalyticsTheme
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -54,60 +53,57 @@ private val statsParams = listOf(
 
 @Composable
 fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
-    // Увесь екран — у локальній світлій темі; решта застосунку залишається темною.
-    PremiumAnalyticsTheme {
-        val series by vm.seriesByParam.collectAsState()
-        val stats by vm.stats.collectAsState()
-        val refreshing by vm.refreshing.collectAsState()
-        val colors = LocalSunLinkColors.current
+    val series by vm.seriesByParam.collectAsState()
+    val stats by vm.stats.collectAsState()
+    val refreshing by vm.refreshing.collectAsState()
+    val colors = LocalSunLinkColors.current
 
-        var period by remember { mutableStateOf("24h") }
-        var statsParam by remember { mutableStateOf("pv_total_power") }
+    var period by remember { mutableStateOf("24h") }
+    var statsParam by remember { mutableStateOf("pv_total_power") }
 
-        LaunchedEffect(Unit) {
-            vm.loadFullTelemetry()
-        }
+    LaunchedEffect(Unit) {
+        vm.loadFullTelemetry()
+    }
 
-        LaunchedEffect(period) {
+    LaunchedEffect(period) {
+        chartCards.forEach { (param, _) -> vm.loadSeriesFor(param, period) }
+        val (start, end) = isoRange(period)
+        vm.loadStats(statsParam, start, end)
+    }
+
+    LaunchedEffect(statsParam) {
+        val (start, end) = isoRange(period)
+        vm.loadStats(statsParam, start, end)
+    }
+
+    SunLinkScreen(
+        title = "Аналітика",
+        subtitle = "Історія та статистика · ${periodLabel(period)}",
+        refreshing = refreshing,
+        onRefresh = {
             chartCards.forEach { (param, _) -> vm.loadSeriesFor(param, period) }
             val (start, end) = isoRange(period)
             vm.loadStats(statsParam, start, end)
         }
-
-        LaunchedEffect(statsParam) {
-            val (start, end) = isoRange(period)
-            vm.loadStats(statsParam, start, end)
-        }
-
-        SunLinkScreen(
-            title = "Аналітика",
-            subtitle = "Історія та статистика · ${periodLabel(period)}",
-            refreshing = refreshing,
-            onRefresh = {
-                chartCards.forEach { (param, _) -> vm.loadSeriesFor(param, period) }
-                val (start, end) = isoRange(period)
-                vm.loadStats(statsParam, start, end)
-            }
-        ) {
-            PremiumCard(accent = colors.primary) {
-                PremiumSectionHeader(title = "ПЕРІОД")
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    analyticsPeriods.forEach { (value, label) ->
-                        FilterChip(
-                            selected = period == value,
-                            onClick = { period = value },
-                            label = { Text(label) }
-                        )
-                    }
+    ) {
+        PremiumCard(accent = colors.primary) {
+            PremiumSectionHeader(title = "ПЕРІОД")
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                analyticsPeriods.forEach { (value, label) ->
+                    FilterChip(
+                        selected = period == value,
+                        onClick = { period = value },
+                        label = { Text(label) }
+                    )
                 }
             }
-
-            chartCards.forEach { (param, title) ->
-                SeriesChartCard(title, series[param], chartColor(param))
-            }
-
-            StatsSummaryCard(stats, statsParam, period) { selected -> statsParam = selected }
         }
+
+        chartCards.forEach { (param, title) ->
+            SeriesChartCard(title, series[param], chartColor(param))
+        }
+
+        StatsSummaryCard(stats, statsParam, period) { selected -> statsParam = selected }
     }
 }
 

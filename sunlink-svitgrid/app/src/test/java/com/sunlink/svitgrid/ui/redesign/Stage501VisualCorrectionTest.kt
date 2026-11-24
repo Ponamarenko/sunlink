@@ -35,8 +35,8 @@ class Stage501VisualCorrectionTest {
         val theme = File("src/main/java/com/sunlink/svitgrid/ui/theme/SvitGridTheme.kt").readText()
         assertTrue(theme.contains("fun resolveRootDarkTheme"))
         assertTrue(theme.contains("ThemeMode.SYSTEM -> true") == false)
-        assertTrue(theme.contains("fun PremiumAnalyticsTheme"))
-        assertTrue(theme.contains("fun PremiumDiagnosticsTheme"))
+        assertFalse(theme.contains("PremiumAnalyticsTheme"))
+        assertFalse(theme.contains("PremiumDiagnosticsTheme"))
 
         val v27 = File("src/main/res/values-v27/themes.xml").readText()
         assertTrue(v27.contains("android:windowLightNavigationBar\">false"))
@@ -60,13 +60,15 @@ class Stage501VisualCorrectionTest {
     }
 
     @Test
-    fun `analytics and diagnostics keep light themes while main screens stay dark`() {
+    fun `analytics and diagnostics use the shared dark theme`() {
         val analytics = File("src/main/java/com/sunlink/svitgrid/ui/redesign/AnalyticsScreen.kt").readText()
-        assertTrue(analytics.contains("PremiumAnalyticsTheme"))
+        assertFalse(analytics.contains("PremiumAnalyticsTheme"))
         val diagnostics = File("src/main/java/com/sunlink/svitgrid/ui/redesign/DiagnosticsScreen.kt").readText()
-        assertTrue(diagnostics.contains("PremiumDiagnosticsTheme"))
-        val home = File("src/main/java/com/sunlink/svitgrid/ui/redesign/HomeScreen.kt").readText()
-        assertFalse(home.contains("PremiumAnalyticsTheme"))
+        assertFalse(diagnostics.contains("PremiumDiagnosticsTheme"))
+        val sources = File("src/main/java/com/sunlink/svitgrid/ui/redesign").listFiles { f -> f.extension == "kt" }!!
+            .map { it.readText() }.joinToString("\n")
+        assertFalse(sources.contains("lightColorScheme"))
+        assertFalse(sources.contains("sunLinkLightColors"))
     }
 
     @Test
@@ -76,6 +78,6 @@ class Stage501VisualCorrectionTest {
         assertTrue("versionCode must be >= 72, got $code", code != null && code >= 72)
         val name = Regex("versionName = \"([^\"]+)\"").find(gradle)?.groupValues?.get(1) ?: ""
         assertTrue("versionName must be >= 2.50.0, got $name", name == "2.50.0" || name == "2.50.1" ||
-            name == "2.50.2" || name == "2.51.0" || name == "2.52.0" || name == "2.53.0")
+            name == "2.50.2" || name == "2.51.0" || name == "2.52.0" || name == "2.53.0" || name == "2.53.1")
     }
 }
