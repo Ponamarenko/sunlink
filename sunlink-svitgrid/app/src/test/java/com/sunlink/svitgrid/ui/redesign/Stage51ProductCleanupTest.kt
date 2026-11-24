@@ -33,12 +33,12 @@ class Stage51ProductCleanupTest {
         listOf("home", "energy", "battery", "solar", "more").forEach {
             assertFalse("More must not duplicate main tab $it", routes.contains(it))
         }
-        listOf("grid", "load", "analytics", "diagnostics", "settings", "about",
-            "inverter-details", "all-parameters", "forecast", "debug").forEach {
+        listOf("grid", "load", "analytics", "diagnostics", "settings",
+            "inverter-details", "all-parameters").forEach {
             assertTrue("More must expose $it", routes.contains(it))
         }
         listOf("energy-flow", "history", "statistics", "telemetry",
-            "inverter-status", "live").forEach {
+            "inverter-status", "live", "forecast", "about", "debug").forEach {
             assertFalse("Obsolete item $it still visible", routes.contains(it))
         }
     }
@@ -94,7 +94,7 @@ class Stage51ProductCleanupTest {
     @Test
     fun `version is bumped to stage 51`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 74"))
-        assertTrue(gradle.contains("versionName = \"2.51.0\""))
+        assertTrue(gradle.contains("versionCode = 75"))
+        assertTrue(gradle.contains("versionName = \"2.52.0\""))
     }
 }

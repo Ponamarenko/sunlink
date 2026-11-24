@@ -122,7 +122,7 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
             composable("home") {
                 com.sunlink.svitgrid.ui.redesign.HomeScreen(vm = viewModel, onNavigate = { go(it) })
             }
-            composable("energy") { com.sunlink.svitgrid.ui.redesign.EnergyScreen(vm = viewModel) }
+            composable("energy") { com.sunlink.svitgrid.ui.redesign.EnergyScreen(vm = viewModel, onNavigate = { go(it) }) }
             composable("battery") { com.sunlink.svitgrid.ui.redesign.BatteryScreen(vm = viewModel) }
             composable("solar") { com.sunlink.svitgrid.ui.redesign.SolarScreen(vm = viewModel) }
             composable("more") {
@@ -139,10 +139,12 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
             // Корисні додаткові розділи — доступні лише з More.
             composable("inverter-details") { InverterDetailsScreen(vm = viewModel) }
             composable("all-parameters") { AllParametersScreen(vm = viewModel) }
-            composable("forecast") { com.sunlink.svitgrid.ui.forecast.ForecastScreen(vm = viewModel) }
-            composable("debug") { DebugScreen() }
+            // Debug — тільки для debug-збірки; у release deep link безпечно веде в Settings.
+            composable("debug") {
+                if (BuildConfig.DEBUG) DebugScreen()
+                else LegacyRedirect(navController, "debug", "settings")
+            }
             composable("settings") { SettingsScreen(vm = viewModel) }
-            composable("about") { AboutScreen() }
 
             // Безпечні аліаси старих маршрутів: deep links не ламаються,
             // користувач потрапляє на актуальний екран.
@@ -154,6 +156,10 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
             composable("history") { LegacyRedirect(navController, "history", "analytics") }
             composable("inverter-status") { LegacyRedirect(navController, "inverter-status", "inverter-details") }
             composable("live") { LegacyRedirect(navController, "live", "home") }
+            // Прогноз у Stage49 був фіктивним (emoji + "15-22°C"): прибраний з навігації.
+            composable("forecast") { LegacyRedirect(navController, "forecast", "home") }
+            // Про додаток об'єднано з налаштуваннями (версія/збірка вже там).
+            composable("about") { LegacyRedirect(navController, "about", "settings") }
         }
     }
 }
@@ -384,7 +390,11 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                     "Сервер за замовчуванням: ${com.sunlink.svitgrid.data.BackendDefaults.HOST}:${com.sunlink.svitgrid.data.BackendDefaults.PORT} (deye_gateway.py)",
                     style = MaterialTheme.typography.bodySmall
                 )
-                Text("Авторизація буде реалізована на сервері", style = MaterialTheme.typography.bodySmall)
+                Text("SunLink · Ponamarenko · MIT", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    "Збірка: ${BuildConfig.BUILD_TIME} · ${BuildConfig.GIT_HASH}",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }
@@ -423,76 +433,5 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
                 TextButton(enabled = !downloading, onClick = { showUpdateDialog = false }) { Text("Скасувати") }
             }
         )
-    }
-}
-
-@Composable
-fun AboutScreen() {
-    val context = LocalContext.current
-    var updateStatus by remember { mutableStateOf("Натисніть кнопку для перевірки") }
-    var isChecking by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(stringResource(R.string.nav_about), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("SunLink", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Версія: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", style = MaterialTheme.typography.bodyLarge)
-                Text("Дата збірки: ${BuildConfig.BUILD_TIME}", style = MaterialTheme.typography.bodyMedium)
-                Text("Git-коміт: ${BuildConfig.GIT_HASH}", style = MaterialTheme.typography.bodyMedium)
-                Text("Розробник: Ponamarenko", style = MaterialTheme.typography.bodyMedium)
-                Text("Ліцензія: MIT", style = MaterialTheme.typography.bodySmall)
-                Text("© 2026 Ponamarenko", style = MaterialTheme.typography.bodySmall)
-            }
-        }
-
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(stringResource(R.string.settings_description), style = MaterialTheme.typography.titleMedium)
-                Text("SunLink — сучасний додаток для моніторингу сонячних систем. Підтримує різні типи підключення: RS485, ESP32, Solarman WiFi, Ethernet.", style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(stringResource(R.string.settings_updates), style = MaterialTheme.typography.titleMedium)
-                Text(updateStatus, style = MaterialTheme.typography.bodyMedium)
-                Spacer(Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        isChecking = true
-                        updateStatus = context.getString(R.string.checking)
-                        scope.launch {
-                            try {
-                                val client = okhttp3.OkHttpClient()
-                                val request = okhttp3.Request.Builder()
-                                    .url("https://api.github.com/repos/Ponamarenko/sunlink/releases/latest")
-                                    .header("User-Agent", "SunLink-App")
-                                    .header("Accept", "application/vnd.github+json")
-                                    .build()
-                                val response = client.newCall(request).execute()
-                                val body = response.body?.string() ?: ""
-                                updateStatus = "HTTP ${response.code} len=${body.length}\n${body.take(200)}"
-                            } catch (e: Exception) {
-                                updateStatus = "Помилка: ${e.message}"
-                            }
-                            isChecking = false
-                        }
-                    },
-                    enabled = !isChecking
-                ) {
-                    if (isChecking) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                        Spacer(Modifier.width(8.dp))
-                    }
-                    Text(if (isChecking) stringResource(R.string.checking) else stringResource(R.string.check_updates))
-                }
-            }
-        }
     }
 }

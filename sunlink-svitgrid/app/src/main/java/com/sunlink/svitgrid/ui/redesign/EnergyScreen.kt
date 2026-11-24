@@ -1,17 +1,12 @@
 package com.sunlink.svitgrid.ui.redesign
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BatteryChargingFull
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Power
-import androidx.compose.material.icons.filled.SolarPower
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.R
-import com.sunlink.svitgrid.data.dto.HistorySeriesDto
 import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
@@ -35,24 +29,17 @@ private fun wattText(item: MeasurementValueDto?, stale: Boolean): String {
     return "${v.toInt()} W"
 }
 
-/** Пропуски (gap / null) залишаються null — графік малює розрив, а не нуль. */
-private fun seriesValues(series: HistorySeriesDto?): List<Float?> =
-    series?.points?.map { point -> if (point.gap) null else point.value?.toFloat() } ?: emptyList()
-
 @Composable
-fun EnergyScreen(vm: MainViewModel = viewModel()) {
+fun EnergyScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {}) {
     val full by vm.fullTelemetry.collectAsState()
     val quality by vm.telemetryQuality.collectAsState()
     val loading by vm.refreshing.collectAsState()
-    val series by vm.seriesByParam.collectAsState()
     val colors = LocalSunLinkColors.current
     val stale = full?.stale == true || quality?.stale == true
 
     LaunchedEffect(Unit) {
         vm.loadFullTelemetry()
         vm.loadTelemetryQuality()
-        vm.loadSeriesFor("pv_total_power")
-        vm.loadSeriesFor("load_power")
         vm.loadData()
     }
 
@@ -109,30 +96,6 @@ fun EnergyScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-            MetricCard(
-                "PV", pvValue, "W", Icons.Default.SolarPower, colors.solar, Modifier.weight(1f),
-                caption = telemetryLabel(pv),
-                sparkline = seriesValues(series["pv_total_power"]),
-                emphasize = true
-            )
-            MetricCard(
-                "Load", loadValue, "W", Icons.Default.Power, colors.load, Modifier.weight(1f),
-                caption = telemetryLabel(load),
-                sparkline = seriesValues(series["load_power"])
-            )
-        }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-            MetricCard(
-                "Battery", batteryValue, "W", Icons.Default.BatteryChargingFull, colors.battery, Modifier.weight(1f),
-                caption = telemetryLabel(battery)
-            )
-            MetricCard(
-                "Grid", gridValue, "W", Icons.Default.Bolt, colors.grid, Modifier.weight(1f),
-                caption = telemetryLabel(grid)
-            )
-        }
-
         PremiumCard(accent = colors.solar) {
             PremiumSectionHeader(title = stringResource(R.string.energy_today))
             Spacer(Modifier.height(PremiumTokens.spaceSm))
@@ -144,20 +107,16 @@ fun EnergyScreen(vm: MainViewModel = viewModel()) {
             EnergyBalanceRow("Розряд батареї", telemetryNumber(full, "battery", "daily_discharge_energy"), colors.batteryDischarge)
         }
 
-        PremiumCard(accent = colors.primary) {
-            PremiumSectionHeader(title = "Історія потужності", subtitle = stringResource(R.string.gap_notice))
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
-            val pvSeries = seriesValues(series["pv_total_power"])
-            if (pvSeries.isEmpty() || pvSeries.all { it == null }) {
-                EmptyState("Немає даних історії PV")
-            } else {
-                AnalyticsChart(pvSeries, colors.solar, Modifier.fillMaxWidth().height(100.dp), showGrid = true)
-            }
-            val loadSeries = seriesValues(series["load_power"])
-            if (loadSeries.isNotEmpty() && loadSeries.any { it != null }) {
-                Spacer(Modifier.height(PremiumTokens.spaceSm))
-                AnalyticsChart(loadSeries, colors.load, Modifier.fillMaxWidth().height(100.dp), showGrid = true)
-            }
+        // Детальні потужні значення вже є на Home та в чіпах Energy Flow —
+        // тут не дублюємо їх великими картками.
+        PremiumCard(
+            modifier = Modifier.clickable { onNavigate("analytics") },
+            accent = colors.primary
+        ) {
+            PremiumSectionHeader(
+                title = "Історія та статистика",
+                subtitle = "Daily / Weekly / Monthly / Yearly"
+            )
         }
     }
 }

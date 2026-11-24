@@ -216,5 +216,6 @@
     <string name="energy_today">Energy today</string>
     <string name="no_confirmed_data">No confirmed data</string>
     <string name="confidence_label">Confidence: %1$s</string>
+    <string name="more_technical">TECHNICAL INFO</string>
     <string name="gap_notice">Gaps are shown as breaks, not zeros</string>
 </resources>

@@ -8,10 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.GridOn
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Power
@@ -45,14 +42,11 @@ fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
         ),
         stringResource(R.string.drawer_system) to listOf(
             MoreItem("diagnostics", stringResource(R.string.nav_diagnostics), Icons.Default.Memory),
-            MoreItem("settings", stringResource(R.string.nav_settings), Icons.Default.Settings),
-            MoreItem("about", stringResource(R.string.nav_about), Icons.Default.Info)
+            MoreItem("settings", stringResource(R.string.nav_settings), Icons.Default.Settings)
         ),
-        stringResource(R.string.drawer_other) to listOf(
+        stringResource(R.string.more_technical) to listOf(
             MoreItem("inverter-details", stringResource(R.string.nav_inverter), Icons.Default.Memory),
-            MoreItem("all-parameters", stringResource(R.string.all_parameters), Icons.Default.List),
-            MoreItem("forecast", stringResource(R.string.nav_forecast), Icons.Default.DateRange),
-            MoreItem("debug", stringResource(R.string.nav_debug), Icons.Default.BugReport)
+            MoreItem("all-parameters", stringResource(R.string.all_parameters), Icons.Default.List)
         )
     )
 
