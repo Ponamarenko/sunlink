@@ -20,7 +20,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.data.dto.HistorySeriesDto
@@ -37,6 +36,7 @@ private const val LoadPowerHistoryParam = "load_power"
 /**
  * Навантаження — поточне споживання будинку. Знак reg.175 (S_WORD) зберігається
  * як є: displayLoadPower не застосовує abs(). Відсутнє — «—», а не нуль.
+ * Одна hero-поверхня, компактні плитки добової статистики й одна панель історії.
  */
 @Composable
 fun LoadScreen(vm: MainViewModel = viewModel()) {
@@ -56,6 +56,9 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
     val powerItem = telemetryValue(full, "load", "power")
     val power = displayLoadPower(telemetryNumber(full, "load", "power"))
     val confirmed = isConfirmed(powerItem, full?.stale == true)
+    val freshness = freshnessOf(
+        full?.stale, powerItem?.quality, powerItem?.confidence, full?.connection_status
+    )
     val dailyEnergy = telemetryNumber(full, "load", "daily_energy")
     val values = loadChartValues(series[LoadPowerHistoryParam])
 
@@ -80,21 +83,15 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
             vm.loadStats(LoadPowerHistoryParam, start, end)
         }
     ) {
-        StatusPill(
-            text = if (power != null && confirmed) "Активно" else "Недоступно",
-            color = if (power != null && confirmed) colors.load else colors.offline
-        )
-
-        // Hero: миттєва потужність зі збереженим знаком.
-        PremiumCard(accent = colors.load) {
+        // Hero: миттєва потужність зі збереженим знаком і чесним станом.
+        HeroPanel(accent = colors.load) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(
-                        if (power == null) "Немає даних" else telemetryLabel(powerItem),
-                        style = SunLinkTypography.caption,
-                        color = if (power == null) colors.offline else colors.load
+                    StatusPill(
+                        text = if (power != null && confirmed) telemetryLabel(powerItem) else "Недоступно",
+                        color = if (power != null && confirmed) colors.load else colors.offline
                     )
-                    Spacer(Modifier.height(PremiumTokens.spaceXs))
+                    Spacer(Modifier.height(PremiumTokens.spaceSm))
                     Text(
                         loadPowerText(power),
                         style = SunLinkTypography.display,
@@ -106,6 +103,8 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
                         style = SunLinkTypography.caption,
                         color = colors.textSecondary
                     )
+                    Spacer(Modifier.height(PremiumTokens.spaceSm))
+                    DataFreshnessIndicator(freshness, full?.timestamp, compact = true)
                 }
                 Box(
                     Modifier
@@ -123,60 +122,53 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
-        // Доступні метрики навантаження.
-        Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-            LoadMetricCard(
+        // Компактні добові статистики: лише реальні значення, відсутнє — «—».
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+            StatTile(
                 label = "Спожито за добу",
-                valueText = energyText(dailyEnergy),
-                caption = if (dailyEnergy == null) "Недоступно" else "З 00:00 до $timePart",
-                valueColor = colors.load,
-                hasValue = dailyEnergy != null,
-                modifier = Modifier.weight(1f)
+                value = dailyEnergy,
+                unit = "kWh",
+                accent = colors.load,
+                modifier = Modifier.weight(1f),
+                caption = if (dailyEnergy == null) "Недоступно" else "З 00:00 до $timePart"
             )
-            LoadMetricCard(
+            StatTile(
                 label = "Максимум за добу",
-                valueText = loadPowerText(dailyMax),
-                caption = if (dailyMax == null) "Недоступно" else "За останні 24 год",
-                valueColor = colors.textPrimary,
-                hasValue = dailyMax != null,
-                modifier = Modifier.weight(1f)
+                value = dailyMax,
+                unit = "W",
+                accent = colors.load,
+                modifier = Modifier.weight(1f),
+                caption = if (dailyMax == null) "Недоступно" else "За останні 24 год"
             )
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-            LoadMetricCard(
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+            StatTile(
                 label = "Середнє за добу",
-                valueText = loadPowerText(dailyAvg),
-                caption = if (dailyAvg == null) "Недоступно" else "За останні 24 год",
-                valueColor = colors.textPrimary,
-                hasValue = dailyAvg != null,
-                modifier = Modifier.weight(1f)
+                value = dailyAvg,
+                unit = "W",
+                accent = colors.load,
+                modifier = Modifier.weight(1f),
+                caption = if (dailyAvg == null) "Недоступно" else "За останні 24 год"
             )
-            LoadMetricCard(
+            StatTile(
                 label = "Резервний вихід",
-                valueText = "—",
-                caption = "Недоступно",
-                valueColor = colors.textTertiary,
-                hasValue = false,
-                modifier = Modifier.weight(1f)
+                value = null,
+                unit = "W",
+                accent = colors.offline,
+                modifier = Modifier.weight(1f),
+                caption = "Недоступно"
             )
         }
 
-        // Історія навантаження — чесні розриви, реальні мін/пік.
-        PremiumCard(accent = colors.load) {
-            PremiumSectionHeader(
-                title = "Історія навантаження",
-                trailing = {
-                    Text(
-                        if (seriesMin != null && seriesMax != null) {
-                            "Мін ${loadPowerText(seriesMin)} · Пік ${loadPowerText(seriesMax)}"
-                        } else {
-                            "—"
-                        },
-                        style = SunLinkTypography.caption,
-                        color = colors.load
-                    )
-                }
-            )
+        // Історія навантаження — чесні розриви, реальні мін/пік, одна панель.
+        DataPanel(
+            title = "Історія навантаження",
+            subtitle = if (seriesMin != null && seriesMax != null) {
+                "Мін ${loadPowerText(seriesMin)} · Пік ${loadPowerText(seriesMax)}"
+            } else {
+                null
+            }
+        ) {
             if (present.isEmpty()) {
                 EmptyState("Немає даних")
             } else {
@@ -189,12 +181,7 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
                 )
                 Spacer(Modifier.height(PremiumTokens.spaceXs))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    listOf(
-                        hhmm(series[LoadPowerHistoryParam]?.start) ?: "00:00",
-                        "04:00",
-                        "08:00",
-                        hhmm(series[LoadPowerHistoryParam]?.end) ?: "09:24"
-                    ).forEach { label ->
+                    chartTimeLabels(series[LoadPowerHistoryParam]).forEach { label ->
                         Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
                     }
                 }
@@ -203,23 +190,12 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
     }
 }
 
-@Composable
-private fun LoadMetricCard(
-    label: String,
-    valueText: String,
-    caption: String,
-    valueColor: Color,
-    hasValue: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val colors = LocalSunLinkColors.current
-    PremiumCard(modifier = modifier, accent = if (hasValue) valueColor else colors.border) {
-        Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
-        Spacer(Modifier.height(PremiumTokens.spaceSm))
-        Text(valueText, style = SunLinkTypography.metric, color = valueColor)
-        Spacer(Modifier.height(PremiumTokens.spaceXs))
-        Text(caption, style = SunLinkTypography.caption, color = colors.textTertiary)
-    }
+/** Підписи осі беруться з реальних timestamp-ів ряду, а не з фіксованих заглушок. */
+private fun chartTimeLabels(series: HistorySeriesDto?): List<String> {
+    val stamps = series?.points?.map { it.timestamp }.orEmpty()
+    if (stamps.isEmpty()) return listOf(hhmm(series?.start) ?: "—", hhmm(series?.end) ?: "—")
+    val last = stamps.lastIndex
+    return listOf(0, last / 3, last * 2 / 3, last).map { hhmm(stamps[it]) ?: "—" }.distinct()
 }
 
 /** gap == true або value == null стає null — графік розриває лінію, а не з'єднує через нуль. */
@@ -234,9 +210,6 @@ private fun loadPowerText(value: Float?): String = when {
     value <= -1000f || value >= 1000f -> "%.2f kW".format(value / 1000f)
     else -> "%.0f W".format(value)
 }
-
-private fun energyText(value: Float?): String =
-    if (value == null) "—" else "%.1f kWh".format(value)
 
 private fun isoRange24h(): Pair<String, String> {
     val end = Instant.now()

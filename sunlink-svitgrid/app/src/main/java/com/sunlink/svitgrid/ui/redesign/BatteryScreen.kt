@@ -16,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.data.dto.HistorySeriesDto
@@ -97,8 +96,8 @@ private fun BatteryScreenContent(vm: MainViewModel) {
             Text(it, color = if (hasFreshTelemetry) colors.warning else colors.error, style = SunLinkTypography.caption)
         }
 
-        // Hero: SOC-ринг і підписи стану, похідні від реальних вимірювань.
-        PremiumCard(accent = colors.battery) {
+        // Hero: одна велика поверхня з SOC-рингом і підписами стану.
+        HeroPanel(accent = colors.battery) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -119,57 +118,70 @@ private fun BatteryScreenContent(vm: MainViewModel) {
             }
         }
 
-        // Електричні параметри: 2×2. Відсутні значення — «—», а не нулі.
-        PremiumCard(accent = colors.battery) {
-            PremiumSectionHeader("Електричні параметри", "Миттєві вимірювання")
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
+        // Електричні параметри: 2×2 компактні плитки. Відсутні значення — «—», а не нулі.
+        DataPanel(title = "Електричні параметри", subtitle = "Миттєві вимірювання") {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                MetricCard(
-                    title = "Напруга", value = voltage, unit = "V", icon = null,
-                    accent = colors.battery, modifier = Modifier.weight(1f),
+                StatTile(
+                    label = "Напруга",
+                    value = voltage,
+                    unit = "V",
+                    accent = colors.battery,
+                    modifier = Modifier.weight(1f),
                     caption = if (voltageConfirmed) telemetryLabel(voltageItem) else "Недоступно"
                 )
-                MetricCard(
-                    title = "Струм", value = current, unit = "A", icon = null,
-                    accent = colors.battery, modifier = Modifier.weight(1f),
+                StatTile(
+                    label = "Струм",
+                    value = current,
+                    unit = "A",
+                    accent = colors.battery,
+                    modifier = Modifier.weight(1f),
                     caption = if (currentConfirmed) telemetryLabel(currentItem) else "Недоступно"
                 )
             }
             Spacer(Modifier.height(PremiumTokens.spaceSm))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                MetricCard(
-                    title = "Потужність", value = power, unit = "W", icon = null,
-                    accent = colors.batteryCharge, modifier = Modifier.weight(1f),
+                StatTile(
+                    label = "Потужність",
+                    value = power,
+                    unit = "W",
+                    accent = colors.batteryCharge,
+                    modifier = Modifier.weight(1f),
                     caption = if (powerConfirmed) telemetryLabel(powerItem) else "Недоступно"
                 )
-                MetricCard(
-                    title = "Температура", value = temperature, unit = "°C", icon = null,
-                    accent = colors.warning, modifier = Modifier.weight(1f),
+                StatTile(
+                    label = "Температура",
+                    value = temperature,
+                    unit = "°C",
+                    accent = colors.warning,
+                    modifier = Modifier.weight(1f),
                     caption = if (tempConfirmed) telemetryLabel(tempItem) else "Датчик відсутній"
                 )
             }
         }
 
-        // Добова енергія — дані моделі інвертора.
-        PremiumCard(accent = colors.batteryCharge) {
-            PremiumSectionHeader("Енергія за добу", "Дані моделі інвертора")
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                DailyEnergyCell("Заряджено", telemetryNumber(full, "battery", "daily_charge_energy"), colors.batteryCharge, Modifier.weight(1f))
-                DailyEnergyCell("Розряджено", telemetryNumber(full, "battery", "daily_discharge_energy"), colors.batteryDischarge, Modifier.weight(1f))
-            }
+        // Добова енергія — дані моделі інвертора; тонкі рядки замість ще двох карток.
+        DataPanel(title = "Енергія за добу", subtitle = "Дані моделі інвертора") {
+            InlineMetric(
+                label = "Заряджено",
+                value = telemetryNumber(full, "battery", "daily_charge_energy")?.let { "%.1f kWh".format(it) } ?: "—",
+                accent = colors.batteryCharge
+            )
+            InlineMetric(
+                label = "Розряджено",
+                value = telemetryNumber(full, "battery", "daily_discharge_energy")?.let { "%.1f kWh".format(it) } ?: "—",
+                accent = colors.batteryDischarge
+            )
         }
 
-        // Історія SOC за 24 год із чесними розривами.
-        PremiumCard(accent = colors.battery) {
-            PremiumSectionHeader("Історія SOC (24 год)", socRange)
+        // Історія SOC за 24 год із чесними розривами — єдиний графік на екрані.
+        DataPanel(title = "Історія SOC (24 год)", subtitle = socRange) {
             if (presentSoc.isEmpty()) {
                 EmptyState("Немає даних")
             } else {
                 AreaChart(
                     values = socValues,
                     color = colors.battery,
-                    modifier = Modifier.fillMaxWidth().height(124.dp),
+                    modifier = Modifier.fillMaxWidth().height(128.dp),
                     showGrid = true,
                     marker = true
                 )
@@ -220,17 +232,4 @@ private fun currentStateLabel(current: Float?): String {
     if (current == null) return "Струм: —"
     return if (kotlin.math.abs(current) < 5f) "Підтримуючий струм у нормі"
     else "Струм: %.1f A".format(current)
-}
-
-@Composable
-private fun DailyEnergyCell(label: String, value: Float?, color: Color, modifier: Modifier = Modifier) {
-    val colors = LocalSunLinkColors.current
-    Column(modifier) {
-        Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
-        Text(
-            text = value?.let { "%.1f kWh".format(it) } ?: "—",
-            style = SunLinkTypography.label,
-            color = if (value == null) colors.textTertiary else color
-        )
-    }
 }

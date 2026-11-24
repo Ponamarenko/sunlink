@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -153,6 +154,106 @@ fun SunLinkCard(
     accent: Color = LocalSunLinkColors.current.primary,
     content: @Composable () -> Unit
 ) = PremiumCard(modifier, accent, content)
+
+/** Hero surface: layered gradient with tinted hairline, used once per screen. */
+@Composable
+fun HeroPanel(
+    modifier: Modifier = Modifier,
+    accent: Color = LocalSunLinkColors.current.primary,
+    content: @Composable () -> Unit
+) {
+    val colors = LocalSunLinkColors.current
+    Box(
+        modifier
+            .clip(RoundedCornerShape(22.dp))
+            .background(Brush.verticalGradient(listOf(colors.surfaceElevated, colors.surface)))
+            .border(1.dp, accent.copy(alpha = 0.35f), RoundedCornerShape(22.dp))
+            .padding(PremiumTokens.spaceLg)
+    ) { content() }
+}
+
+/** Compact metric tile: tinted tonal surface, no heavy frame. */
+@Composable
+fun StatTile(
+    label: String,
+    value: Float?,
+    unit: String,
+    accent: Color,
+    modifier: Modifier = Modifier,
+    caption: String? = null,
+    icon: ImageVector? = null,
+    emphasized: Boolean = false
+) {
+    val colors = LocalSunLinkColors.current
+    Column(
+        modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(accent.copy(alpha = if (emphasized) 0.13f else 0.08f))
+            .padding(if (emphasized) PremiumTokens.spaceLg else PremiumTokens.spaceMd),
+        verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            if (icon != null) Icon(icon, contentDescription = null, tint = accent, modifier = Modifier.size(15.dp))
+            Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
+        }
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                if (value == null) "—" else if (abs(value) >= 1000f) "%.2f".format(value / 1000f) else "%.1f".format(value),
+                style = if (emphasized) SunLinkTypography.display else SunLinkTypography.metric,
+                color = if (value == null) colors.textTertiary else colors.textPrimary
+            )
+            Text(
+                if (value == null) "" else if (abs(value) >= 1000f) "kW" else unit,
+                style = SunLinkTypography.caption,
+                color = colors.textTertiary,
+                modifier = Modifier.padding(bottom = if (emphasized) 5.dp else 3.dp, start = 4.dp)
+            )
+        }
+        if (caption != null) Text(caption, style = SunLinkTypography.caption, color = colors.textTertiary)
+    }
+}
+
+/** Grouped data surface: one panel with thin dividers instead of many boxes. */
+@Composable
+fun DataPanel(
+    title: String,
+    subtitle: String? = null,
+    modifier: Modifier = Modifier,
+    trailing: @Composable (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val colors = LocalSunLinkColors.current
+    Column(
+        modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(colors.surface.copy(alpha = 0.72f))
+            .border(1.dp, colors.border.copy(alpha = 0.7f), RoundedCornerShape(18.dp))
+            .padding(PremiumTokens.spaceLg)
+    ) {
+        PremiumSectionHeader(title, subtitle, trailing)
+        Spacer(Modifier.height(PremiumTokens.spaceSm))
+        content()
+    }
+}
+
+@Composable
+fun InlineMetric(
+    label: String,
+    value: String,
+    accent: Color? = null,
+    modifier: Modifier = Modifier
+) {
+    val colors = LocalSunLinkColors.current
+    Row(
+        modifier
+            .fillMaxWidth()
+            .padding(vertical = PremiumTokens.spaceXs),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, style = SunLinkTypography.body, color = colors.textSecondary)
+        Text(value, style = SunLinkTypography.label, color = accent ?: colors.textPrimary)
+    }
+}
 
 @Composable
 fun PremiumSectionHeader(
@@ -513,10 +614,27 @@ fun EnergyFlowCanvas(
         FlowEdge(load, colors.load, "Будинок", Icons.Default.Home, Math.PI.toFloat() / 2f)
     )
     Canvas(modifier) {
-        val dash = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f)
         val hub = Offset(size.width / 2, size.height / 2)
         val radius = minOf(size.width, size.height) * 0.36f
         val hubEdge = 34.dp.toPx()
+
+        // Stitch uses a dusk photo under a gradient. Compose recreates the depth with
+        // layered translucent gradients: no image placeholder, no fake telemetry.
+        drawRect(
+            brush = Brush.verticalGradient(listOf(colors.surface, colors.background)),
+            size = size
+        )
+        drawCircle(Color(0xFFF5B942).copy(alpha = 0.07f), radius * 1.7f, Offset(hub.x, hub.y - radius))
+        drawCircle(Color(0xFF10B981).copy(alpha = 0.05f), radius * 1.4f, Offset(hub.x - radius, hub.y))
+        drawCircle(Color(0xFFF59E0B).copy(alpha = 0.08f), radius * 1.7f, Offset(hub.x, hub.y + radius))
+        drawLine(
+            color = colors.border.copy(alpha = 0.5f),
+            start = Offset(0f, size.height * 0.86f),
+            end = Offset(size.width, size.height * 0.86f),
+            strokeWidth = 1.dp.toPx()
+        )
+
+        val dash = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f)
 
         edges.forEach { edge ->
             val nodePoint = Offset(

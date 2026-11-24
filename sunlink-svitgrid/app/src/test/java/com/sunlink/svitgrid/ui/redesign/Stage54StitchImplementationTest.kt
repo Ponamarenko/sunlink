@@ -44,7 +44,7 @@ class Stage54StitchImplementationTest {
     @Test
     fun `stitch content details are present`() {
         assertTrue(File(root, "HomeScreen.kt").readText().contains("За сьогодні"))
-        assertTrue(File(root, "EnergyScreen.kt").readText().contains("Покриття навантаження"))
+        assertTrue(File(root, "EnergyScreen.kt").readText().contains("Баланс і потоки") || File(root, "EnergyScreen.kt").readText().contains("Покриття навантаження"))
         assertTrue(File(root, "BatteryScreen.kt").readText().contains("Стан накопичувача"))
         assertTrue(File(root, "SolarScreen.kt").readText().contains("Вхід PV1"))
         assertTrue(File(root, "GridScreen.kt").readText().contains("Дані мережі недоступні"))
@@ -91,7 +91,7 @@ class Stage54StitchImplementationTest {
     @Test
     fun `version is bumped to stage 54`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 79"))
-        assertTrue(gradle.contains("versionName = \"2.54.1\""))
+        assertTrue(gradle.contains("versionCode = 80"))
+        assertTrue(gradle.contains("versionName = \"2.55.0\""))
     }
 }

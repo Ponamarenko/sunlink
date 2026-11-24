@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,6 +59,7 @@ private val analyticsParams = listOf(
 /**
  * Аналітика — генерація/споживання лише з реальних рядів. Усі стани темні
  * (кореневий sunLinkDarkColors); світлої теми для цього екрана не існує.
+ * Hero з підсумками, одна панель звірки PV/Будинок і панель циклів батареї.
  */
 @Composable
 fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
@@ -116,19 +116,31 @@ fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
     val buckets = alignBarBuckets(pvSeries, loadSeries, bucketSize)
     val chartTitle = analyticsPeriods.firstOrNull { it.first == period }?.third ?: "Порівняння за день"
 
+    // Свіжість прив'язана до реального кінця рядів, а не до локального часу.
+    val freshestTimestamp = listOf(pvSeries?.end, loadSeries?.end).filterNotNull().maxOrNull() ?: full?.timestamp
+    val freshness = when {
+        full?.connection_status == false -> Freshness.OFFLINE
+        full?.stale == true -> Freshness.STALE
+        buckets.isEmpty() -> Freshness.UNAVAILABLE
+        else -> Freshness.FRESH
+    }
+
     SunLinkScreen(
         title = "Аналітика",
         subtitle = "Статистика генерації та споживання",
         refreshing = refreshing,
         onRefresh = { analyticsParams.forEach { vm.loadSeriesFor(it, period) } }
     ) {
-        Text(
-            dateLabel(full?.timestamp),
-            style = SunLinkTypography.caption,
-            color = colors.textTertiary,
-            textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                dateLabel(full?.timestamp),
+                style = SunLinkTypography.caption,
+                color = colors.textTertiary,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.weight(1f)
+            )
+            DataFreshnessIndicator(freshness, freshestTimestamp, compact = true)
+        }
 
         // Період: День / Тиждень / Місяць / Рік.
         Row(
@@ -158,25 +170,44 @@ fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
-        // Підсумки періоду.
-        Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-            SummaryTile("Генерація", pvTotal, colors.solar, Modifier.weight(1f))
-            SummaryTile("Споживання", loadTotal, colors.load, Modifier.weight(1f))
-            SummaryTile("Мережа", gridTotal, colors.grid, Modifier.weight(1f))
+        // Hero-поверхня: три підсумки обраного періоду.
+        HeroPanel(accent = colors.solar) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                StatTile(
+                    label = "Генерація",
+                    value = pvTotal,
+                    unit = "kWh",
+                    accent = colors.solar,
+                    modifier = Modifier.weight(1f)
+                )
+                StatTile(
+                    label = "Споживання",
+                    value = loadTotal,
+                    unit = "kWh",
+                    accent = colors.load,
+                    modifier = Modifier.weight(1f)
+                )
+                StatTile(
+                    label = "Мережа",
+                    value = gridTotal,
+                    unit = "kWh",
+                    accent = colors.grid,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
         // Порівняння PV vs Будинок — Stitch-стовпчики за часовим бакетом.
-        PremiumCard(accent = colors.solar) {
-            PremiumSectionHeader(
-                title = chartTitle,
-                trailing = {
-                    Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                        LegendDot("PV", colors.solar)
-                        LegendDot("Будинок", colors.load)
-                    }
+        DataPanel(
+            title = chartTitle,
+            subtitle = "PV та будинок",
+            trailing = {
+                Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                    LegendDot("PV", colors.solar)
+                    LegendDot("Будинок", colors.load)
                 }
-            )
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            }
+        ) {
             if (buckets.isEmpty()) {
                 EmptyState("Немає даних")
             } else {
@@ -185,42 +216,14 @@ fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
-        // Цикли батареї.
-        PremiumCard(accent = colors.battery) {
-            PremiumSectionHeader(title = "Цикли батареї", subtitle = if (period == "24h") "Сьогодні" else "Обраний період")
-            Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceMd)) {
-                CycleTile("Заряджено", charge, colors.batteryCharge, Modifier.weight(1f))
-                CycleTile("Розряджено", discharge, colors.batteryDischarge, Modifier.weight(1f))
-            }
+        // Цикли батареї — тонкі рядки замість ще двох карток.
+        DataPanel(
+            title = "Цикли батареї",
+            subtitle = if (period == "24h") "Сьогодні" else "Обраний період"
+        ) {
+            InlineMetric("Заряджено", energyText(charge), colors.batteryCharge)
+            InlineMetric("Розряджено", energyText(discharge), colors.batteryDischarge)
         }
-    }
-}
-
-@Composable
-private fun SummaryTile(label: String, value: Float?, color: Color, modifier: Modifier = Modifier) {
-    val colors = LocalSunLinkColors.current
-    PremiumCard(modifier = modifier, accent = if (value == null) colors.border else color) {
-        Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
-        Spacer(Modifier.height(PremiumTokens.spaceXs))
-        Text(
-            energyText(value),
-            style = SunLinkTypography.label,
-            color = if (value == null) colors.textTertiary else color
-        )
-    }
-}
-
-@Composable
-private fun CycleTile(label: String, value: Float?, color: Color, modifier: Modifier = Modifier) {
-    val colors = LocalSunLinkColors.current
-    Column(modifier) {
-        Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
-        Spacer(Modifier.height(PremiumTokens.spaceXs))
-        Text(
-            energyText(value),
-            style = SunLinkTypography.title,
-            color = if (value == null) colors.textTertiary else color
-        )
     }
 }
 

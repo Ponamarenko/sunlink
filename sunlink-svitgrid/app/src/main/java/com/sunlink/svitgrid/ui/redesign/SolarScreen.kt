@@ -1,13 +1,18 @@
 package com.sunlink.svitgrid.ui.redesign
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SolarPower
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -16,7 +21,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.data.dto.HistorySeriesDto
@@ -82,50 +86,76 @@ private fun SolarScreenContent(vm: MainViewModel) {
             Text(it, color = if (hasFreshTelemetry) colors.warning else colors.error, style = SunLinkTypography.caption)
         }
 
-        // Hero: загальна потужність PV із реальним gap-aware спарклайном.
-        MetricCard(
-            title = "Загальна генерація PV",
-            value = totalPower,
-            unit = "W",
-            icon = Icons.Default.SolarPower,
-            accent = colors.solar,
-            modifier = Modifier.fillMaxWidth(),
-            caption = telemetryLabel(totalItem),
-            sparkline = chartValues,
-            emphasize = true
-        )
-
-        // Входи PV1–PV3: кожен окремо, без об'єднання невідомих значень.
-        PvInputCard("Вхід PV1", "pv1", full, stale, colors)
-        PvInputCard("Вхід PV2", "pv2", full, stale, colors)
-        PvInputCard("Вхід PV3", "pv3", full, stale, colors)
-
-        // Генерація сьогодні: добова енергія та пік — з реальних даних/ряду.
-        PremiumCard(accent = colors.solar) {
-            PremiumSectionHeader(
-                title = "Генерація сьогодні",
-                trailing = {
+        // Hero: одна велика поверхня із загальною потужністю PV та provenance.
+        HeroPanel(accent = colors.solar) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceMd)
+            ) {
+                Icon(
+                    Icons.Default.SolarPower,
+                    contentDescription = null,
+                    tint = colors.solar,
+                    modifier = Modifier.size(30.dp)
+                )
+                Column(Modifier.weight(1f)) {
                     Text(
-                        text = totalPower?.let { "${it.toInt()} W" } ?: "—",
+                        "Загальна генерація PV",
+                        style = SunLinkTypography.label,
+                        color = colors.textSecondary
+                    )
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = if (totalPower == null) "—" else "%.0f".format(totalPower),
+                            style = SunLinkTypography.display,
+                            color = if (totalPower == null) colors.textTertiary else colors.textPrimary
+                        )
+                        Text(
+                            text = if (totalPower == null) "" else "W",
+                            style = SunLinkTypography.caption,
+                            color = colors.textTertiary,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 5.dp)
+                        )
+                    }
+                    Text(
+                        telemetryLabel(totalItem),
                         style = SunLinkTypography.caption,
-                        color = if (totalPower == null) colors.textTertiary else colors.solar
+                        color = colors.textTertiary
                     )
                 }
-            )
-            Text(
-                text = "За добу: ${dailyEnergy?.let { "%.1f kWh".format(it) } ?: "—"} · " +
-                    "Пік ${peak?.let { "${it.toInt()} W" } ?: "—"}",
-                style = SunLinkTypography.body,
-                color = colors.textSecondary
-            )
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            }
+        }
+
+        // Входи PV1–PV3: окремі легкі рядки з власним станом, без важких однакових карток.
+        DataPanel(title = "Входи PV1–PV3", subtitle = "Стан каналів") {
+            PvInputRow("Вхід PV1", "pv1", full, stale, colors)
+            Box(Modifier.fillMaxWidth().height(1.dp).background(colors.border.copy(alpha = 0.5f)))
+            PvInputRow("Вхід PV2", "pv2", full, stale, colors)
+            Box(Modifier.fillMaxWidth().height(1.dp).background(colors.border.copy(alpha = 0.5f)))
+            PvInputRow("Вхід PV3", "pv3", full, stale, colors)
+        }
+
+        // Генерація сьогодні: добова енергія та пік — з реальних даних/ряду.
+        DataPanel(
+            title = "Генерація сьогодні",
+            subtitle = "За добу: ${dailyEnergy?.let { "%.1f kWh".format(it) } ?: "—"} · " +
+                "Пік ${peak?.let { "${it.toInt()} W" } ?: "—"}",
+            trailing = {
+                Text(
+                    text = totalPower?.let { "${it.toInt()} W" } ?: "—",
+                    style = SunLinkTypography.caption,
+                    color = if (totalPower == null) colors.textTertiary else colors.solar
+                )
+            }
+        ) {
             if (chartValues.all { it == null }) {
                 EmptyState("Немає даних")
             } else {
                 AreaChart(
                     values = chartValues,
                     color = colors.solar,
-                    modifier = Modifier.fillMaxWidth().height(124.dp),
+                    modifier = Modifier.fillMaxWidth().height(128.dp),
                     showGrid = true,
                     marker = true
                 )
@@ -164,7 +194,7 @@ private fun solarChartValues(series: HistorySeriesDto?): List<Float?> =
     } ?: emptyList()
 
 @Composable
-private fun PvInputCard(
+private fun PvInputRow(
     title: String,
     prefix: String,
     full: TelemetryFullDto?,
@@ -183,15 +213,20 @@ private fun PvInputCard(
         else -> "Недоступно"
     }
     val accent = if (status == "Підтверджено") colors.solar else colors.offline
-    val valueColor = if (status == "Підтверджено") colors.solar else colors.textTertiary
 
+    // Значення підміняються лише тоді, канал підтверджено; інакше чесна «—».
     val power = if (status == "Підтверджено") telemetryNumber(full, "pv", "${prefix}_power") else null
     val voltage = if (status == "Підтверджено") telemetryNumber(full, "pv", "${prefix}_voltage") else null
     val current = if (status == "Підтверджено") telemetryNumber(full, "pv", "${prefix}_current") else null
 
-    PremiumCard(accent = accent) {
+    Column {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(title, style = SunLinkTypography.title, color = colors.textPrimary, modifier = Modifier.weight(1f))
+            Text(
+                title,
+                style = SunLinkTypography.label,
+                color = colors.textPrimary,
+                modifier = Modifier.weight(1f)
+            )
             StatusPill(
                 text = status,
                 color = when (status) {
@@ -201,24 +236,25 @@ private fun PvInputCard(
                 }
             )
         }
-        Spacer(Modifier.height(PremiumTokens.spaceSm))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-            PvValueCell("Потужність", power?.let { "%.0f W".format(it) }, valueColor, Modifier.weight(1f))
-            PvValueCell("Напруга", voltage?.let { "%.0f V".format(it) }, colors.textPrimary, Modifier.weight(1f))
-            PvValueCell("Струм", current?.let { "%.1f A".format(it) }, colors.textPrimary, Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-private fun PvValueCell(label: String, value: String?, valueColor: Color, modifier: Modifier = Modifier) {
-    val colors = LocalSunLinkColors.current
-    Column(modifier) {
-        Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
+        Spacer(Modifier.height(PremiumTokens.spaceXs))
+        InlineMetric(
+            label = "Потужність",
+            value = power?.let { "%.0f W".format(it) } ?: "—",
+            accent = accent
+        )
+        InlineMetric(
+            label = "Напруга",
+            value = voltage?.let { "%.0f V".format(it) } ?: "—"
+        )
+        InlineMetric(
+            label = "Струм",
+            value = current?.let { "%.1f A".format(it) } ?: "—"
+        )
         Text(
-            text = value ?: "—",
-            style = SunLinkTypography.label,
-            color = if (value == null) colors.textTertiary else valueColor
+            text = telemetryLabel(powerItem),
+            style = SunLinkTypography.caption,
+            color = colors.textTertiary,
+            modifier = Modifier.padding(top = PremiumTokens.spaceXs)
         )
     }
 }

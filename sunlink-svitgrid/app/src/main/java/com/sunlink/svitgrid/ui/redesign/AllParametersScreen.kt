@@ -1,31 +1,26 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +37,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
+import com.sunlink.svitgrid.ui.designsystem.SunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.designsystem.sunLinkDarkColors
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 import java.util.Locale
 
@@ -109,12 +105,19 @@ private val FIELD_LABELS = mapOf(
 )
 
 /**
- * Екран «Усі параметри» (Stitch sunlink_ux_v2_12).
+ * Екран «Усі параметри» (Stitch sunlink_ux_v2_12): сім згрупованих панелей.
  * Каталог будується виключно з реальних даних `/api/telemetry/full`; відсутні
- * значення лишаються «—», а пошук працює за українською назвою та api_name.
+ * значення лишаються «—», а пошук працює за назвою та api_name.
  */
 @Composable
 fun AllParametersScreen(vm: MainViewModel = viewModel()) {
+    CompositionLocalProvider(LocalSunLinkColors provides sunLinkDarkColors()) {
+        AllParametersScreenContent(vm)
+    }
+}
+
+@Composable
+private fun AllParametersScreenContent(vm: MainViewModel) {
     val full by vm.fullTelemetry.collectAsState()
     val error by vm.fullTelemetryError.collectAsState()
     val colors = LocalSunLinkColors.current
@@ -131,25 +134,29 @@ fun AllParametersScreen(vm: MainViewModel = viewModel()) {
     val timestamp = formatTelemetryTimestamp(full?.timestamp)
     val subtitle = if (timestamp == "—") "Каталог телеметрії" else "Каталог телеметрії · $timestamp"
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(listOf(colors.background, colors.surface.copy(alpha = 0.65f)))
-            )
-            .verticalScroll(rememberScrollState())
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Усі параметри", style = SunLinkTypography.headline, color = colors.textPrimary)
-                Text(subtitle, style = SunLinkTypography.caption, color = colors.textTertiary)
+    SunLinkScreen(title = "Усі параметри", subtitle = subtitle) {
+        // Hero: обсяг каталогу та чесна позначка часу останньої телеметрії.
+        HeroPanel(accent = colors.primary) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceLg)
+            ) {
+                Column(Modifier.weight(1f)) {
+                    GroupCaption("Каталог", colors.primary)
+                    Text(
+                        if (groups.isEmpty()) "Телеметрія недоступна" else "Реальні параметри пристрою",
+                        style = SunLinkTypography.headline,
+                        color = colors.textPrimary
+                    )
+                    Text(
+                        if (timestamp == "—") "Без позначки часу" else "Оновлено $timestamp",
+                        style = SunLinkTypography.caption,
+                        color = colors.textTertiary
+                    )
+                }
+                StatusPill("$visibleCount", colors.primary)
             }
-            StatusPill(visibleCount.toString(), colors.textSecondary)
         }
 
         SearchField(query = query, onQueryChange = { query = it })
@@ -163,20 +170,20 @@ fun AllParametersScreen(vm: MainViewModel = viewModel()) {
             visibleCount == 0 -> EmptyState("Параметрів не знайдено")
             else -> filtered.forEach { group ->
                 val (label, accent) = groupStyle(group.key, colors)
-                GroupCaption(label, accent)
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, colors.border, RoundedCornerShape(12.dp)),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = colors.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                val globalStale = full?.stale == true
+                val confirmed = group.items.count { item ->
+                    item.value != null && isConfirmed(item.value, globalStale)
+                }
+                DataPanel(
+                    title = label,
+                    subtitle = "${group.items.size} параметрів",
+                    trailing = { StatusPill("$confirmed / ${group.items.size}", accent) }
                 ) {
                     group.items.forEachIndexed { index, item ->
                         if (index > 0) ParameterDivider()
                         ParameterRow(
                             item = item,
-                            globalStale = full?.stale == true,
+                            globalStale = globalStale,
                             offline = !error.isNullOrBlank()
                         )
                     }
@@ -187,7 +194,7 @@ fun AllParametersScreen(vm: MainViewModel = viewModel()) {
 }
 
 @Composable
-private fun groupStyle(key: ParamGroupKey, colors: com.sunlink.svitgrid.ui.designsystem.SunLinkColors): Pair<String, Color> =
+private fun groupStyle(key: ParamGroupKey, colors: SunLinkColors): Pair<String, Color> =
     when (key) {
         ParamGroupKey.BATTERY -> "Батарея" to colors.battery
         ParamGroupKey.PV -> "Сонце (PV)" to colors.solar
@@ -205,7 +212,7 @@ private fun GroupCaption(label: String, accent: Color) {
         style = SunLinkTypography.caption,
         color = accent,
         fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+        modifier = Modifier.padding(bottom = 2.dp)
     )
 }
 
@@ -216,8 +223,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(colors.surface, RoundedCornerShape(12.dp))
-            .border(1.dp, colors.border, RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = PremiumTokens.spaceMd, vertical = PremiumTokens.spaceSm),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -294,30 +300,21 @@ private fun ParameterRow(item: ParamItem, globalStale: Boolean, offline: Boolean
         Freshness.OFFLINE -> colors.error
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                item.label,
-                style = SunLinkTypography.body,
-                color = if (number == null) colors.textTertiary else colors.textPrimary
-            )
+    Column(Modifier.fillMaxWidth().padding(vertical = PremiumTokens.spaceXs)) {
+        InlineMetric(
+            label = item.label,
+            value = if (number == null) "—" else formatQuantity(number, value?.unit),
+            accent = valueColor
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(item.apiName, style = SunLinkTypography.mono, color = colors.textTertiary)
-        }
-        Spacer(Modifier.width(8.dp))
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                if (number == null) "—" else formatQuantity(number, value?.unit),
-                style = SunLinkTypography.mono,
-                color = valueColor
-            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)
             ) {
                 Box(Modifier.size(6.dp).background(dotColor, RoundedCornerShape(50)))
                 Text(secondary, style = SunLinkTypography.caption, color = dotColor)

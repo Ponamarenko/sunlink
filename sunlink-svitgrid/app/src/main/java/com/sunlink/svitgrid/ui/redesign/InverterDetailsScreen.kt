@@ -1,37 +1,31 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Troubleshoot
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,6 +35,7 @@ import com.sunlink.svitgrid.network.NetworkDiagnostics
 import com.sunlink.svitgrid.network.TelemetryWebSocketClient
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.designsystem.sunLinkDarkColors
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 import java.time.Instant
 import java.time.LocalDate
@@ -49,14 +44,21 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * Екран «Інвертор» (Stitch sunlink_ux_v2_11): паспорт пристрою, стан зв'язку
- * та чесні заглушки для даних, яких backend не передає.
+ * Екран «Інвертор» (Stitch sunlink_ux_v2_11): hero-паспорт пристрою,
+ * згрупований стан звʼязку та чесні заглушки для даних, яких backend не передає.
  */
 @Composable
 fun InverterDetailsScreen(
     vm: MainViewModel = viewModel(),
     onNavigate: (String) -> Unit = {}
 ) {
+    CompositionLocalProvider(LocalSunLinkColors provides sunLinkDarkColors()) {
+        InverterDetailsScreenContent(vm, onNavigate)
+    }
+}
+
+@Composable
+private fun InverterDetailsScreenContent(vm: MainViewModel, onNavigate: (String) -> Unit) {
     val uiState by vm.uiState.collectAsState()
     val full by vm.fullTelemetry.collectAsState()
     val transport by vm.liveTransport.collectAsState()
@@ -79,84 +81,34 @@ fun InverterDetailsScreen(
         online = online
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(listOf(colors.background, colors.surface.copy(alpha = 0.65f)))
-            )
-            .verticalScroll(rememberScrollState())
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    SunLinkScreen(
+        title = "Інвертор",
+        subtitle = "Паспорт пристрою та звʼязок"
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(colors.surface, RoundedCornerShape(50))
-                    .border(1.dp, colors.border, RoundedCornerShape(50))
-                    .clickable { onNavigate("more") },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Назад до меню Більше",
-                    tint = colors.textPrimary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Інвертор", style = SunLinkTypography.headline, color = colors.textPrimary)
-                Text(
-                    "Паспорт пристрою та звʼязок",
-                    style = SunLinkTypography.caption,
-                    color = colors.textTertiary
-                )
-            }
-            StatusPill(
-                text = if (online) "Онлайн" else "Офлайн",
-                color = if (online) colors.battery else colors.error
-            )
-        }
-
-        // 1. Виробник і модель.
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, colors.border, RoundedCornerShape(28.dp)),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = colors.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
+        // Hero: ідентифікація пристрою, стан каналу та повернення в меню.
+        HeroPanel(accent = if (online) colors.battery else colors.error) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .background(colors.surfaceElevated, RoundedCornerShape(16.dp))
-                        .border(1.dp, colors.border, RoundedCornerShape(16.dp)),
+                        .size(40.dp)
+                        .background(colors.surfaceElevated, RoundedCornerShape(50))
+                        .clickable { onNavigate("more") },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Default.Memory,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(24.dp)
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Назад до меню Більше",
+                        tint = colors.textPrimary,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "Виробник: Deye",
-                        style = SunLinkTypography.caption,
-                        color = colors.textTertiary
-                    )
+                Spacer(Modifier.size(PremiumTokens.spaceMd))
+                Column(Modifier.weight(1f)) {
+                    SectionCaption("Паспорт пристрою")
+                    Text("Виробник: Deye", style = SunLinkTypography.caption, color = colors.textTertiary)
                     Text(
                         "SUN-12K-SG02LP1-EU-AM3",
                         style = SunLinkTypography.title,
@@ -168,51 +120,42 @@ fun InverterDetailsScreen(
                         color = colors.textTertiary
                     )
                 }
+                Icon(
+                    Icons.Default.Memory,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(Modifier.height(PremiumTokens.spaceMd))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                StatusPill(
+                    text = if (online) "Онлайн" else "Офлайн",
+                    color = if (online) colors.battery else colors.error
+                )
+                DataFreshnessIndicator(freshness, full?.timestamp, compact = true)
             }
         }
 
-        // 2. Стан підключення.
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, colors.border, RoundedCornerShape(12.dp)),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = colors.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            DetailRow(
-                label = "Тип підключення",
-                value = "WebSocket · Локальний шлюз",
-                valueColor = colors.textPrimary
+        // Стан підключення: тонкі рядки в одній панелі.
+        DataPanel(title = "Стан підключення", subtitle = "Локальний шлюз") {
+            InlineMetric("Тип підключення", "WebSocket · Локальний шлюз", colors.textPrimary)
+            DetailDivider()
+            InlineMetric(
+                "Поточний стан",
+                if (online) "Підключено" else "Відключено",
+                if (online) colors.battery else colors.error
             )
             DetailDivider()
-            DetailRow(
-                label = "Поточний стан",
-                value = if (online) "Підключено" else "Відключено",
-                valueColor = if (online) colors.battery else colors.error,
-                bold = true
-            )
-            DetailDivider()
-            DetailRow(
-                label = "Останній успішний обмін",
-                value = lastExchangeLabel(lastSuccess),
-                valueColor = colors.textPrimary,
-                mono = true
-            )
+            InlineMetric("Останній успішний обмін", lastExchangeLabel(lastSuccess), colors.textPrimary)
         }
 
-        DataFreshnessIndicator(freshness, full?.timestamp, compact = true)
-
-        // 3. Ідентифікація та прошивка — тільки чесні заглушки, без вигаданих серійних номерів.
-        SectionCaption("Ідентифікація та прошивка")
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, colors.border.copy(alpha = 0.6f), RoundedCornerShape(12.dp)),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = colors.surfaceElevated.copy(alpha = 0.45f)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
+        // Ідентифікація та прошивка — тільки чесні заглушки, без вигаданих номерів.
+        DataPanel(title = "Ідентифікація та прошивка", subtitle = "Поля не передаються backend") {
             DetailRow("Серійний номер", "— · Не передається", colors.textTertiary, mono = true)
             DetailDivider()
             DetailRow("Ідентифікатор логера", "— · Не передається", colors.textTertiary, mono = true)
@@ -220,46 +163,32 @@ fun InverterDetailsScreen(
             DetailRow("Версія прошивки", "— · Недоступно", colors.textTertiary, mono = true)
         }
 
-        // 4. Перехід до діагностики.
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, colors.border, RoundedCornerShape(12.dp))
-                .clickable { onNavigate("diagnostics") },
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = colors.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.Troubleshoot,
-                    contentDescription = null,
-                    tint = colors.battery,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(Modifier.size(10.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "Діагностика звʼязку",
-                        style = SunLinkTypography.body,
-                        color = colors.textPrimary
+        // Перехід до діагностики — окрема дія, не ще одна одинакова картка.
+        DataPanel(
+            title = "Діагностика звʼязку",
+            subtitle = "Стан каналів і пакетів",
+            modifier = Modifier.clickable { onNavigate("diagnostics") },
+            trailing = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)
+                ) {
+                    Icon(
+                        Icons.Default.Troubleshoot,
+                        contentDescription = null,
+                        tint = colors.battery,
+                        modifier = Modifier.size(20.dp)
                     )
-                    Text(
-                        "Переглянути стан каналів і пакетів",
-                        style = SunLinkTypography.caption,
-                        color = colors.textTertiary
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = colors.textTertiary,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = colors.textTertiary,
-                    modifier = Modifier.size(20.dp)
-                )
             }
+        ) {
+            InlineMetric("Дія", "Відкрити діагностику", colors.battery)
         }
     }
 }
@@ -270,9 +199,8 @@ private fun SectionCaption(text: String) {
     Text(
         text,
         style = SunLinkTypography.caption,
-        color = colors.textSecondary,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+        color = colors.primary,
+        fontWeight = FontWeight.SemiBold
     )
 }
 
@@ -299,7 +227,7 @@ private fun DetailRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(vertical = PremiumTokens.spaceSm),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

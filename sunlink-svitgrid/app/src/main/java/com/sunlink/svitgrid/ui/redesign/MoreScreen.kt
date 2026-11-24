@@ -1,21 +1,17 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.BarChart
@@ -26,20 +22,19 @@ import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Troubleshoot
 import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.designsystem.sunLinkDarkColors
 
 private data class MoreItem(
     val route: String,
@@ -52,12 +47,18 @@ private data class MoreItem(
 )
 
 /**
- * Екран «Більше» (Stitch sunlink_ux_v2_9).
- * Одна згрупована картка на розділ, розділювачі між рядками, 16px поля, 12px проміжки.
- * Усі кольори — з темної семантичної палітри застосунку.
+ * Екран «Більше» (Stitch sunlink_ux_v2_9): hero-ідентифікатор меню та дві
+ * згруповані панелі з тонкими рядками. Головні вкладки не дублюються.
  */
 @Composable
 fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
+    CompositionLocalProvider(LocalSunLinkColors provides sunLinkDarkColors()) {
+        MoreScreenContent(currentRoute, onNavigate)
+    }
+}
+
+@Composable
+private fun MoreScreenContent(currentRoute: String, onNavigate: (String) -> Unit) {
     val colors = LocalSunLinkColors.current
 
     val secondary = listOf(
@@ -90,47 +91,43 @@ fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
         MoreItem("diagnostics", "Діагностика", icon = Icons.Default.Troubleshoot, accent = colors.battery, compact = true)
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(listOf(colors.background, colors.surface.copy(alpha = 0.65f)))
-            )
-            .verticalScroll(rememberScrollState())
-            .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    SunLinkScreen(
+        title = "Більше",
+        subtitle = "Додаткові розділи та система"
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(colors.surface, RoundedCornerShape(16.dp))
-                    .border(1.dp, colors.border, RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center
+        HeroPanel(accent = colors.primary) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceLg)
             ) {
-                Icon(
-                    Icons.Default.Tune,
-                    contentDescription = null,
-                    tint = colors.textPrimary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Більше", style = SunLinkTypography.headline, color = colors.textPrimary)
-                Text(
-                    "Додаткові розділи та система",
-                    style = SunLinkTypography.caption,
-                    color = colors.textTertiary
-                )
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(colors.primarySoft, RoundedCornerShape(14.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Tune,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Column(Modifier.weight(1f)) {
+                    SectionLabel("Меню")
+                    Text("Всі розділи застосунку", style = SunLinkTypography.title, color = colors.textPrimary)
+                    Text(
+                        "Налаштування та детальний моніторинг",
+                        style = SunLinkTypography.caption,
+                        color = colors.textTertiary
+                    )
+                }
+                StatusPill("${secondary.size + monitoring.size} розділів", colors.primary)
             }
         }
 
-        SectionLabel("Вторинні функції")
-        GroupCard {
+        GroupCard(title = "Вторинні функції", subtitle = "Налаштування та пристрій") {
             secondary.forEachIndexed { index, item ->
                 if (index > 0) GroupDivider()
                 MoreRow(
@@ -141,8 +138,7 @@ fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
             }
         }
 
-        SectionLabel("Детальний моніторинг")
-        GroupCard {
+        GroupCard(title = "Детальний моніторинг", subtitle = "Канали, графіки, діагностика") {
             monitoring.forEachIndexed { index, item ->
                 if (index > 0) GroupDivider()
                 MoreRow(
@@ -161,25 +157,19 @@ private fun SectionLabel(text: String) {
     Text(
         text,
         style = SunLinkTypography.caption,
-        color = colors.textSecondary,
+        color = colors.primary,
         fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+        modifier = Modifier.padding(bottom = 2.dp)
     )
 }
 
+/** Групова поверхня: DataPanel із заголовком замість окремої картки. */
 @Composable
-private fun GroupCard(content: @Composable ColumnScope.() -> Unit) {
-    val colors = LocalSunLinkColors.current
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(1.dp, colors.border, RoundedCornerShape(28.dp)),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        content = { Column(content = content) }
-    )
-}
+private fun GroupCard(
+    title: String,
+    subtitle: String? = null,
+    content: @Composable ColumnScope.() -> Unit
+) = DataPanel(title = title, subtitle = subtitle, content = content)
 
 @Composable
 private fun GroupDivider() {
@@ -195,20 +185,17 @@ private fun GroupDivider() {
 @Composable
 private fun MoreRow(item: MoreItem, selected: Boolean, onClick: () -> Unit) {
     val colors = LocalSunLinkColors.current
-    val horizontal = if (item.compact) 16.dp else PremiumTokens.spaceLg
-    val vertical = if (item.compact) 12.dp else PremiumTokens.spaceLg
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(horizontal = horizontal, vertical = vertical),
+            .padding(vertical = if (item.compact) PremiumTokens.spaceSm else PremiumTokens.spaceMd),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceMd)
         ) {
             if (item.compact) {
                 Icon(
@@ -221,8 +208,7 @@ private fun MoreRow(item: MoreItem, selected: Boolean, onClick: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(colors.surfaceElevated, RoundedCornerShape(6.dp))
-                        .border(1.dp, colors.border, RoundedCornerShape(6.dp)),
+                        .background(colors.surfaceElevated, RoundedCornerShape(10.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

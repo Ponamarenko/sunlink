@@ -1,19 +1,18 @@
 package com.sunlink.svitgrid.ui.redesign
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,6 +27,7 @@ import com.sunlink.svitgrid.network.NetworkDiagnostics
 import com.sunlink.svitgrid.network.TelemetryWebSocketClient
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.designsystem.sunLinkDarkColors
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 import java.time.Instant
 import java.time.LocalDate
@@ -36,12 +36,19 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * Діагностика — зв'язок та якість телеметрії. Основні статуси лишаються
- * читабельними; сирі REST-помилки та provenance винесені в компактний
- * технічний блок. Усі стани темні (кореневий sunLinkDarkColors).
+ * Діагностика — один hero-стан, згруповані панелі та тонкі рядки.
+ * Сирі REST-помилки й provenance винесені в компактний технічний блок.
+ * Усі стани темні (кореневий sunLinkDarkColors).
  */
 @Composable
 fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
+    CompositionLocalProvider(LocalSunLinkColors provides sunLinkDarkColors()) {
+        DiagnosticsScreenContent(vm)
+    }
+}
+
+@Composable
+private fun DiagnosticsScreenContent(vm: MainViewModel) {
     val uiState by vm.uiState.collectAsState()
     val refreshing by vm.refreshing.collectAsState()
     val events by NetworkDiagnostics.events.collectAsState()
@@ -77,6 +84,12 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
         confidence = if (hasTelemetry) "verified" else null,
         online = if (errorState != null) false else if (hasTelemetry) online else null
     )
+    val freshnessColor = when (connectionFreshness) {
+        Freshness.FRESH -> colors.success
+        Freshness.STALE, Freshness.PROVISIONAL -> colors.warning
+        Freshness.UNAVAILABLE -> colors.offline
+        Freshness.OFFLINE -> colors.error
+    }
 
     val statusLabel = when {
         hasErrors -> "Увага"
@@ -94,6 +107,8 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
     val known = quality?.known_parameters ?: 0
     val available = quality?.available_parameters ?: 0
     val channels = if (quality == null || known <= 0) "—" else "$available / $known каналів"
+    val knownTile = quality?.known_parameters?.takeIf { it > 0 }?.toFloat()
+    val availableTile = knownTile?.let { quality?.available_parameters?.toFloat() }
 
     val lastPacket = lastPacketLabel(
         lastSuccess ?: full?.timestamp ?: success?.status?.lastUpdate
@@ -114,45 +129,79 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
             vm.loadTelemetryQuality()
         }
     ) {
-        StatusPill(statusLabel, statusColor)
-
-        // 1. З'єднання з інвертором.
-        PremiumCard(accent = colors.battery) {
-            PremiumSectionHeader(
-                title = "Зʼєднання з інвертором",
-                trailing = {
+        // Hero: єдиний блок статусу — Fresh / Stale / Unavailable / Offline.
+        HeroPanel(accent = statusColor) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceLg)
+            ) {
+                Column(Modifier.weight(1f)) {
+                    StatusPill(statusLabel, statusColor)
+                    Spacer(Modifier.height(PremiumTokens.spaceSm))
                     Text(
-                        if (online) "Онлайн" else "Офлайн",
-                        style = SunLinkTypography.caption,
-                        color = if (online) colors.battery else colors.offline
+                        freshnessLabel(connectionFreshness),
+                        style = SunLinkTypography.headline,
+                        color = colors.textPrimary
+                    )
+                    Text(
+                        "Останній пакет: $lastPacket",
+                        style = SunLinkTypography.body,
+                        color = colors.textSecondary
+                    )
+                    Spacer(Modifier.height(PremiumTokens.spaceSm))
+                    DataFreshnessIndicator(
+                        freshness = connectionFreshness,
+                        timestamp = lastSuccess ?: full?.timestamp,
+                        compact = true
                     )
                 }
-            )
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
-            DiagRow(
-                "Канал WebSocket",
-                if (wsConnected) "Підключено" else transportLabel(transport),
-                if (wsConnected) colors.grid else colors.textTertiary
-            )
-            DiagRow("Останній пакет", lastPacket, colors.textPrimary)
-            DiagRow("Інтервал опитування", "${vm.pollIntervalSeconds} сек", colors.textPrimary)
-            DiagRow(
-                "Актуальність даних",
-                freshnessLabel(connectionFreshness),
-                when (connectionFreshness) {
-                    Freshness.FRESH -> colors.success
-                    Freshness.STALE, Freshness.PROVISIONAL -> colors.warning
-                    Freshness.UNAVAILABLE -> colors.offline
-                    Freshness.OFFLINE -> colors.error
-                }
-            )
+            }
         }
 
-        // 2. Якість телеметрії.
-        PremiumCard(accent = colors.grid) {
-            PremiumSectionHeader(title = "Якість телеметрії", trailing = {
-                Text(channels, style = SunLinkTypography.caption, color = colors.textTertiary)
-            })
+        // З'єднання: тонкі рядки замість окремої картки на кожне поле.
+        DataPanel(
+            title = "Зʼєднання з інвертором",
+            subtitle = "Канал і опитування",
+            trailing = {
+                Text(
+                    if (online) "Онлайн" else "Офлайн",
+                    style = SunLinkTypography.caption,
+                    color = if (online) colors.battery else colors.offline
+                )
+            }
+        ) {
+            InlineMetric(
+                label = "Канал WebSocket",
+                value = if (wsConnected) "Підключено" else transportLabel(transport),
+                accent = if (wsConnected) colors.grid else colors.textTertiary
+            )
+            InlineMetric("Останній пакет", lastPacket, colors.textPrimary)
+            InlineMetric("Інтервал опитування", "${vm.pollIntervalSeconds} сек", colors.textPrimary)
+            InlineMetric("Актуальність даних", freshnessLabel(connectionFreshness), freshnessColor)
+        }
+
+        // Якість телеметрії: компактні плитки + рядки станів каналів.
+        DataPanel(title = "Якість телеметрії", subtitle = channels) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)
+            ) {
+                StatTile(
+                    label = "Відомо каналів",
+                    value = knownTile,
+                    unit = "каналів",
+                    accent = colors.grid,
+                    modifier = Modifier.weight(1f)
+                )
+                StatTile(
+                    label = "Доступно",
+                    value = availableTile,
+                    unit = "каналів",
+                    accent = colors.battery,
+                    modifier = Modifier.weight(1f)
+                )
+            }
             Spacer(Modifier.height(PremiumTokens.spaceSm))
             QualityRow(
                 "PV1 + навантаження",
@@ -195,10 +244,11 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
             )
         }
 
-        // 3. Стан помилок. Позитивне повідомлення — тільки якщо помилок немає.
-        PremiumCard(accent = if (hasErrors) colors.error else colors.battery) {
-            PremiumSectionHeader(title = "Стан помилок")
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
+        // Стан помилок: позитивне повідомлення — тільки якщо помилок немає.
+        DataPanel(
+            title = "Стан помилок",
+            subtitle = if (hasErrors) "Зафіксовані збої та події" else "Активних збоїв немає"
+        ) {
             if (!hasErrors) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -228,10 +278,8 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
-        // Технічні деталі Stage53 — компактно, без перевантаження статусних карток.
-        PremiumCard(accent = colors.border) {
-            PremiumSectionHeader(title = "Технічні деталі", subtitle = "REST / provenance / polling")
-            Spacer(Modifier.height(PremiumTokens.spaceXs))
+        // Технічні деталі — компактна довідкова панель, не статусна картка.
+        DataPanel(title = "Технічні деталі", subtitle = "REST / provenance / polling") {
             DiagRow("REST", telemetryErrorNote(restError, hasFreshTelemetry) ?: "—", colors.textSecondary)
             DiagRow("Provenance SOC", telemetryProvenance(telemetryValue(full, "battery", "soc")), colors.textSecondary)
             DiagRow("Provenance PV", telemetryProvenance(telemetryValue(full, "pv", "total_power")), colors.textSecondary)
@@ -249,32 +297,17 @@ fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
 
 @Composable
 private fun DiagRow(label: String, value: String, valueColor: Color) {
-    val colors = LocalSunLinkColors.current
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
-        Text(value.ifBlank { "—" }, style = SunLinkTypography.label, color = valueColor)
-    }
+    InlineMetric(label, value.ifBlank { "—" }, valueColor)
 }
 
 @Composable
 private fun QualityRow(label: String, status: String) {
     val colors = LocalSunLinkColors.current
-    val confirmed = status == "Підтверджено"
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .background(colors.surfaceElevated, RoundedCornerShape(6.dp))
-            .padding(horizontal = PremiumTokens.spaceMd, vertical = PremiumTokens.spaceSm),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(label, style = SunLinkTypography.body, color = colors.textPrimary)
-        Text(
-            status,
-            style = SunLinkTypography.caption,
-            color = if (confirmed) colors.success else colors.textTertiary
-        )
-    }
+    InlineMetric(
+        label = label,
+        value = status,
+        accent = if (status == "Підтверджено") colors.success else colors.textTertiary
+    )
 }
 
 /** Статус групи каналів формується лише з реальних вимірювань. */

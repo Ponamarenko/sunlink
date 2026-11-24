@@ -2,12 +2,15 @@ package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.BatteryChargingFull
@@ -24,9 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.R
+import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.model.InverterUiState
 import com.sunlink.svitgrid.network.TelemetryWebSocketClient
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
@@ -38,6 +43,12 @@ import com.sunlink.svitgrid.viewmodel.MainViewModel
 /**
  * Головна — темний "Hybrid Premium" екран. Усі значення надходять лише з
  * реальної телеметрії (`full` / `series`); відсутні — «—» зі зрозумілим станом.
+ *
+ * Композиція (Stitch node_12456895449774030424):
+ *  1. компактний заголовок + окремі пілюлі стану / свіжості / WebSocket;
+ *  2. один HeroPanel з атмосферною схемою потоків (DEYE в центрі);
+ *  3. один ряд із трьох компактних StatTile;
+ *  4. один DataPanel «За сьогодні» з сіткою 3×2 та посиланням на Аналітику.
  */
 @Composable
 fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {}) {
@@ -54,14 +65,11 @@ private fun HomeScreenContent(vm: MainViewModel, onNavigate: (String) -> Unit) {
     val loading by vm.refreshing.collectAsState()
     val state by vm.uiState.collectAsState()
     val transport by vm.liveTransport.collectAsState()
-    val series by vm.seriesByParam.collectAsState()
     val colors = LocalSunLinkColors.current
 
     LaunchedEffect(Unit) {
         vm.loadFullTelemetry()
         vm.loadData()
-        vm.loadSeriesFor("pv_total_power")
-        vm.loadSeriesFor("battery_soc")
     }
 
     val success = state as? InverterUiState.Success
@@ -114,7 +122,7 @@ private fun HomeScreenContent(vm: MainViewModel, onNavigate: (String) -> Unit) {
         refreshing = loading,
         onRefresh = { vm.loadFullTelemetry(); vm.loadData() }
     ) {
-        // Статус-рядок: окремі пілюлі стану, свіжості та WebSocket.
+        // Статус-рядок: Онлайн, окрема свіжість і окремий WebSocket.
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
             StatusPill(headerStatus, freshnessColor(freshness, colors), Modifier.weight(1f))
             DataFreshnessIndicator(freshness, full?.timestamp, Modifier.weight(1f), compact = true)
@@ -127,65 +135,73 @@ private fun HomeScreenContent(vm: MainViewModel, onNavigate: (String) -> Unit) {
             Text(it, color = if (full != null && !stale) colors.warning else colors.error, style = SunLinkTypography.caption)
         }
 
-        // Схема потоків: Сонце (вгорі) / Батарея (ліворуч) / Мережа (праворуч) / Будинок (внизу).
-        PremiumCard(modifier = Modifier.clickable { onNavigate("energy") }, accent = colors.primary) {
-            PremiumSectionHeader(
-                title = stringResource(R.string.energy_balance),
-                subtitle = if (isBalanceComplete(listOf(pvValue, batteryValue, gridValue, loadValue)))
-                    stringResource(R.string.flow_hint)
-                else stringResource(R.string.balance_partial)
-            )
-            PremiumEnergyFlow(pvNode, batteryNode, gridNode, loadNode)
+        // 1. Одна велика атмосферна панель зі схемою потоків. Клік по вузлу веде
+        //    на відповідний екран, клік по порожньому місцю — на Енергію.
+        HeroPanel(modifier = Modifier.clickable { onNavigate("energy") }, accent = colors.primary) {
+            Column(verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                PremiumSectionHeader(
+                    title = stringResource(R.string.energy_balance),
+                    subtitle = if (isBalanceComplete(listOf(pvValue, batteryValue, gridValue, loadValue)))
+                        stringResource(R.string.flow_hint)
+                    else stringResource(R.string.balance_partial)
+                )
+                Box {
+                    PremiumEnergyFlow(pvNode, batteryNode, gridNode, loadNode)
+                    // Прозорі зони кліку поверх чіпів PremiumEnergyFlow.
+                    Box(Modifier.matchParentSize()) {
+                        NodeTap(Alignment.TopCenter, 156.dp, 64.dp, "solar", onNavigate)
+                        NodeTap(Alignment.CenterStart, 104.dp, 64.dp, "battery", onNavigate)
+                        NodeTap(Alignment.CenterEnd, 104.dp, 64.dp, "grid", onNavigate)
+                        NodeTap(Alignment.BottomCenter, 156.dp, 64.dp, "load", onNavigate)
+                    }
+                }
+            }
         }
 
-        // Ключові показники: PV · SOC · Навантаження.
+        // 2. Ключові показники — три компактні плитки, без важких рамок.
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-            MetricCard(
-                title = "Потужність PV",
+            StatTile(
+                label = "Потужність PV",
                 value = pvValue.takeIf { pvConfirmed },
                 unit = "W",
-                icon = Icons.Default.SolarPower,
                 accent = colors.solar,
                 modifier = Modifier.weight(1f).clickable { onNavigate("solar") },
-                caption = telemetryLabel(pvItem),
-                sparkline = series["pv_total_power"]?.points?.map { p -> if (p.gap) null else p.value?.toFloat() } ?: emptyList()
+                caption = compactConfidence(pvItem),
+                icon = Icons.Default.SolarPower
             )
-            MetricCard(
-                title = "Заряд SOC",
+            StatTile(
+                label = "Заряд SOC",
                 value = soc.takeIf { socConfirmed },
                 unit = "%",
-                icon = Icons.Default.BatteryChargingFull,
                 accent = colors.battery,
                 modifier = Modifier.weight(1f).clickable { onNavigate("battery") },
                 caption = voltageCurrentCaption(voltage, current),
-                sparkline = series["battery_soc"]?.points?.map { p -> if (p.gap) null else p.value?.toFloat() } ?: emptyList()
+                icon = Icons.Default.BatteryChargingFull
             )
-            MetricCard(
-                title = "Навантаження",
+            StatTile(
+                label = "Навантаження",
                 value = loadValue.takeIf { loadConfirmed },
                 unit = "W",
-                icon = Icons.Default.Power,
                 accent = colors.load,
                 modifier = Modifier.weight(1f).clickable { onNavigate("load") },
-                caption = telemetryLabel(loadItem)
+                caption = compactConfidence(loadItem),
+                icon = Icons.Default.Power
             )
         }
 
-        // Підсумки за сьогодні — 6 окремих показників + посилання на Аналітику.
-        PremiumCard(accent = colors.solar) {
-            PremiumSectionHeader(
-                title = "За сьогодні",
-                trailing = {
-                    Row(
-                        modifier = Modifier.clickable { onNavigate("analytics") },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Аналітика", style = SunLinkTypography.caption, color = colors.primary)
-                        Icon(Icons.Default.Analytics, contentDescription = null, tint = colors.primary, modifier = Modifier.size(14.dp))
-                    }
+        // 3. Компактний підсумок доби — одна група, сітка 3×2, посилання на Аналітику.
+        DataPanel(
+            title = "За сьогодні",
+            trailing = {
+                Row(
+                    modifier = Modifier.clickable { onNavigate("analytics") },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Аналітика", style = SunLinkTypography.caption, color = colors.primary)
+                    Icon(Icons.Default.Analytics, contentDescription = null, tint = colors.primary, modifier = Modifier.size(14.dp))
                 }
-            )
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            }
+        ) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
                 DailyCell("Сонце", telemetryNumber(full, "pv", "daily_energy"), colors.solar, Modifier.weight(1f))
                 DailyCell("Імпорт", telemetryNumber(full, "grid", "daily_import_energy"), colors.gridImport, Modifier.weight(1f))
@@ -193,12 +209,30 @@ private fun HomeScreenContent(vm: MainViewModel, onNavigate: (String) -> Unit) {
             }
             Spacer(Modifier.height(PremiumTokens.spaceSm))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                DailyCell("Навантаження", telemetryNumber(full, "load", "daily_energy"), colors.load, Modifier.weight(1f))
+                DailyCell("Споживання", telemetryNumber(full, "load", "daily_energy"), colors.load, Modifier.weight(1f))
                 DailyCell("Заряд", telemetryNumber(full, "battery", "daily_charge_energy"), colors.batteryCharge, Modifier.weight(1f))
                 DailyCell("Розряд", telemetryNumber(full, "battery", "daily_discharge_energy"), colors.batteryDischarge, Modifier.weight(1f))
             }
         }
     }
+}
+
+/** Прозора зона кліку над вузлом схеми потоків. */
+@Composable
+private fun BoxScope.NodeTap(
+    alignment: Alignment,
+    width: Dp,
+    height: Dp,
+    route: String,
+    onNavigate: (String) -> Unit
+) {
+    Box(
+        Modifier
+            .align(alignment)
+            .width(width)
+            .height(height)
+            .clickable { onNavigate(route) }
+    )
 }
 
 private fun freshnessColor(freshness: Freshness, colors: SunLinkColors): Color = when (freshness) {
@@ -221,6 +255,17 @@ private fun voltageCurrentCaption(voltage: Float?, current: Float?): String {
     val v = voltage?.let { "%.1fV".format(it) } ?: "—"
     val a = current?.let { "%.1fA".format(it) } ?: "—"
     return "$v · $a"
+}
+
+/** Короткий підпис достовірності, щоб не обрізати український текст у вузькій плитці. */
+private fun compactConfidence(item: MeasurementValueDto?): String = when (item?.confidence) {
+    null -> "Немає даних"
+    "physically_verified", "verified", "corroborated" -> "Підтверджено"
+    "calculated" -> "Розраховано"
+    "provisional" -> "Попередньо"
+    "model_compatible" -> "За моделлю"
+    "unverified" -> "Не перевірено"
+    else -> "Стан невідомий"
 }
 
 @Composable
