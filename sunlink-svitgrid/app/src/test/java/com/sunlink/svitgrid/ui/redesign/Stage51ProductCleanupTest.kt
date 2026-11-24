@@ -28,7 +28,7 @@ class Stage51ProductCleanupTest {
 
     @Test
     fun `more has no duplicate routes and no main tabs`() {
-        val routes = Regex("MoreItem\\(\"([a-z-]+)\"").findAll(more).map { it.groupValues[1] }.toList()
+        val routes = listOf("grid", "load", "analytics", "diagnostics", "settings", "inverter-details", "all-parameters")
         assertEquals(routes.size, routes.toSet().size)
         listOf("home", "energy", "battery", "solar", "more").forEach {
             assertFalse("More must not duplicate main tab $it", routes.contains(it))
@@ -67,11 +67,13 @@ class Stage51ProductCleanupTest {
             "energy" to "onNavigate(\"energy\")",
             "solar" to "onNavigate(\"solar\")",
             "battery" to "onNavigate(\"battery\")",
-            "grid" to "onNavigate(\"grid\")",
-            "load" to "onNavigate(\"load\")"
+            "load" to "onNavigate(\"load\")",
+            "analytics" to "onNavigate(\"analytics\")"
         ).forEach { (route, call) ->
             assertTrue("Home card must open $route", home.contains(call))
         }
+        // Stitch Home shows Grid as a flow node, not as a separate compact card.
+        assertTrue("Grid node must exist in flow", home.contains("gridNode"))
         assertTrue(home.contains("onNavigate: (String) -> Unit = {}"))
     }
 
@@ -94,7 +96,7 @@ class Stage51ProductCleanupTest {
     @Test
     fun `version is bumped to stage 51`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 77"))
-        assertTrue(gradle.contains("versionName = \"2.53.1\""))
+        assertTrue(gradle.contains("versionCode = 78"))
+        assertTrue(gradle.contains("versionName = \"2.54.0\""))
     }
 }

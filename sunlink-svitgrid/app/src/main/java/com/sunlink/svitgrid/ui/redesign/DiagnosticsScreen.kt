@@ -1,41 +1,51 @@
 package com.sunlink.svitgrid.ui.redesign
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.sunlink.svitgrid.R
+import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.model.InverterUiState
 import com.sunlink.svitgrid.network.NetworkDiagnostics
 import com.sunlink.svitgrid.network.TelemetryWebSocketClient
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
 import com.sunlink.svitgrid.viewmodel.MainViewModel
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
+/**
+ * Діагностика — зв'язок та якість телеметрії. Основні статуси лишаються
+ * читабельними; сирі REST-помилки та provenance винесені в компактний
+ * технічний блок. Усі стани темні (кореневий sunLinkDarkColors).
+ */
 @Composable
 fun DiagnosticsScreen(vm: MainViewModel = viewModel()) {
-    DiagnosticsContent(vm)
-}
-
-@Composable
-private fun DiagnosticsContent(vm: MainViewModel) {
     val uiState by vm.uiState.collectAsState()
-    val loading by vm.refreshing.collectAsState()
+    val refreshing by vm.refreshing.collectAsState()
     val events by NetworkDiagnostics.events.collectAsState()
     val lastSuccess by NetworkDiagnostics.lastSuccessUtc.collectAsState()
-    val backendHealth by vm.backendHealth.collectAsState()
-    val backendVersion by vm.backendVersion.collectAsState()
     val quality by vm.telemetryQuality.collectAsState()
     val transport by vm.liveTransport.collectAsState()
     val full by vm.fullTelemetry.collectAsState()
@@ -44,164 +54,252 @@ private fun DiagnosticsContent(vm: MainViewModel) {
 
     LaunchedEffect(Unit) {
         vm.loadData()
-        vm.loadBackendInfo()
+        vm.loadFullTelemetry()
         vm.loadTelemetryQuality()
     }
 
     val success = uiState as? InverterUiState.Success
     val errorState = uiState as? InverterUiState.Error
     val online = success?.status?.online == true
-    val stale = success?.stale == true || quality?.stale == true
-    val error = errorState?.message ?: success?.status?.error
+    val stale = success?.stale == true || quality?.stale == true || full?.stale == true
 
-    // Стани Fresh / Stale / Unavailable / Offline формуються єдиною функцією freshnessOf.
+    val errorEvents = events.filter { event ->
+        event.errorType != null || (event.httpCode ?: 200) >= 400
+    }
+    val hasErrors = errorState != null ||
+        !success?.status?.error.isNullOrBlank() ||
+        errorEvents.isNotEmpty()
+
+    val hasTelemetry = success != null || full != null
     val connectionFreshness = freshnessOf(
         stale = stale,
-        quality = if (success == null) "unavailable" else "verified",
-        confidence = if (success == null) null else "verified",
-        online = if (error != null) false else if (success == null) null else online
+        quality = if (hasTelemetry) "verified" else "unavailable",
+        confidence = if (hasTelemetry) "verified" else null,
+        online = if (errorState != null) false else if (hasTelemetry) online else null
     )
-    val healthStatus = backendHealth?.status
-    val backendFreshness = freshnessOf(
-        stale = false,
-        quality = when {
-            healthStatus == null -> "unavailable"
-            healthStatus.equals("ok", true) || healthStatus.equals("up", true) -> "verified"
-            else -> "stale"
-        },
-        confidence = if (healthStatus == null) null else "verified"
+
+    val statusLabel = when {
+        hasErrors -> "Увага"
+        online && !stale -> "Стабільно"
+        stale -> "Застарілі дані"
+        else -> "Недоступно"
+    }
+    val statusColor = when {
+        hasErrors -> colors.error
+        online && !stale -> colors.battery
+        stale -> colors.warning
+        else -> colors.offline
+    }
+
+    val known = quality?.known_parameters ?: 0
+    val available = quality?.available_parameters ?: 0
+    val channels = if (quality == null || known <= 0) "—" else "$available / $known каналів"
+
+    val lastPacket = lastPacketLabel(
+        lastSuccess ?: full?.timestamp ?: success?.status?.lastUpdate
     )
-    val qualityFreshness = freshnessOf(
-        stale = quality?.stale,
-        quality = null,
-        confidence = if (quality == null) null else "verified"
-    )
-    val wsFreshness = freshnessOf(
-        stale = false,
-        quality = null,
-        confidence = if (transport == TelemetryWebSocketClient.WsTransportState.OPEN) "verified" else null
-    )
+    val wsConnected = transport == TelemetryWebSocketClient.WsTransportState.OPEN
+    val hasFreshTelemetry = !stale && (
+        telemetryValue(full, "pv", "total_power") != null ||
+            telemetryValue(full, "load", "power") != null
+        )
 
     SunLinkScreen(
-        title = stringResource(R.string.nav_diagnostics),
-        subtitle = "REST ${com.sunlink.svitgrid.network.RetrofitClient.getBaseUrl()} · WS $transport",
-        refreshing = loading,
-        onRefresh = { vm.loadBackendInfo(); vm.loadTelemetryQuality() }
+        title = "Діагностика",
+        subtitle = "Звʼязок та якість телеметрії",
+        refreshing = refreshing,
+        onRefresh = {
+            vm.loadData()
+            vm.loadFullTelemetry()
+            vm.loadTelemetryQuality()
+        }
     ) {
-        PremiumCard(accent = colors.primary) {
-            PremiumSectionHeader(title = stringResource(R.string.diagnostics_title))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                DataFreshnessIndicator(connectionFreshness, modifier = Modifier.weight(1f))
-                DataFreshnessIndicator(backendFreshness, modifier = Modifier.weight(1f))
-            }
-            Spacer(Modifier.height(PremiumTokens.spaceXs))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                DataFreshnessIndicator(qualityFreshness, modifier = Modifier.weight(1f))
-                DataFreshnessIndicator(wsFreshness, modifier = Modifier.weight(1f))
-            }
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
-            Button(onClick = { vm.checkConnection() }, enabled = !loading, modifier = Modifier.fillMaxWidth()) {
-                Text(if (loading) stringResource(R.string.diagnostics_checking) else stringResource(R.string.diagnostics_check_server))
-            }
-        }
+        StatusPill(statusLabel, statusColor)
 
-        PremiumCard(accent = colors.grid) {
-            PremiumSectionHeader(title = "З'єднання", trailing = { DataFreshnessIndicator(connectionFreshness) })
-            InfoRow("Останнє оновлення", success?.status?.lastUpdate ?: "—")
-            InfoRow("Інвертор", success?.status?.inverterId ?: "—")
-            InfoRow("Доступних реєстрів", success?.status?.availableRegisters?.toString() ?: "—")
-            InfoRow("Останній успішний запит", lastSuccess ?: "—")
-            InfoRow("Транспорт", transport.name)
-        }
-
-        PremiumCard(accent = colors.error) {
-            PremiumSectionHeader(title = "REST / повідомлення", subtitle = "Технічні деталі для діагностики")
-            InfoRow("Остання помилка REST", restError ?: "—")
-            InfoRow("Provenance SOC", telemetryProvenance(telemetryValue(full, "battery", "soc")))
-            InfoRow("Provenance PV", telemetryProvenance(telemetryValue(full, "pv", "total_power")))
-            InfoRow("Provenance Load", telemetryProvenance(telemetryValue(full, "load", "power")))
-            InfoRow("Provenance Grid", telemetryProvenance(telemetryValue(full, "grid", "power")))
-        }
-
-        PremiumCard(accent = colors.primary) {
-            PremiumSectionHeader(title = "Backend", trailing = { DataFreshnessIndicator(backendFreshness) })
-            InfoRow("Стан", backendHealth?.status ?: "—")
-            InfoRow("API / Gateway", listOfNotNull(backendVersion?.api, backendVersion?.gateway).joinToString(" / ").ifBlank { "—" })
-            InfoRow("Протокол", backendVersion?.protocol ?: "—")
-            InfoRow("Джерело", backendHealth?.source ?: "—")
-        }
-
-        PremiumCard(accent = colors.solar) {
-            PremiumSectionHeader(title = stringResource(R.string.quality_title), trailing = { DataFreshnessIndicator(qualityFreshness) })
-            InfoRow(stringResource(R.string.quality_known, quality?.known_parameters ?: 0), "")
-            InfoRow(stringResource(R.string.quality_available, quality?.available_parameters ?: 0), "")
-            InfoRow(stringResource(R.string.quality_unavailable, quality?.unavailable_parameters ?: 0), "")
-            InfoRow("Polling", if (quality?.polling_running == true) "ON" else "OFF")
-            InfoRow("Cycles / failed / missed", "${quality?.cycles ?: 0} / ${quality?.failed_cycles ?: 0} / ${quality?.missed_cycles ?: 0}")
-            InfoRow("Last cycle", quality?.last_cycle_ms?.let { "%.0f ms".format(it) } ?: "—")
-        }
-
+        // 1. З'єднання з інвертором.
         PremiumCard(accent = colors.battery) {
-            PremiumSectionHeader(title = "Стан реєстрів")
-            InfoRow("Активні", quality?.active_registers?.joinToString()?.ifBlank { "—" } ?: "—")
-            InfoRow(
-                "Відомо / Доступно / Недоступно",
-                "${quality?.known_parameters ?: 0} / ${quality?.available_parameters ?: 0} / ${quality?.unavailable_parameters ?: 0}"
-            )
-            InfoRow(
-                "Розширений polling",
-                quality?.extended_polling?.let { "jobs=${it.jobs ?: "—"} · executed=${it.executed.size}" } ?: "—"
-            )
-        }
-
-        PremiumCard(accent = colors.error) {
-            PremiumSectionHeader(title = "Попередження та помилки")
-            val messages = mutableListOf<String>().apply {
-                errorState?.message?.let { add(it) }
-                success?.status?.error?.let { add(it) }
-                quality?.by_confidence
-                    ?.filter { (key, count) -> key in setOf("provisional", "unverified") && count > 0 }
-                    ?.forEach { (key, count) -> add("$key: $count") }
-            }
-            if (messages.isEmpty()) {
-                EmptyState("Помилок і попереджень немає")
-            } else {
-                messages.distinct().forEach {
-                    Text("• $it", style = SunLinkTypography.caption, color = colors.textSecondary)
-                }
-            }
-        }
-
-        PremiumCard(accent = colors.load) {
-            PremiumSectionHeader(title = "Мережеві події (UPDATE / REST / WS)")
-            if (events.isEmpty()) {
-                EmptyState(stringResource(R.string.diagnostics_no_requests))
-            } else {
-                events.take(10).forEach { e ->
+            PremiumSectionHeader(
+                title = "Зʼєднання з інвертором",
+                trailing = {
                     Text(
-                        "${e.type} · ${e.stage} · ${e.endpoint} · HTTP ${e.httpCode ?: "—"} · ${e.errorType ?: "OK"}",
+                        if (online) "Онлайн" else "Офлайн",
                         style = SunLinkTypography.caption,
-                        color = colors.textSecondary
+                        color = if (online) colors.battery else colors.offline
                     )
                 }
+            )
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            DiagRow(
+                "Канал WebSocket",
+                if (wsConnected) "Підключено" else transportLabel(transport),
+                if (wsConnected) colors.grid else colors.textTertiary
+            )
+            DiagRow("Останній пакет", lastPacket, colors.textPrimary)
+            DiagRow("Інтервал опитування", "${vm.pollIntervalSeconds} сек", colors.textPrimary)
+            DiagRow(
+                "Актуальність даних",
+                freshnessLabel(connectionFreshness),
+                when (connectionFreshness) {
+                    Freshness.FRESH -> colors.success
+                    Freshness.STALE, Freshness.PROVISIONAL -> colors.warning
+                    Freshness.UNAVAILABLE -> colors.offline
+                    Freshness.OFFLINE -> colors.error
+                }
+            )
+        }
+
+        // 2. Якість телеметрії.
+        PremiumCard(accent = colors.grid) {
+            PremiumSectionHeader(title = "Якість телеметрії", trailing = {
+                Text(channels, style = SunLinkTypography.caption, color = colors.textTertiary)
+            })
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            QualityRow(
+                "PV1 + навантаження",
+                qualityStatus(
+                    listOf(
+                        telemetryValue(full, "pv", "pv1_power"),
+                        telemetryValue(full, "load", "power")
+                    ),
+                    "Недоступно", stale
+                )
+            )
+            QualityRow(
+                "Батарея (SOC, V, I)",
+                qualityStatus(
+                    listOf(
+                        telemetryValue(full, "battery", "soc"),
+                        telemetryValue(full, "battery", "voltage"),
+                        telemetryValue(full, "battery", "current")
+                    ),
+                    "Недоступно", stale
+                )
+            )
+            QualityRow(
+                "Мережа / імпорт / експорт",
+                qualityStatus(
+                    listOf(
+                        telemetryValue(full, "grid", "power"),
+                        telemetryValue(full, "grid", "import_energy"),
+                        telemetryValue(full, "grid", "export_energy")
+                    ),
+                    "Недоступно", stale
+                )
+            )
+            QualityRow(
+                "Датчик температури батареї",
+                qualityStatus(
+                    listOf(telemetryValue(full, "battery", "temperature")),
+                    "Відсутній", stale
+                )
+            )
+        }
+
+        // 3. Стан помилок. Позитивне повідомлення — тільки якщо помилок немає.
+        PremiumCard(accent = if (hasErrors) colors.error else colors.battery) {
+            PremiumSectionHeader(title = "Стан помилок")
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            if (!hasErrors) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = colors.battery,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.size(PremiumTokens.spaceSm))
+                    Text(
+                        "Активних аварій або збоїв інвертора не зафіксовано",
+                        style = SunLinkTypography.body,
+                        color = colors.textPrimary
+                    )
+                }
+            } else {
+                val messages = buildList {
+                    errorState?.message?.let { add(it) }
+                    success?.status?.error?.let { add(it) }
+                    errorEvents.take(5).forEach { event ->
+                        add("${event.type} · ${event.stage} · ${event.errorType ?: "HTTP ${event.httpCode ?: "—"}"}")
+                    }
+                }.distinct()
+                messages.forEach { message ->
+                    Text("• $message", style = SunLinkTypography.caption, color = colors.error)
+                }
             }
         }
 
+        // Технічні деталі Stage53 — компактно, без перевантаження статусних карток.
         PremiumCard(accent = colors.border) {
-            PremiumSectionHeader(title = "Як читати статуси")
-            Text("• Онлайн / Офлайн — чи відповідає сервер на запити /api/live/raw.", style = SunLinkTypography.caption, color = colors.textTertiary)
-            Text("• Fresh / Stale / Unavailable / Offline — свіжість і доступність підтверджених значень.", style = SunLinkTypography.caption, color = colors.textTertiary)
-            Text("• verified / corroborated — підтверджені значення; provisional — попередні; calculated — розраховані.", style = SunLinkTypography.caption, color = colors.textTertiary)
-            Text("• stale — застарілі дані; unavailable — відсутні значення (показуються як «—», не як 0).", style = SunLinkTypography.caption, color = colors.textTertiary)
+            PremiumSectionHeader(title = "Технічні деталі", subtitle = "REST / provenance / polling")
+            Spacer(Modifier.height(PremiumTokens.spaceXs))
+            DiagRow("REST", telemetryErrorNote(restError, hasFreshTelemetry) ?: "—", colors.textSecondary)
+            DiagRow("Provenance SOC", telemetryProvenance(telemetryValue(full, "battery", "soc")), colors.textSecondary)
+            DiagRow("Provenance PV", telemetryProvenance(telemetryValue(full, "pv", "total_power")), colors.textSecondary)
+            DiagRow("Provenance Load", telemetryProvenance(telemetryValue(full, "load", "power")), colors.textSecondary)
+            DiagRow("Provenance Grid", telemetryProvenance(telemetryValue(full, "grid", "power")), colors.textSecondary)
+            DiagRow("Транспорт", transportLabel(transport), colors.textSecondary)
+            DiagRow(
+                "Цикли / збої / пропуски",
+                "${quality?.cycles ?: 0} / ${quality?.failed_cycles ?: 0} / ${quality?.missed_cycles ?: 0}",
+                colors.textSecondary
+            )
         }
     }
 }
 
 @Composable
-private fun InfoRow(label: String, value: String) {
+private fun DiagRow(label: String, value: String, valueColor: Color) {
     val colors = LocalSunLinkColors.current
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
-        Text(value.ifBlank { "—" }, style = SunLinkTypography.label, color = colors.textPrimary)
+        Text(value.ifBlank { "—" }, style = SunLinkTypography.label, color = valueColor)
+    }
+}
+
+@Composable
+private fun QualityRow(label: String, status: String) {
+    val colors = LocalSunLinkColors.current
+    val confirmed = status == "Підтверджено"
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(colors.surfaceElevated, RoundedCornerShape(6.dp))
+            .padding(horizontal = PremiumTokens.spaceMd, vertical = PremiumTokens.spaceSm),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, style = SunLinkTypography.body, color = colors.textPrimary)
+        Text(
+            status,
+            style = SunLinkTypography.caption,
+            color = if (confirmed) colors.success else colors.textTertiary
+        )
+    }
+}
+
+/** Статус групи каналів формується лише з реальних вимірювань. */
+private fun qualityStatus(items: List<MeasurementValueDto?>, absentLabel: String, stale: Boolean): String {
+    val present = items.filterNotNull()
+    if (present.isEmpty()) return absentLabel
+    val confirmed = present.count { isConfirmed(it, stale) }
+    return when (confirmed) {
+        present.size -> "Підтверджено"
+        0 -> "Недоступно"
+        else -> "Частково"
+    }
+}
+
+private fun lastPacketLabel(iso: String?): String {
+    if (iso.isNullOrBlank()) return "—"
+    return try {
+        val zoned = Instant.parse(iso).atZone(ZoneId.systemDefault())
+        val time = DateTimeFormatter.ofPattern("HH:mm").format(zoned)
+        if (zoned.toLocalDate() == LocalDate.now(ZoneId.systemDefault())) {
+            "Сьогодні, $time"
+        } else {
+            DateTimeFormatter.ofPattern("d MMM, HH:mm", Locale("uk")).format(zoned)
+        }
+    } catch (e: Exception) {
+        "—"
     }
 }

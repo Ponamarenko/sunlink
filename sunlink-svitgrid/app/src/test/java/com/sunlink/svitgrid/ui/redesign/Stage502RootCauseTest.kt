@@ -39,7 +39,8 @@ class Stage502RootCauseTest {
         assertEquals("WS RECONNECTING", transportLabel(TelemetryWebSocketClient.WsTransportState.RECONNECTING))
         assertEquals("WS CLOSED", transportLabel(TelemetryWebSocketClient.WsTransportState.CLOSED))
         val home = File("src/main/java/com/sunlink/svitgrid/ui/redesign/HomeScreen.kt").readText()
-        assertTrue(home.contains("transportLabel(transport)"))
+        assertTrue(home.contains("wsLabel(transport)"))
+        assertFalse(home.contains("WS OPEN"))
     }
 
     @Test

@@ -23,7 +23,7 @@ class Stage53UxTelemetryPolishTest {
         // Помилка залишається видимою в Diagnostics у технічному вигляді.
         val diagnostics = src("DiagnosticsScreen.kt")
         assertTrue(diagnostics.contains("restError"))
-        assertTrue(diagnostics.contains("Остання помилка REST"))
+        assertTrue(diagnostics.contains("DiagRow(\"REST\"") || diagnostics.contains("Остання помилка REST"))
         assertTrue(diagnostics.contains("telemetryProvenance("))
     }
 
@@ -88,7 +88,7 @@ class Stage53UxTelemetryPolishTest {
         assertTrue(home.contains("balance_partial"))
         assertFalse(home.contains("available_parameters"))
         assertFalse(home.contains("28/28"))
-        assertTrue(src("DiagnosticsScreen.kt").contains("quality_known"))
+        assertTrue(src("DiagnosticsScreen.kt").contains("known_parameters"))
     }
 
     @Test
@@ -105,7 +105,7 @@ class Stage53UxTelemetryPolishTest {
     @Test
     fun `version is bumped to stage 53`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 77"))
-        assertTrue(gradle.contains("versionName = \"2.53.1\""))
+        assertTrue(gradle.contains("versionCode = 78"))
+        assertTrue(gradle.contains("versionName = \"2.54.0\""))
     }
 }

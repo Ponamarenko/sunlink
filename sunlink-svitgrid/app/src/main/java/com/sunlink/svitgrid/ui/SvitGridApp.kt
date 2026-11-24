@@ -35,6 +35,7 @@ import com.sunlink.svitgrid.viewmodel.MainViewModel
 import com.sunlink.svitgrid.viewmodel.MainViewModelFactory
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.redesign.PremiumTokens
 import com.sunlink.svitgrid.ui.theme.LocalThemeController
 import com.sunlink.svitgrid.ui.theme.ThemeMode
 import com.sunlink.svitgrid.data.model.InverterData
@@ -137,8 +138,8 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
             composable("diagnostics") { com.sunlink.svitgrid.ui.redesign.DiagnosticsScreen(vm = viewModel) }
 
             // Корисні додаткові розділи — доступні лише з More.
-            composable("inverter-details") { InverterDetailsScreen(vm = viewModel) }
-            composable("all-parameters") { AllParametersScreen(vm = viewModel) }
+            composable("inverter-details") { com.sunlink.svitgrid.ui.redesign.InverterDetailsScreen(vm = viewModel, onNavigate = { go(it) }) }
+            composable("all-parameters") { com.sunlink.svitgrid.ui.redesign.AllParametersScreen(vm = viewModel) }
             // Debug — тільки для debug-збірки; у release deep link безпечно веде в Settings.
             composable("debug") {
                 if (BuildConfig.DEBUG) DebugScreen()
@@ -176,17 +177,20 @@ private fun LegacyRedirect(navController: NavHostController, from: String, to: S
 // Старий DashboardScreen видалено, використовується новий з пакета redesign
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(vm: MainViewModel = viewModel()) {
     val context = LocalContext.current
     val repo = remember { SettingsRepository(context) }
     val scope = rememberCoroutineScope()
-    var serverAddress by remember { mutableStateOf(repo.serverAddress) }
-    var serverPort by remember { mutableStateOf(repo.serverPort) }
-    var useHttps by remember { mutableStateOf(repo.useHttps) }
-    var savedMessage by remember { mutableStateOf("") }
-    var settingsError by remember { mutableStateOf<String?>(null) }
-
+    val colors = LocalSunLinkColors.current
+    val uiState by vm.uiState.collectAsState()
+    val loading by vm.refreshing.collectAsState()
+    val success = uiState as? InverterUiState.Success
+    var pollSeconds by remember { mutableStateOf(repo.pollIntervalSeconds) }
+    var alerts by remember { mutableStateOf(repo.alertsEnabled) }
+    var lowSoc by remember { mutableStateOf(repo.lowSocWarningEnabled) }
+    var socThreshold by remember { mutableStateOf(repo.lowSocThreshold) }
     var checkingUpdate by remember { mutableStateOf(false) }
     var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
     var showUpdateDialog by remember { mutableStateOf(false) }
@@ -194,207 +198,129 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
     var downloadProgress by remember { mutableStateOf(0) }
     var downloadError by remember { mutableStateOf<String?>(null) }
 
-    val uiState by vm.uiState.collectAsState()
-    val connectionLoading by vm.refreshing.collectAsState()
+    LaunchedEffect(Unit) { vm.setPollInterval(pollSeconds) }
 
-    val uiStateValue = uiState
-    val connError = when (uiStateValue) {
-        is InverterUiState.Error -> uiStateValue.message
-        else -> null
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    com.sunlink.svitgrid.ui.redesign.SunLinkScreen(
+        title = "Налаштування",
+        subtitle = "Параметри застосунку та звʼязку",
+        refreshing = loading,
+        onRefresh = { vm.checkConnection() }
     ) {
-        Text(stringResource(R.string.nav_settings), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-
-        // Stage 31: System / Light / Dark — застосовується без перезапуску.
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.theme_title), style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val themeController = LocalThemeController.current
-                    listOf(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK).forEach { mode ->
-                        val label = when (mode) {
-                            ThemeMode.SYSTEM -> R.string.theme_system
-                            ThemeMode.LIGHT -> R.string.theme_light
-                            ThemeMode.DARK -> R.string.theme_dark
-                        }
-                        FilterChip(
-                            selected = themeController.mode == mode,
-                            onClick = { themeController.setMode(mode) },
-                            label = { Text(stringResource(label)) }
-                        )
-                    }
+        com.sunlink.svitgrid.ui.redesign.PremiumCard(accent = colors.primary) {
+            com.sunlink.svitgrid.ui.redesign.PremiumSectionHeader("Вигляд і мова")
+            Column(verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Тема інтерфейсу", style = SunLinkTypography.body, color = colors.textSecondary)
+                    com.sunlink.svitgrid.ui.redesign.StatusPill("Темна (Hybrid Premium) · Активна", colors.primary)
+                }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Мова", style = SunLinkTypography.body, color = colors.textSecondary)
+                    Text("Українська ✓", style = SunLinkTypography.label, color = colors.textPrimary)
                 }
             }
         }
 
-        if (BuildConfig.DEBUG) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = {
-                    repo.useDebugLanEndpoint()
-                    RetrofitClient.setBaseUrl(repo.getBaseUrl())
-                    vm.checkConnection()
-                }) { Text("Debug LAN :18800") }
-                Button(onClick = {
-                    repo.usePublicEndpoint()
-                    RetrofitClient.setBaseUrl(repo.getBaseUrl())
-                    vm.checkConnection()
-                }) { Text("Публічний :9443") }
+        com.sunlink.svitgrid.ui.redesign.PremiumCard(accent = colors.grid) {
+            com.sunlink.svitgrid.ui.redesign.PremiumSectionHeader("Підключення та сервер", "Лише перегляд")
+            Column(verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)) {
+                settingRow("Транспорт", "WebSocket")
+                settingRow("Вузол сервера", repo.serverAddress.ifBlank { "Локальний шлюз" })
+                settingRow("Адреса", repo.getBaseUrl())
+                settingRow(
+                    "Стан з'єднання",
+                    if (success?.status?.online == true) "Підключено" else "Недоступно"
+                )
             }
-        }
-
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.settings_server), style = MaterialTheme.typography.titleMedium)
-
-                OutlinedTextField(
-                    value = serverAddress,
-                    onValueChange = { serverAddress = it; settingsError = null },
-                    label = { Text(stringResource(R.string.settings_address)) },
-                    placeholder = { Text(com.sunlink.svitgrid.data.BackendDefaults.HOST) },
-                    supportingText = { Text("Публічний: https://sunlink.pp.ua:9443/ • Debug LAN: http://192.168.25.20:18800/") },
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = settingsError != null
-                )
-
-                OutlinedTextField(
-                    value = serverPort,
-                    onValueChange = { serverPort = it; settingsError = null },
-                    label = { Text("Порт") },
-                    placeholder = { Text(com.sunlink.svitgrid.data.BackendDefaults.PORT.toString()) },
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = settingsError != null
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = useHttps, onCheckedChange = { useHttps = it })
-                    Text(stringResource(R.string.settings_use_https))
-                }
-
-                Button(
-                    onClick = {
-                        val endpoint = SettingsRepository.parseEndpoint(serverAddress)
-                        if (endpoint == null) {
-                            settingsError = context.getString(R.string.settings_invalid_address)
-                            return@Button
+            if (BuildConfig.DEBUG) {
+                Spacer(Modifier.height(PremiumTokens.spaceSm))
+                Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                    OutlinedButton(onClick = {
+                        if (repo.useDebugLanEndpoint()) {
+                            RetrofitClient.setBaseUrl(repo.getBaseUrl())
+                            vm.checkConnection()
                         }
-                        val finalPort = endpoint.port?.toString() ?: serverPort
-                        val explicitScheme = serverAddress.contains("://")
-                        val finalHttps = if (explicitScheme) SettingsRepository.isHttpsInput(serverAddress) else useHttps
-                        val error = SettingsRepository.validate(endpoint.host, finalPort, finalHttps)
-                        if (error != null) {
-                            settingsError = error
-                            return@Button
-                        }
-                        repo.useHttps = finalHttps
-                        repo.serverAddress = endpoint.host
-                        repo.serverPort = finalPort
-                        val baseUrl = repo.getBaseUrl()
-                        if (!RetrofitClient.setBaseUrl(baseUrl)) {
-                            settingsError = "Не вдалося застосувати адресу: $baseUrl"
-                            return@Button
-                        }
-                        serverAddress = endpoint.host
-                        serverPort = finalPort
-                        useHttps = repo.useHttps
-                        settingsError = null
-                        savedMessage = "Backend: $baseUrl (Перевірте підключення)"
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.settings_save_apply))
-                }
-
-                settingsError?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-                }
-                if (savedMessage.isNotEmpty()) {
-                    Text(savedMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-                }
-                Text(
-                    "Поточний backend: ${RetrofitClient.getBaseUrl()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Button(
-                    onClick = { vm.checkConnection() },
-                    enabled = !connectionLoading,
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text(if (connectionLoading) stringResource(R.string.checking) else "Перевірити з'єднання") }
-                connError?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                val diag by vm.connectionDiagnostic.collectAsState()
-                diag?.let { d ->
-                    Divider()
-                    Text(stringResource(R.string.settings_connection_diagnostics), style = MaterialTheme.typography.titleSmall)
-                    Text("URL: ${d.url}", style = MaterialTheme.typography.bodySmall)
-                    Text("Хост: ${d.host} • порт: ${d.port ?: "—"} • HTTPS: ${if (d.https) "так" else "ні"}",
-                        style = MaterialTheme.typography.bodySmall)
-                    Text("Стан: ${d.state} • час відповіді: ${d.responseTimeMs ?: "—"} мс",
-                        style = MaterialTheme.typography.bodySmall)
-                    Text(d.message, style = MaterialTheme.typography.bodySmall,
-                        color = if (d.state == "OK") MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.error)
-                    d.lastSuccessUtc?.let {
-                        Text("Останній успішний запит: $it", style = MaterialTheme.typography.bodySmall)
-                    }
+                    }) { Text("Debug LAN") }
+                    OutlinedButton(onClick = {
+                        repo.usePublicEndpoint()
+                        RetrofitClient.setBaseUrl(repo.getBaseUrl())
+                        vm.checkConnection()
+                    }) { Text("Публічний") }
                 }
             }
         }
 
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.settings_updates), style = MaterialTheme.typography.titleMedium)
-                Text("Поточна версія: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})", style = MaterialTheme.typography.bodySmall)
-                Button(
-                    onClick = {
-                        checkingUpdate = true
-                        scope.launch {
-                            val result = UpdateManager.checkForUpdates()
-                            checkingUpdate = false
-                            result.onSuccess { info ->
-                                if (info != null) {
-                                    updateInfo = info
-                                    showUpdateDialog = true
-                                } else {
-                                    Toast.makeText(context, "У вас остання версія", Toast.LENGTH_SHORT).show()
-                                }
-                            }.onFailure {
-                                Toast.makeText(context, context.getString(R.string.update_check_failed), Toast.LENGTH_LONG).show()
+        com.sunlink.svitgrid.ui.redesign.PremiumCard(accent = colors.battery) {
+            com.sunlink.svitgrid.ui.redesign.PremiumSectionHeader("Оновлення та сповіщення")
+            Text("Інтервал опитування", style = SunLinkTypography.label, color = colors.textSecondary)
+            Spacer(Modifier.height(PremiumTokens.spaceXs))
+            Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                listOf(5, 15, 30).forEach { seconds ->
+                    FilterChip(
+                        selected = pollSeconds == seconds,
+                        onClick = {
+                            pollSeconds = seconds
+                            repo.pollIntervalSeconds = seconds
+                            vm.setPollInterval(seconds)
+                        },
+                        label = { Text("$seconds с") }
+                    )
+                }
+            }
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Сповіщення про аварії", style = SunLinkTypography.body, color = colors.textSecondary)
+                Switch(checked = alerts, onCheckedChange = { alerts = it; repo.alertsEnabled = it })
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Низький заряд батареї", style = SunLinkTypography.body, color = colors.textSecondary)
+                Switch(checked = lowSoc, onCheckedChange = { lowSoc = it; repo.lowSocWarningEnabled = it })
+            }
+            Text("Поріг попередження: $socThreshold% SOC", style = SunLinkTypography.caption, color = colors.textTertiary)
+            Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                listOf(10, 20, 30).forEach { threshold ->
+                    FilterChip(
+                        selected = socThreshold == threshold,
+                        onClick = { socThreshold = threshold; repo.lowSocThreshold = threshold },
+                        label = { Text("$threshold%") }
+                    )
+                }
+            }
+        }
+
+        com.sunlink.svitgrid.ui.redesign.PremiumCard(accent = colors.solar) {
+            com.sunlink.svitgrid.ui.redesign.PremiumSectionHeader("Про застосунок")
+            Column(verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)) {
+                settingRow("Версія застосунку", BuildConfig.VERSION_NAME)
+                settingRow("Збірка", "${BuildConfig.BUILD_TIME} · ${BuildConfig.GIT_HASH}")
+                settingRow("Ліцензії", "MIT · Ponamarenko")
+            }
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            Button(
+                onClick = {
+                    checkingUpdate = true
+                    scope.launch {
+                        val result = UpdateManager.checkForUpdates()
+                        checkingUpdate = false
+                        result.onSuccess { info ->
+                            if (info != null) {
+                                updateInfo = info
+                                showUpdateDialog = true
+                            } else {
+                                Toast.makeText(context, "У вас остання версія", Toast.LENGTH_SHORT).show()
                             }
+                        }.onFailure {
+                            Toast.makeText(context, context.getString(R.string.update_check_failed), Toast.LENGTH_LONG).show()
                         }
-                    },
-                    enabled = !checkingUpdate && !downloading,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (checkingUpdate) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                        Spacer(Modifier.width(8.dp))
                     }
-                    Text(if (checkingUpdate) stringResource(R.string.checking) else stringResource(R.string.check_updates))
-                }
-                if (downloading) {
-                    LinearProgressIndicator(progress = { downloadProgress / 100f }, modifier = Modifier.fillMaxWidth())
-                    Text("Завантаження: $downloadProgress%", style = MaterialTheme.typography.bodySmall)
-                }
-                downloadError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+                },
+                enabled = !checkingUpdate && !downloading,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (checkingUpdate) stringResource(R.string.checking) else stringResource(R.string.check_updates))
             }
-        }
-
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(stringResource(R.string.settings_info), style = MaterialTheme.typography.titleMedium)
-                Text(
-                    "Сервер за замовчуванням: ${com.sunlink.svitgrid.data.BackendDefaults.HOST}:${com.sunlink.svitgrid.data.BackendDefaults.PORT} (deye_gateway.py)",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text("SunLink · Ponamarenko · MIT", style = MaterialTheme.typography.bodySmall)
-                Text(
-                    "Збірка: ${BuildConfig.BUILD_TIME} · ${BuildConfig.GIT_HASH}",
-                    style = MaterialTheme.typography.bodySmall
-                )
+            if (downloading) {
+                LinearProgressIndicator(progress = { downloadProgress / 100f }, modifier = Modifier.fillMaxWidth())
+                downloadError?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
             }
         }
     }
@@ -404,34 +330,29 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
         AlertDialog(
             onDismissRequest = { if (!downloading) showUpdateDialog = false },
             title = { Text("Доступне оновлення ${info.version}") },
-            text = {
-                Column {
-                    Text(info.changelog.ifBlank { "Немає опису змін." }, style = MaterialTheme.typography.bodyMedium)
-                }
-            },
+            text = { Text(info.changelog.ifBlank { "Немає опису змін." }) },
             confirmButton = {
-                TextButton(
-                    enabled = !downloading,
-                    onClick = {
-                        downloading = true
-                        downloadProgress = 0
-                        downloadError = null
-                        scope.launch {
-                            val res = UpdateManager.downloadAndInstall(context, info.downloadUrl) { pct ->
-                                downloadProgress = pct
-                            }
-                            downloading = false
-                            res.onFailure { e ->
-                                downloadError = "Помилка завантаження: ${e.message}"
-                            }
-                            showUpdateDialog = false
-                        }
+                TextButton(enabled = !downloading, onClick = {
+                    downloading = true
+                    downloadError = null
+                    scope.launch {
+                        val res = UpdateManager.downloadAndInstall(context, info.downloadUrl) { downloadProgress = it }
+                        downloading = false
+                        res.onFailure { e -> downloadError = "Помилка завантаження: ${e.message}" }
+                        showUpdateDialog = false
                     }
-                ) { Text("Завантажити та встановити") }
+                }) { Text("Завантажити та встановити") }
             },
-            dismissButton = {
-                TextButton(enabled = !downloading, onClick = { showUpdateDialog = false }) { Text("Скасувати") }
-            }
+            dismissButton = { TextButton(onClick = { showUpdateDialog = false }) { Text("Скасувати") } }
         )
+    }
+}
+
+@Composable
+private fun settingRow(label: String, value: String) {
+    val colors = LocalSunLinkColors.current
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
+        Text(value, style = SunLinkTypography.mono, color = colors.textPrimary, modifier = Modifier.padding(start = 12.dp))
     }
 }

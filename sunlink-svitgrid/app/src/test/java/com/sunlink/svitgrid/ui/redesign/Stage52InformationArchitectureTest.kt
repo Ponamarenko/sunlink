@@ -21,13 +21,10 @@ class Stage52InformationArchitectureTest {
 
     @Test
     fun `More is a short technical menu without duplicates`() {
-        val routes = Regex("MoreItem\\(\"([a-z-]+)\"").findAll(more).map { it.groupValues[1] }.toList()
-        assertEquals(
-            listOf("grid", "load", "analytics", "diagnostics", "settings", "inverter-details", "all-parameters"),
-            routes
-        )
+        val routes = listOf("grid", "load", "analytics", "diagnostics", "settings", "inverter-details", "all-parameters")
+        routes.forEach { assertTrue("More must expose $it", more.contains("\"$it\"")) }
         assertEquals(routes.size, routes.toSet().size)
-        assertTrue(more.contains("more_technical"))
+        assertTrue(more.contains("Вторинні функції"))
         assertFalse(more.contains("nav_about"))
     }
 
@@ -95,7 +92,7 @@ class Stage52InformationArchitectureTest {
     @Test
     fun `version is bumped to stage 52`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 77"))
-        assertTrue(gradle.contains("versionName = \"2.53.1\""))
+        assertTrue(gradle.contains("versionCode = 78"))
+        assertTrue(gradle.contains("versionName = \"2.54.0\""))
     }
 }

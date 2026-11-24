@@ -78,6 +78,6 @@ class Stage501VisualCorrectionTest {
         assertTrue("versionCode must be >= 72, got $code", code != null && code >= 72)
         val name = Regex("versionName = \"([^\"]+)\"").find(gradle)?.groupValues?.get(1) ?: ""
         assertTrue("versionName must be >= 2.50.0, got $name", name == "2.50.0" || name == "2.50.1" ||
-            name == "2.50.2" || name == "2.51.0" || name == "2.52.0" || name == "2.53.0" || name == "2.53.1")
+            name == "2.50.2" || name == "2.51.0" || name == "2.52.0" || name == "2.53.0" || name == "2.53.1" || name == "2.54.0")
     }
 }

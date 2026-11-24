@@ -28,6 +28,11 @@ class SettingsRepository(private val prefs: SharedPreferences) {
         const val KEY_HTTPS = "server_https"
         const val KEY_MIGRATION_VERSION = "settings_migration_version"
         const val KEY_THEME_MODE = "theme_mode"
+        const val KEY_LANGUAGE = "language"
+        const val KEY_POLL_INTERVAL = "poll_interval_seconds"
+        const val KEY_ALERTS_ENABLED = "alerts_enabled"
+        const val KEY_LOW_SOC_ENABLED = "low_soc_enabled"
+        const val KEY_LOW_SOC_THRESHOLD = "low_soc_threshold"
         const val CURRENT_MIGRATION_VERSION = 4
 
         private val HOST_REGEX = Regex("^[A-Za-z0-9._-]+$")
@@ -195,4 +200,26 @@ class SettingsRepository(private val prefs: SharedPreferences) {
             saved
         }
     }
+
+    /** Мова інтерфейсу: Stitch: Ukrainian; other values reserved. */
+    var language: String
+        get() = prefs.getString(KEY_LANGUAGE, "uk") ?: "uk"
+        set(value) { prefs.edit().putString(KEY_LANGUAGE, value).apply() }
+
+    /** Інтервал оновлення телеметрії, секунди (5 / 15 / 30). */
+    var pollIntervalSeconds: Int
+        get() = prefs.getInt(KEY_POLL_INTERVAL, 5).coerceIn(5, 30)
+        set(value) { prefs.edit().putInt(KEY_POLL_INTERVAL, value.coerceIn(5, 30)).apply() }
+
+    var alertsEnabled: Boolean
+        get() = prefs.getBoolean(KEY_ALERTS_ENABLED, true)
+        set(value) { prefs.edit().putBoolean(KEY_ALERTS_ENABLED, value).apply() }
+
+    var lowSocWarningEnabled: Boolean
+        get() = prefs.getBoolean(KEY_LOW_SOC_ENABLED, true)
+        set(value) { prefs.edit().putBoolean(KEY_LOW_SOC_ENABLED, value).apply() }
+
+    var lowSocThreshold: Int
+        get() = prefs.getInt(KEY_LOW_SOC_THRESHOLD, 20).coerceIn(5, 80)
+        set(value) { prefs.edit().putInt(KEY_LOW_SOC_THRESHOLD, value.coerceIn(5, 80)).apply() }
 }

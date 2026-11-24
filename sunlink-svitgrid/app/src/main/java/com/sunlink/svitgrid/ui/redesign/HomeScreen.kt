@@ -2,33 +2,53 @@ package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.Power
 import androidx.compose.material.icons.filled.SolarPower
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.R
-import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.model.InverterUiState
 import com.sunlink.svitgrid.network.TelemetryWebSocketClient
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
+import com.sunlink.svitgrid.ui.designsystem.SunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
+import com.sunlink.svitgrid.ui.designsystem.sunLinkDarkColors
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 
+/**
+ * Головна — темний "Hybrid Premium" екран. Усі значення надходять лише з
+ * реальної телеметрії (`full` / `series`); відсутні — «—» зі зрозумілим станом.
+ */
 @Composable
 fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {}) {
+    // Усі 12 екранів мають бути темними незалежно від системної теми.
+    CompositionLocalProvider(LocalSunLinkColors provides sunLinkDarkColors()) {
+        HomeScreenContent(vm, onNavigate)
+    }
+}
+
+@Composable
+private fun HomeScreenContent(vm: MainViewModel, onNavigate: (String) -> Unit) {
     val full by vm.fullTelemetry.collectAsState()
     val error by vm.fullTelemetryError.collectAsState()
     val loading by vm.refreshing.collectAsState()
@@ -54,7 +74,7 @@ fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
         online -> Freshness.PROVISIONAL
         else -> Freshness.UNAVAILABLE
     }
-    val freshnessLabel = when (freshness) {
+    val headerStatus = when (freshness) {
         Freshness.FRESH -> stringResource(R.string.state_online)
         Freshness.STALE -> stringResource(R.string.state_stale)
         Freshness.PROVISIONAL -> stringResource(R.string.state_connecting)
@@ -63,110 +83,153 @@ fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
     }
 
     val pvItem = telemetryValue(full, "pv", "total_power")
-    val batteryItem = telemetryValue(full, "battery", "power")
-    val gridItem = telemetryValue(full, "grid", "power")
     val loadItem = telemetryValue(full, "load", "power")
-    val pvValue = pvItem?.normalized_value?.toFloat()
-    val batteryValue = batteryItem?.normalized_value?.toFloat()
-    val gridValue = gridItem?.normalized_value?.toFloat()
-    val loadValue = loadItem?.normalized_value?.toFloat()
+    val gridItem = telemetryValue(full, "grid", "power")
+    val batteryItem = telemetryValue(full, "battery", "power")
+    val socItem = telemetryValue(full, "battery", "soc")
 
-    val pvNode = FlowNode(pvValue, isConfirmed(pvItem, stale), pvFlowDirection(pvValue, isConfirmed(pvItem, stale)))
-    val gridNode = FlowNode(gridValue, isConfirmed(gridItem, stale), gridFlowDirection(gridValue, isConfirmed(gridItem, stale)))
-    val loadNode = FlowNode(loadValue, isConfirmed(loadItem, stale), loadFlowDirection(loadValue, isConfirmed(loadItem, stale)))
-    // Напрямок батареї сервер не підтверджує (конфлікт reg. 190) — показуємо лише активність.
-    val batteryNode = FlowNode(batteryValue, isConfirmed(batteryItem, stale), batteryFlowDirection())
+    val pvValue = pvItem?.normalized_value?.toFloat()
+    val loadValue = displayLoadPower(telemetryNumber(full, "load", "power"))
+    val gridValue = gridItem?.normalized_value?.toFloat()
+    val batteryValue = batteryItem?.normalized_value?.toFloat()
+    val soc = telemetryNumber(full, "battery", "soc")
+    val voltage = telemetryNumber(full, "battery", "voltage")
+    val current = telemetryNumber(full, "battery", "current")
+
+    val pvConfirmed = isConfirmed(pvItem, stale)
+    val loadConfirmed = isConfirmed(loadItem, stale)
+    val gridConfirmed = isConfirmed(gridItem, stale)
+    val batteryConfirmed = isConfirmed(batteryItem, stale)
+    val socConfirmed = isConfirmed(socItem, stale)
+
+    // Лише підтверджені значення керують напрямком потоків; батарея — UNKNOWN.
+    val pvNode = FlowNode(pvValue.takeIf { pvConfirmed }, pvConfirmed, pvFlowDirection(pvValue, pvConfirmed))
+    val loadNode = FlowNode(loadValue.takeIf { loadConfirmed }, loadConfirmed, loadFlowDirection(loadValue, loadConfirmed))
+    val gridNode = FlowNode(gridValue.takeIf { gridConfirmed }, gridConfirmed, gridFlowDirection(gridValue, gridConfirmed))
+    val batteryNode = FlowNode(batteryValue.takeIf { batteryConfirmed }, batteryConfirmed, batteryFlowDirection())
 
     SunLinkScreen(
         title = stringResource(R.string.nav_home),
-        subtitle = "$freshnessLabel · ${stringResource(R.string.dash_last_update, formatTelemetryTimestamp(full?.timestamp))}",
+        subtitle = "SunLink · Оновлено ${formatTelemetryTimestamp(full?.timestamp)}",
         refreshing = loading,
-        onRefresh = { vm.loadData(); vm.loadFullTelemetry() }
+        onRefresh = { vm.loadFullTelemetry(); vm.loadData() }
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Статус-рядок: окремі пілюлі стану, свіжості та WebSocket.
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+            StatusPill(headerStatus, freshnessColor(freshness, colors), Modifier.weight(1f))
             DataFreshnessIndicator(freshness, full?.timestamp, Modifier.weight(1f), compact = true)
-            TransportPill(transport, compact = true)
         }
+        StatusPill(
+            wsLabel(transport),
+            if (transport == TelemetryWebSocketClient.WsTransportState.OPEN) colors.success else colors.warning
+        )
         telemetryErrorNote(error, full != null && !stale)?.let {
             Text(it, color = if (full != null && !stale) colors.warning else colors.error, style = SunLinkTypography.caption)
         }
 
-        PremiumCard(
-            modifier = Modifier.clickable { onNavigate("energy") },
-            accent = colors.primary
-        ) {
+        // Схема потоків: Сонце (вгорі) / Батарея (ліворуч) / Мережа (праворуч) / Будинок (внизу).
+        PremiumCard(modifier = Modifier.clickable { onNavigate("energy") }, accent = colors.primary) {
             PremiumSectionHeader(
-                stringResource(R.string.energy_balance),
-                if (isBalanceComplete(listOf(pvValue, batteryValue, gridValue, loadValue)))
+                title = stringResource(R.string.energy_balance),
+                subtitle = if (isBalanceComplete(listOf(pvValue, batteryValue, gridValue, loadValue)))
                     stringResource(R.string.flow_hint)
                 else stringResource(R.string.balance_partial)
             )
             PremiumEnergyFlow(pvNode, batteryNode, gridNode, loadNode)
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // Ключові показники: PV · SOC · Навантаження.
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
             MetricCard(
-                "PV Power", pvValue, "W", Icons.Default.SolarPower, colors.solar,
-                Modifier.weight(1f).clickable { onNavigate("solar") }, emphasize = true,
+                title = "Потужність PV",
+                value = pvValue.takeIf { pvConfirmed },
+                unit = "W",
+                icon = Icons.Default.SolarPower,
+                accent = colors.solar,
+                modifier = Modifier.weight(1f).clickable { onNavigate("solar") },
                 caption = telemetryLabel(pvItem),
                 sparkline = series["pv_total_power"]?.points?.map { p -> if (p.gap) null else p.value?.toFloat() } ?: emptyList()
             )
             MetricCard(
-                "Battery SOC", telemetryNumber(full, "battery", "soc"), "%",
-                Icons.Default.BatteryChargingFull, colors.battery, Modifier.weight(1f).clickable { onNavigate("battery") },
-                emphasize = true,
+                title = "Заряд SOC",
+                value = soc.takeIf { socConfirmed },
+                unit = "%",
+                icon = Icons.Default.BatteryChargingFull,
+                accent = colors.battery,
+                modifier = Modifier.weight(1f).clickable { onNavigate("battery") },
+                caption = voltageCurrentCaption(voltage, current),
                 sparkline = series["battery_soc"]?.points?.map { p -> if (p.gap) null else p.value?.toFloat() } ?: emptyList()
+            )
+            MetricCard(
+                title = "Навантаження",
+                value = loadValue.takeIf { loadConfirmed },
+                unit = "W",
+                icon = Icons.Default.Power,
+                accent = colors.load,
+                modifier = Modifier.weight(1f).clickable { onNavigate("load") },
+                caption = telemetryLabel(loadItem)
             )
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard("Battery", batteryValue, "W", null, colors.batteryCharge, Modifier.weight(1f).clickable { onNavigate("battery") })
-            MetricCard("Grid", gridValue, "W", null, colors.grid, Modifier.weight(1f).clickable { onNavigate("grid") })
-            MetricCard("Load", loadValue, "W", Icons.Default.Power, colors.load, Modifier.weight(1f).clickable { onNavigate("load") })
-        }
-
+        // Підсумки за сьогодні — 6 окремих показників + посилання на Аналітику.
         PremiumCard(accent = colors.solar) {
-            PremiumSectionHeader(stringResource(R.string.energy_today))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DailyItem("Solar", telemetryNumber(full, "pv", "daily_energy"), colors.solar, Modifier.weight(1f))
-                DailyItem("Import", telemetryNumber(full, "grid", "daily_import_energy"), colors.gridImport, Modifier.weight(1f))
-                DailyItem("Export", telemetryNumber(full, "grid", "daily_export_energy"), colors.gridExport, Modifier.weight(1f))
+            PremiumSectionHeader(
+                title = "За сьогодні",
+                trailing = {
+                    Row(
+                        modifier = Modifier.clickable { onNavigate("analytics") },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Аналітика", style = SunLinkTypography.caption, color = colors.primary)
+                        Icon(Icons.Default.Analytics, contentDescription = null, tint = colors.primary, modifier = Modifier.size(14.dp))
+                    }
+                }
+            )
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                DailyCell("Сонце", telemetryNumber(full, "pv", "daily_energy"), colors.solar, Modifier.weight(1f))
+                DailyCell("Імпорт", telemetryNumber(full, "grid", "daily_import_energy"), colors.gridImport, Modifier.weight(1f))
+                DailyCell("Експорт", telemetryNumber(full, "grid", "daily_export_energy"), colors.gridExport, Modifier.weight(1f))
             }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                DailyItem("Load", telemetryNumber(full, "load", "daily_energy"), colors.load, Modifier.weight(1f))
-                DailyItem("Charge", telemetryNumber(full, "battery", "daily_charge_energy"), colors.batteryCharge, Modifier.weight(1f))
-                DailyItem("Discharge", telemetryNumber(full, "battery", "daily_discharge_energy"), colors.batteryDischarge, Modifier.weight(1f))
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                DailyCell("Навантаження", telemetryNumber(full, "load", "daily_energy"), colors.load, Modifier.weight(1f))
+                DailyCell("Заряд", telemetryNumber(full, "battery", "daily_charge_energy"), colors.batteryCharge, Modifier.weight(1f))
+                DailyCell("Розряд", telemetryNumber(full, "battery", "daily_discharge_energy"), colors.batteryDischarge, Modifier.weight(1f))
             }
         }
-
     }
 }
 
-@Composable
-private fun TransportPill(
-    transport: TelemetryWebSocketClient.WsTransportState,
-    compact: Boolean = false
-) {
-    val colors = LocalSunLinkColors.current
-    val connected = transport == TelemetryWebSocketClient.WsTransportState.OPEN
-    StatusPill(transportLabel(transport), if (connected) colors.success else colors.warning)
+private fun freshnessColor(freshness: Freshness, colors: SunLinkColors): Color = when (freshness) {
+    Freshness.FRESH -> colors.success
+    Freshness.STALE -> colors.warning
+    Freshness.PROVISIONAL -> colors.warning
+    Freshness.OFFLINE -> colors.error
+    Freshness.UNAVAILABLE -> colors.offline
+}
+
+private fun wsLabel(state: TelemetryWebSocketClient.WsTransportState): String = when (state) {
+    TelemetryWebSocketClient.WsTransportState.OPEN -> "WebSocket: підключено"
+    TelemetryWebSocketClient.WsTransportState.CONNECTING,
+    TelemetryWebSocketClient.WsTransportState.RECONNECTING -> "WebSocket: підключення"
+    TelemetryWebSocketClient.WsTransportState.CLOSED -> "WebSocket: відключено"
+}
+
+private fun voltageCurrentCaption(voltage: Float?, current: Float?): String {
+    if (voltage == null && current == null) return "Немає даних"
+    val v = voltage?.let { "%.1fV".format(it) } ?: "—"
+    val a = current?.let { "%.1fA".format(it) } ?: "—"
+    return "$v · $a"
 }
 
 @Composable
-private fun DailyItem(
-    label: String,
-    value: Float?,
-    color: androidx.compose.ui.graphics.Color,
-    modifier: Modifier = Modifier
-) {
+private fun DailyCell(label: String, value: Float?, color: Color, modifier: Modifier = Modifier) {
     val colors = LocalSunLinkColors.current
-    androidx.compose.foundation.layout.Column(
-        modifier = modifier
-            .padding(vertical = PremiumTokens.spaceXs)
-    ) {
+    Column(modifier) {
         Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
         Text(
-            if (value == null) "—" else "%.1f kWh".format(value),
+            text = value?.let { "%.1f kWh".format(it) } ?: "—",
             style = SunLinkTypography.label,
             color = if (value == null) colors.textTertiary else color
         )

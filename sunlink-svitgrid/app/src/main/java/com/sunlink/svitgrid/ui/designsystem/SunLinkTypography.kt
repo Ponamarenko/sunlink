@@ -6,40 +6,47 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 /**
- * Единая типографическая система. Числовые стили используют tabular figures
- * (`tnum`), чтобы ширина показаний не «прыгала» при обновлении телеметрии.
+ * SunLink Hybrid Premium typography, mapped to the Stitch tokens:
+ * Mona Sans → SansSerif display/headline/title,
+ * Commissioner → SansSerif body/label,
+ * Red Hat Mono → Monospace technical values with tabular figures.
  */
 object SunLinkTypography {
-    private val DisplayFont = FontFamily.Monospace
+    private val DisplayFont = FontFamily.SansSerif
     private val TextFont = FontFamily.SansSerif
+    private val MonoFont = FontFamily.Monospace
     private const val Tabular = "tnum"
 
     val display = TextStyle(
         fontFamily = DisplayFont, fontWeight = FontWeight.Bold,
-        fontSize = 38.sp, lineHeight = 44.sp, fontFeatureSettings = Tabular
+        fontSize = 30.sp, lineHeight = 36.sp, fontFeatureSettings = Tabular
     )
     val headline = TextStyle(
-        fontFamily = TextFont, fontWeight = FontWeight.SemiBold,
+        fontFamily = DisplayFont, fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp, lineHeight = 26.sp
     )
     val title = TextStyle(
-        fontFamily = TextFont, fontWeight = FontWeight.SemiBold,
-        fontSize = 15.sp, lineHeight = 20.sp
+        fontFamily = DisplayFont, fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp, lineHeight = 22.sp
     )
     val metric = TextStyle(
-        fontFamily = DisplayFont, fontWeight = FontWeight.Bold,
+        fontFamily = MonoFont, fontWeight = FontWeight.Bold,
         fontSize = 26.sp, lineHeight = 32.sp, fontFeatureSettings = Tabular
     )
     val body = TextStyle(
         fontFamily = TextFont, fontWeight = FontWeight.Normal,
-        fontSize = 13.sp, lineHeight = 18.sp
+        fontSize = 14.sp, lineHeight = 20.sp
     )
     val label = TextStyle(
-        fontFamily = TextFont, fontWeight = FontWeight.Medium,
-        fontSize = 12.sp, lineHeight = 16.sp
+        fontFamily = TextFont, fontWeight = FontWeight.SemiBold,
+        fontSize = 13.sp, lineHeight = 18.sp
     )
     val caption = TextStyle(
-        fontFamily = TextFont, fontWeight = FontWeight.Normal,
+        fontFamily = TextFont, fontWeight = FontWeight.Medium,
         fontSize = 11.sp, lineHeight = 14.sp, fontFeatureSettings = Tabular
+    )
+    val mono = TextStyle(
+        fontFamily = MonoFont, fontWeight = FontWeight.Medium,
+        fontSize = 13.sp, lineHeight = 18.sp, fontFeatureSettings = Tabular
     )
 }
