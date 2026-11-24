@@ -117,7 +117,7 @@ class Stage50ComposeTest {
     @Test
     fun home_shows_premium_flow_and_no_fake_zero() {
         render { HomeScreen(vm = vm()) }
-        compose.onNodeWithText("Fresh").assertIsDisplayed()
+        compose.onNodeWithText("Дані актуальні").assertIsDisplayed()
         compose.onNodeWithText("PV").assertIsDisplayed()
         compose.onNodeWithText("HOME").assertIsDisplayed()
         compose.onNodeWithText("0 W").assertDoesNotExist()
@@ -162,7 +162,7 @@ class Stage50ComposeTest {
         render { LoadScreen(vm = vm()) }
         compose.onNodeWithText("Навантаження").assertIsDisplayed()
         render { EnergyScreen(vm = vm()) }
-        compose.onNodeWithText("Fresh").assertIsDisplayed()
+        compose.onNodeWithText("Дані актуальні").assertIsDisplayed()
     }
 
     @Test

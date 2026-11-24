@@ -32,7 +32,6 @@ fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
     val full by vm.fullTelemetry.collectAsState()
     val error by vm.fullTelemetryError.collectAsState()
     val loading by vm.refreshing.collectAsState()
-    val quality by vm.telemetryQuality.collectAsState()
     val state by vm.uiState.collectAsState()
     val transport by vm.liveTransport.collectAsState()
     val series by vm.seriesByParam.collectAsState()
@@ -40,14 +39,13 @@ fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
 
     LaunchedEffect(Unit) {
         vm.loadFullTelemetry()
-        vm.loadTelemetryQuality()
         vm.loadData()
         vm.loadSeriesFor("pv_total_power")
         vm.loadSeriesFor("battery_soc")
     }
 
     val success = state as? InverterUiState.Success
-    val stale = full?.stale == true || quality?.stale == true || success?.stale == true
+    val stale = full?.stale == true || success?.stale == true
     val online = success?.status?.online == true
     val freshness = when {
         error != null -> Freshness.OFFLINE
@@ -89,13 +87,20 @@ fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
             DataFreshnessIndicator(freshness, full?.timestamp, Modifier.weight(1f), compact = true)
             TransportPill(transport, compact = true)
         }
-        error?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
+        telemetryErrorNote(error, full != null && !stale)?.let {
+            Text(it, color = if (full != null && !stale) colors.warning else colors.error, style = SunLinkTypography.caption)
+        }
 
         PremiumCard(
             modifier = Modifier.clickable { onNavigate("energy") },
             accent = colors.primary
         ) {
-            PremiumSectionHeader(stringResource(R.string.energy_balance), stringResource(R.string.flow_hint))
+            PremiumSectionHeader(
+                stringResource(R.string.energy_balance),
+                if (isBalanceComplete(listOf(pvValue, batteryValue, gridValue, loadValue)))
+                    stringResource(R.string.flow_hint)
+                else stringResource(R.string.balance_partial)
+            )
             PremiumEnergyFlow(pvNode, batteryNode, gridNode, loadNode)
         }
 
@@ -134,9 +139,6 @@ fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
             }
         }
 
-        quality?.let {
-            StatusPill("${it.available_parameters}/${it.known_parameters} parameters", colors.primary)
-        }
     }
 }
 

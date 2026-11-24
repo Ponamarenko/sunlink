@@ -48,6 +48,7 @@ fun SolarScreen(vm: MainViewModel = viewModel()) {
     val error by vm.fullTelemetryError.collectAsState()
     val loading by vm.refreshing.collectAsState()
     val colors = LocalSunLinkColors.current
+    val hasFreshTelemetry = full != null && full?.stale != true
 
     var period by remember { mutableStateOf("24h") }
 
@@ -76,7 +77,9 @@ fun SolarScreen(vm: MainViewModel = viewModel()) {
         }
     ) {
         DataFreshnessIndicator(freshness, full?.timestamp)
-        error?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
+        telemetryErrorNote(error, hasFreshTelemetry)?.let {
+            Text(it, color = if (hasFreshTelemetry) colors.warning else colors.error, style = SunLinkTypography.caption)
+        }
 
         // Hero: загальна генерація з реальним спарклайном. Відсутнє значення — «—», а не нуль.
         MetricCard(

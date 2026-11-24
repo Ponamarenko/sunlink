@@ -195,12 +195,13 @@ fun DataFreshnessIndicator(
 ) {
     val colors = LocalSunLinkColors.current
     val (label, color) = when (freshness) {
-        Freshness.FRESH -> "Fresh" to colors.success
-        Freshness.STALE -> "Stale" to colors.warning
-        Freshness.PROVISIONAL -> "Provisional" to colors.warning
-        Freshness.UNAVAILABLE -> "Unavailable" to colors.offline
-        Freshness.OFFLINE -> "Offline" to colors.error
+        Freshness.FRESH -> freshnessLabel(Freshness.FRESH) to colors.success
+        Freshness.STALE -> freshnessLabel(Freshness.STALE) to colors.warning
+        Freshness.PROVISIONAL -> freshnessLabel(Freshness.PROVISIONAL) to colors.warning
+        Freshness.UNAVAILABLE -> freshnessLabel(Freshness.UNAVAILABLE) to colors.offline
+        Freshness.OFFLINE -> freshnessLabel(Freshness.OFFLINE) to colors.error
     }
+    val timeLabel = formatTelemetryTimestamp(timestamp)
     Row(
         modifier = modifier
             .background(color.copy(alpha = 0.12f), PremiumTokens.pill)
@@ -213,8 +214,8 @@ fun DataFreshnessIndicator(
     ) {
         Box(Modifier.size(if (compact) 6.dp else 7.dp).background(color, CircleShape))
         Text(label, style = SunLinkTypography.caption, color = color, fontWeight = FontWeight.SemiBold)
-        if (!timestamp.isNullOrBlank() && !compact) {
-            Text(timestamp, style = SunLinkTypography.caption, color = colors.textTertiary)
+        if (!timestamp.isNullOrBlank() && !compact && timeLabel != "—") {
+            Text(timeLabel, style = SunLinkTypography.caption, color = colors.textTertiary)
         }
     }
 }

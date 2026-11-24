@@ -14,12 +14,43 @@ fun telemetryValue(dto: TelemetryFullDto?, category: String, field: String): Mea
 fun telemetryNumber(dto: TelemetryFullDto?, category: String, field: String): Float? =
     telemetryValue(dto, category, field)?.normalized_value?.toFloat()
 
-fun telemetryLabel(item: MeasurementValueDto?): String = when {
-    item == null -> "Немає даних"
-    item.confidence == "calculated" -> "Розраховано"
-    item.confidence == "corroborated" -> "Підтверджено"
-    item.confidence == "provisional" -> "Попередньо"
-    else -> item.confidence ?: "Немає даних"
+/**
+ * Єдиний користувацький підпис достовірності. Технічні ідентифікатори
+ * (model_compatible, physically_verified тощо) лишаються в Diagnostics.
+ */
+fun telemetryLabel(item: MeasurementValueDto?): String = when (item?.confidence) {
+    "physically_verified" -> "Підтверджено вимірюванням"
+    "verified" -> "Перевірено"
+    "corroborated" -> "Підтверджено"
+    "calculated" -> "Розраховано"
+    "provisional" -> "Попередньо"
+    "model_compatible" -> "Сумісне з моделлю"
+    "unverified" -> "Не перевірено"
+    null -> "Немає даних"
+    else -> "Стан невідомий"
+}
+
+/** Технічний provenance тільки для Diagnostics/деталей параметра. */
+fun telemetryProvenance(item: MeasurementValueDto?): String =
+    item?.confidence ?: "unavailable"
+
+fun freshnessLabel(freshness: Freshness): String = when (freshness) {
+    Freshness.FRESH -> "Дані актуальні"
+    Freshness.STALE -> "Дані застаріли"
+    Freshness.PROVISIONAL -> "Попередні дані"
+    Freshness.UNAVAILABLE -> "Немає даних"
+    Freshness.OFFLINE -> "Немає з'єднання"
+}
+
+/**
+ * Транзientна помилка REST не є помилкою всієї сторінки, якщо свіжі дані
+ * уже отримані через WebSocket. Повідомлення лишається видимим, але
+ * позначається як тимчасове джерело, а не як втрата телеметрії.
+ */
+fun telemetryErrorNote(error: String?, hasFreshTelemetry: Boolean): String? = when {
+    error.isNullOrBlank() -> null
+    hasFreshTelemetry -> "REST тимчасово недоступний · дані з WebSocket"
+    else -> error
 }
 
 /** Лише підтверджені сервером значення можуть керувати анімацією потоків. */
@@ -92,3 +123,8 @@ fun transportLabel(state: TelemetryWebSocketClient.WsTransportState): String =
  * і не змінюємо знак без підтвердженої семантики джерела.
  */
 fun displayLoadPower(value: Float?): Float? = value
+
+
+/** Повний баланс можна показувати тільки коли всі чотири вузли мають реальні значення. */
+fun isBalanceComplete(values: List<Float?>): Boolean =
+    values.size == 4 && values.all { it != null && !it.isNaN() && !it.isInfinite() }

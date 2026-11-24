@@ -46,6 +46,7 @@ fun BatteryScreen(vm: MainViewModel = viewModel()) {
     val error by vm.fullTelemetryError.collectAsState()
     val loading by vm.refreshing.collectAsState()
     val colors = LocalSunLinkColors.current
+    val hasFreshTelemetry = full != null && full?.stale != true
 
     var period by remember { mutableStateOf("24h") }
 
@@ -72,7 +73,9 @@ fun BatteryScreen(vm: MainViewModel = viewModel()) {
         }
     ) {
         DataFreshnessIndicator(freshness, full?.timestamp)
-        error?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
+        telemetryErrorNote(error, hasFreshTelemetry)?.let {
+            Text(it, color = if (hasFreshTelemetry) colors.warning else colors.error, style = SunLinkTypography.caption)
+        }
 
         // Hero: великий анімований SOC-ринг. Відсутнє значення — «—», а не нуль.
         PremiumCard(accent = colors.battery) {
@@ -86,7 +89,7 @@ fun BatteryScreen(vm: MainViewModel = viewModel()) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 StatusPill(telemetryLabel(socItem), confidenceColor(socItem, colors))
-                Text(full?.timestamp ?: "—", style = SunLinkTypography.caption, color = colors.textTertiary)
+                Text(formatTelemetryTimestamp(full?.timestamp), style = SunLinkTypography.caption, color = colors.textTertiary)
             }
         }
 

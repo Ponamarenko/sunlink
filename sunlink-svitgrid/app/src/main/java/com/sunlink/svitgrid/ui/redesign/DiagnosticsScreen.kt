@@ -38,6 +38,8 @@ private fun DiagnosticsContent(vm: MainViewModel) {
     val backendVersion by vm.backendVersion.collectAsState()
     val quality by vm.telemetryQuality.collectAsState()
     val transport by vm.liveTransport.collectAsState()
+    val full by vm.fullTelemetry.collectAsState()
+    val restError by vm.fullTelemetryError.collectAsState()
     val colors = LocalSunLinkColors.current
 
     LaunchedEffect(Unit) {
@@ -110,6 +112,15 @@ private fun DiagnosticsContent(vm: MainViewModel) {
             InfoRow("Доступних реєстрів", success?.status?.availableRegisters?.toString() ?: "—")
             InfoRow("Останній успішний запит", lastSuccess ?: "—")
             InfoRow("Транспорт", transport.name)
+        }
+
+        PremiumCard(accent = colors.error) {
+            PremiumSectionHeader(title = "REST / повідомлення", subtitle = "Технічні деталі для діагностики")
+            InfoRow("Остання помилка REST", restError ?: "—")
+            InfoRow("Provenance SOC", telemetryProvenance(telemetryValue(full, "battery", "soc")))
+            InfoRow("Provenance PV", telemetryProvenance(telemetryValue(full, "pv", "total_power")))
+            InfoRow("Provenance Load", telemetryProvenance(telemetryValue(full, "load", "power")))
+            InfoRow("Provenance Grid", telemetryProvenance(telemetryValue(full, "grid", "power")))
         }
 
         PremiumCard(accent = colors.primary) {

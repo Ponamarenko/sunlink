@@ -216,6 +216,7 @@
     <string name="energy_today">Енергія сьогодні</string>
     <string name="no_confirmed_data">Немає підтверджених даних</string>
     <string name="confidence_label">Достовірність: %1$s</string>
+    <string name="balance_partial">Баланс частково доступний</string>
     <string name="more_technical">ТЕХНІЧНА ІНФОРМАЦІЯ</string>
     <string name="gap_notice">Пропуски в графіку позначаються розривом, а не нулем</string>
 </resources>
