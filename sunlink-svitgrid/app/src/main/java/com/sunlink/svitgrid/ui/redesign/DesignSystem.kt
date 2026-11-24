@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +28,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.ElectricalServices
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.SolarPower
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
@@ -39,12 +44,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.PathMeasure
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -123,25 +131,18 @@ fun PremiumCard(
     content: @Composable () -> Unit
 ) {
     val colors = LocalSunLinkColors.current
+    // Stitch: rounded surface-container with a hairline border and a soft shadow.
+    // Hero cards use a tinted border; ordinary cards keep the neutral outline.
+    val borderColor = if (accent == colors.primary) colors.border.copy(alpha = 0.7f)
+                      else accent.copy(alpha = 0.35f)
     Card(
         modifier = modifier,
         shape = PremiumTokens.card,
-        colors = CardDefaults.cardColors(containerColor = colors.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        colors = CardDefaults.cardColors(containerColor = colors.surface.copy(alpha = 0.88f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        border = BorderStroke(1.dp, borderColor)
     ) {
-        Box {
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .height(3.dp)
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(accent.copy(alpha = 0.15f), accent, accent.copy(alpha = 0.15f))
-                        )
-                    )
-            )
-            Column(Modifier.padding(PremiumTokens.spaceLg)) { content() }
-        }
+        Column(Modifier.padding(PremiumTokens.spaceLg)) { content() }
     }
 }
 
@@ -483,8 +484,10 @@ data class FlowNode(
 private data class FlowEdge(
     val node: FlowNode,
     val color: Color,
+    val label: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
     val angleRad: Float,
-    val label: String
+    val dashedWhenUnknown: Boolean = false
 )
 
 @Composable
@@ -502,59 +505,98 @@ fun EnergyFlowCanvas(
         infiniteRepeatable(tween(2200, easing = LinearEasing), RepeatMode.Restart),
         label = "flow-phase"
     )
+    // Stitch viewBox 334 x 332: nodes at top / left / right / bottom of a straight cross.
     val edges = listOf(
-        FlowEdge(pv, colors.solar, -Math.PI.toFloat() / 2f, "PV"),
-        FlowEdge(battery, colors.battery, Math.PI.toFloat(), "BATTERY"),
-        FlowEdge(grid, colors.grid, 0f, "GRID"),
-        FlowEdge(load, colors.load, Math.PI.toFloat() / 2f, "HOME")
+        FlowEdge(pv, colors.solar, "Сонце (PV)", Icons.Default.SolarPower, -Math.PI.toFloat() / 2f),
+        FlowEdge(battery, colors.battery, "Батарея", Icons.Default.BatteryChargingFull, Math.PI.toFloat(), true),
+        FlowEdge(grid, colors.grid, "Мережа", Icons.Default.ElectricalServices, 0f, true),
+        FlowEdge(load, colors.load, "Будинок", Icons.Default.Home, Math.PI.toFloat() / 2f)
     )
-    val hasActivity = edges.any { it.node.confirmed && it.node.value != null && abs(it.node.value!!) > 1f }
-
     Canvas(modifier) {
-        val cx = size.width / 2
-        val cy = size.height / 2
-        val radius = minOf(size.width, size.height) * 0.38f
-
-        // Атмосфера: м'яке світіння навколо хаба.
-        drawCircle(colors.primary.copy(alpha = 0.06f), radius * 1.25f, Offset(cx, cy))
-        drawCircle(colors.primary.copy(alpha = 0.05f), radius * 0.85f, Offset(cx, cy))
+        val dash = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f)
+        val hub = Offset(size.width / 2, size.height / 2)
+        val radius = minOf(size.width, size.height) * 0.36f
+        val hubEdge = 34.dp.toPx()
 
         edges.forEach { edge ->
-            val end = Offset(cx + cos(edge.angleRad) * radius, cy + sin(edge.angleRad) * radius)
-            val control = Offset(
-                cx + cos(edge.angleRad) * radius * 0.45f - sin(edge.angleRad) * radius * 0.18f,
-                cy + sin(edge.angleRad) * radius * 0.45f + cos(edge.angleRad) * radius * 0.18f
+            val nodePoint = Offset(
+                hub.x + cos(edge.angleRad) * radius,
+                hub.y + sin(edge.angleRad) * radius
             )
-            val path = Path().apply {
-                moveTo(cx, cy)
-                quadraticBezierTo(control.x, control.y, end.x, end.y)
-            }
             val active = edge.node.confirmed && edge.node.value != null && abs(edge.node.value!!) > 1f
-            val strength = edge.node.value?.let { (abs(it) / 3000f).coerceIn(0.2f, 1f) } ?: 0f
-
-            drawPath(path, edge.color.copy(alpha = if (active) 0.12f else 0.06f), style = Stroke(12.dp.toPx()))
-            drawPath(
-                path,
-                edge.color.copy(alpha = if (active) 0.85f else 0.22f),
-                style = Stroke((2f + 2f * strength).dp.toPx(), cap = StrokeCap.Round)
-            )
-
-            if (active && edge.node.direction != FlowDirection.UNKNOWN) {
-                val measure = PathMeasure().apply { setPath(path, false) }
-                val t = if (edge.node.direction == FlowDirection.TO_HUB) 1f - phase else phase
-                val pos = measure.getPosition(t * measure.length)
-                drawCircle(edge.color.copy(alpha = 0.25f), 9.dp.toPx(), pos)
-                drawCircle(edge.color, 4.dp.toPx(), pos)
+            val start: Offset
+            val end: Offset
+            when (edge.node.direction) {
+                FlowDirection.TO_HUB -> { start = nodePoint; end = hub }
+                FlowDirection.FROM_HUB -> { start = hub; end = nodePoint }
+                FlowDirection.UNKNOWN -> { start = hub; end = nodePoint }
             }
-
-            drawCircle(edge.color.copy(alpha = 0.14f), 22.dp.toPx(), end)
-            drawCircle(edge.color, 5.dp.toPx(), end)
+            if (start != end) {
+                val effect = if (edge.dashedWhenUnknown && !active) dash else null
+                drawLine(
+                    color = edge.color.copy(alpha = if (active) 0.2f else 0.08f),
+                    start = start, end = end,
+                    strokeWidth = 6.dp.toPx(), cap = StrokeCap.Round,
+                    pathEffect = effect
+                )
+                drawLine(
+                    color = edge.color.copy(alpha = if (active) 0.85f else 0.28f),
+                    start = start, end = end,
+                    strokeWidth = 2.2.dp.toPx(), cap = StrokeCap.Round,
+                    pathEffect = effect
+                )
+                // Arrowhead only for a confirmed direction and active power (Stitch polygons).
+                if (active && edge.node.direction != FlowDirection.UNKNOWN) {
+                    val dx = end.x - start.x
+                    val dy = end.y - start.y
+                    val len = kotlin.math.sqrt(dx * dx + dy * dy)
+                    if (len > 0f) {
+                        val ux = dx / len
+                        val uy = dy / len
+                        val tip = if (edge.node.direction == FlowDirection.TO_HUB)
+                            Offset(hub.x + ux * hubEdge, hub.y + uy * hubEdge)
+                        else
+                            Offset(nodePoint.x - ux * 16.dp.toPx(), nodePoint.y - uy * 16.dp.toPx())
+                        val base = Offset(tip.x - ux * 10.dp.toPx(), tip.y - uy * 10.dp.toPx())
+                        val perp = Offset(-uy * 4.dp.toPx(), ux * 4.dp.toPx())
+                        drawPath(
+                            Path().apply {
+                                moveTo(tip.x, tip.y)
+                                lineTo(base.x + perp.x, base.y + perp.y)
+                                lineTo(base.x - perp.x, base.y - perp.y)
+                                close()
+                            },
+                            color = edge.color
+                        )
+                    }
+                }
+                // Animated dot only along a confirmed active direction.
+                if (active && edge.node.direction != FlowDirection.UNKNOWN) {
+                    val measure = PathMeasure().apply {
+                        setPath(Path().apply { moveTo(start.x, start.y); lineTo(end.x, end.y) }, false)
+                    }
+                    val pos = measure.getPosition(phase * measure.length)
+                    drawCircle(edge.color.copy(alpha = 0.2f), 7.dp.toPx(), pos)
+                    drawCircle(edge.color, 3.dp.toPx(), pos)
+                }
+            }
         }
 
-        // Центральний хаб інвертора.
-        drawCircle(colors.surfaceElevated, 38.dp.toPx(), Offset(cx, cy))
-        drawCircle(colors.primary.copy(alpha = if (hasActivity) 0.22f else 0.10f), 30.dp.toPx(), Offset(cx, cy))
-        drawCircle(colors.primary, 8.dp.toPx(), Offset(cx, cy))
+        // Stitch hub: rounded square, not a circle.
+        val hubSize = 64.dp.toPx()
+        drawRoundRect(
+            color = colors.surfaceElevated,
+            topLeft = Offset(hub.x - hubSize / 2, hub.y - hubSize / 2),
+            size = Size(hubSize, hubSize),
+            cornerRadius = CornerRadius(6.dp.toPx())
+        )
+        drawRoundRect(
+            color = colors.border,
+            topLeft = Offset(hub.x - hubSize / 2, hub.y - hubSize / 2),
+            size = Size(hubSize, hubSize),
+            cornerRadius = CornerRadius(6.dp.toPx()),
+            style = Stroke(1.dp.toPx())
+        )
     }
 }
 
@@ -578,40 +620,65 @@ fun PremiumEnergyFlow(
     modifier: Modifier = Modifier
 ) {
     val colors = LocalSunLinkColors.current
-    Box(modifier.fillMaxWidth().height(260.dp)) {
+    Box(modifier.fillMaxWidth().height(300.dp)) {
         EnergyFlowCanvas(pv, battery, grid, load, Modifier.matchParentSize())
-        FlowChip("PV", pv.value, colors.solar, Modifier.align(Alignment.TopCenter))
-        FlowChip("BATTERY", battery.value, colors.battery, Modifier.align(Alignment.CenterStart))
-        FlowChip("GRID", grid.value, colors.grid, Modifier.align(Alignment.CenterEnd))
-        FlowChip("HOME", load.value, colors.load, Modifier.align(Alignment.BottomCenter))
+        FlowChip(
+            "Сонце (PV)", pv.value, colors.solar, Icons.Default.SolarPower,
+            Modifier.align(Alignment.TopCenter).width(156.dp)
+        )
+        FlowChip(
+            "Батарея", battery.value, colors.battery, Icons.Default.BatteryChargingFull,
+            Modifier.align(Alignment.CenterStart).width(104.dp)
+        )
+        FlowChip(
+            "Мережа", grid.value, colors.grid, Icons.Default.ElectricalServices,
+            Modifier.align(Alignment.CenterEnd).width(104.dp)
+        )
+        FlowChip(
+            "Будинок", load.value, colors.load, Icons.Default.Home,
+            Modifier.align(Alignment.BottomCenter).width(156.dp)
+        )
         Box(
             Modifier
                 .align(Alignment.Center)
-                .size(56.dp)
-                .background(colors.surface, CircleShape)
-                .border(1.dp, colors.primary.copy(alpha = 0.5f), CircleShape),
+                .size(64.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(colors.surfaceElevated)
+                .border(1.dp, colors.border, RoundedCornerShape(6.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Bolt, contentDescription = "Inverter", tint = colors.primary, modifier = Modifier.size(24.dp))
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(Icons.Default.Bolt, contentDescription = "Deye inverter", tint = colors.textPrimary, modifier = Modifier.size(20.dp))
+                Text("DEYE", style = SunLinkTypography.caption, color = colors.textSecondary)
+            }
         }
     }
 }
 
 @Composable
-private fun FlowChip(label: String, value: Float?, color: Color, modifier: Modifier = Modifier) {
+private fun FlowChip(
+    label: String,
+    value: Float?,
+    color: Color,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier
+) {
     val colors = LocalSunLinkColors.current
     Column(
         modifier = modifier
             .background(colors.surface.copy(alpha = 0.92f), PremiumTokens.chip)
             .border(1.dp, color.copy(alpha = 0.45f), PremiumTokens.chip)
-            .padding(horizontal = PremiumTokens.spaceSm, vertical = PremiumTokens.spaceXs),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(PremiumTokens.spaceSm),
+        verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)
     ) {
-        Text(label, style = SunLinkTypography.caption, color = color, fontWeight = FontWeight.SemiBold)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)) {
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
+            Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
+        }
         Text(
             if (value == null) "—" else "${value.toInt()} W",
-            style = SunLinkTypography.label,
-            color = if (value == null) colors.textTertiary else colors.textPrimary
+            style = SunLinkTypography.title,
+            color = if (value == null) colors.textTertiary else color
         )
     }
 }

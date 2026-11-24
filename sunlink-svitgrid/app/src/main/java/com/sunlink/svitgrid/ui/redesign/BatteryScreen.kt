@@ -24,6 +24,9 @@ import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
 import com.sunlink.svitgrid.ui.designsystem.sunLinkDarkColors
 import com.sunlink.svitgrid.viewmodel.MainViewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 private const val BatterySocHistoryParam = "battery_soc"
 
@@ -163,9 +166,38 @@ private fun BatteryScreenContent(vm: MainViewModel) {
             if (presentSoc.isEmpty()) {
                 EmptyState("Немає даних")
             } else {
-                AnalyticsChart(socValues, colors.battery, Modifier.fillMaxWidth().height(96.dp))
+                AreaChart(
+                    values = socValues,
+                    color = colors.battery,
+                    modifier = Modifier.fillMaxWidth().height(124.dp),
+                    showGrid = true,
+                    marker = true
+                )
+                Spacer(Modifier.height(PremiumTokens.spaceXs))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    listOf(
+                        hhmm(series[BatterySocHistoryParam]?.start) ?: "00:00",
+                        "04:00",
+                        "08:00",
+                        hhmm(series[BatterySocHistoryParam]?.end) ?: "09:24"
+                    ).forEach { label ->
+                        Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
+                    }
+                }
             }
         }
+    }
+}
+
+/** Часова підпис осі з реального ISO-timestamp; Stitch-значення — лише fallback. */
+private fun hhmm(iso: String?): String? {
+    if (iso.isNullOrBlank()) return null
+    return try {
+        DateTimeFormatter.ofPattern("HH:mm")
+            .withZone(ZoneId.systemDefault())
+            .format(Instant.parse(iso))
+    } catch (e: Exception) {
+        null
     }
 }
 

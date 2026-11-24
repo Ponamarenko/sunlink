@@ -1,6 +1,7 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Troubleshoot
 import androidx.compose.material3.Icon
@@ -34,7 +36,7 @@ import com.sunlink.svitgrid.viewmodel.MainViewModel
  * Уся палітра приходить з кореневого sunLinkDarkColors() — екран завжди темний.
  */
 @Composable
-fun GridScreen(vm: MainViewModel = viewModel()) {
+fun GridScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {}) {
     val full by vm.fullTelemetry.collectAsState()
     val refreshing by vm.refreshing.collectAsState()
     val colors = LocalSunLinkColors.current
@@ -156,8 +158,11 @@ fun GridScreen(vm: MainViewModel = viewModel()) {
             }
         }
 
-        // Не клікаємо: навігації на цьому екрані немає. Це чесна текстова підказка.
-        PremiumCard(accent = colors.primary) {
+        // Stitch: клікабельний рядок переходу до діагностики якості телеметрії.
+        PremiumCard(
+            modifier = Modifier.clickable { onNavigate("diagnostics") },
+            accent = colors.primary
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Default.Troubleshoot,
@@ -179,6 +184,13 @@ fun GridScreen(vm: MainViewModel = viewModel()) {
                         color = colors.textSecondary
                     )
                 }
+                Spacer(Modifier.size(PremiumTokens.spaceSm))
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }

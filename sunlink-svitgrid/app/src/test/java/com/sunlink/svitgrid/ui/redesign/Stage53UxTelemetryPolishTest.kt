@@ -105,7 +105,7 @@ class Stage53UxTelemetryPolishTest {
     @Test
     fun `version is bumped to stage 53`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 78"))
-        assertTrue(gradle.contains("versionName = \"2.54.0\""))
+        assertTrue(gradle.contains("versionCode = 79"))
+        assertTrue(gradle.contains("versionName = \"2.54.1\""))
     }
 }

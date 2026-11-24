@@ -132,7 +132,7 @@ fun SvitGridApp(repository: DataRepository = DataRepository(RetrofitClient.getAp
                     onNavigate = { go(it) }
                 )
             }
-            composable("grid") { com.sunlink.svitgrid.ui.redesign.GridScreen(vm = viewModel) }
+            composable("grid") { com.sunlink.svitgrid.ui.redesign.GridScreen(vm = viewModel, onNavigate = { go(it) }) }
             composable("load") { com.sunlink.svitgrid.ui.redesign.LoadScreen(vm = viewModel) }
             composable("analytics") { com.sunlink.svitgrid.ui.redesign.AnalyticsScreen(vm = viewModel) }
             composable("diagnostics") { com.sunlink.svitgrid.ui.redesign.DiagnosticsScreen(vm = viewModel) }

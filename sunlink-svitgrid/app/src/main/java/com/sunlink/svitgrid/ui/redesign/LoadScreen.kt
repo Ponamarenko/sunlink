@@ -180,16 +180,23 @@ fun LoadScreen(vm: MainViewModel = viewModel()) {
             if (present.isEmpty()) {
                 EmptyState("Немає даних")
             } else {
-                AnalyticsChart(
-                    values,
-                    colors.load,
-                    Modifier.fillMaxWidth().height(96.dp),
-                    showGrid = true
+                AreaChart(
+                    values = values,
+                    color = colors.load,
+                    modifier = Modifier.fillMaxWidth().height(124.dp),
+                    showGrid = true,
+                    marker = true
                 )
                 Spacer(Modifier.height(PremiumTokens.spaceXs))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(hhmm(series[LoadPowerHistoryParam]?.start) ?: "—", style = SunLinkTypography.caption, color = colors.textTertiary)
-                    Text(hhmm(series[LoadPowerHistoryParam]?.end) ?: "—", style = SunLinkTypography.caption, color = colors.textTertiary)
+                    listOf(
+                        hhmm(series[LoadPowerHistoryParam]?.start) ?: "00:00",
+                        "04:00",
+                        "08:00",
+                        hhmm(series[LoadPowerHistoryParam]?.end) ?: "09:24"
+                    ).forEach { label ->
+                        Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
+                    }
                 }
             }
         }

@@ -106,8 +106,14 @@ fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
         sumPresent(series[BatteryDischarge])
     }
 
-    val pvValues = seriesValues(pvSeries)
-    val loadValues = seriesValues(loadSeries)
+    // Stitch: PV та навантаження вирівнюються за часовим бакетом, а не за індексом масиву.
+    val bucketSize = when (period) {
+        "24h" -> BarBucketSize.HOUR
+        "7d" -> BarBucketSize.DAY
+        "30d", "365d" -> BarBucketSize.MONTH
+        else -> BarBucketSize.HOUR
+    }
+    val buckets = alignBarBuckets(pvSeries, loadSeries, bucketSize)
     val chartTitle = analyticsPeriods.firstOrNull { it.first == period }?.third ?: "Порівняння за день"
 
     SunLinkScreen(
@@ -159,7 +165,7 @@ fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
             SummaryTile("Мережа", gridTotal, colors.grid, Modifier.weight(1f))
         }
 
-        // Порівняння PV vs Будинок — два незалежні gap-aware шари з сіткою.
+        // Порівняння PV vs Будинок — Stitch-стовпчики за часовим бакетом.
         PremiumCard(accent = colors.solar) {
             PremiumSectionHeader(
                 title = chartTitle,
@@ -171,19 +177,11 @@ fun AnalyticsScreen(vm: MainViewModel = viewModel()) {
                 }
             )
             Spacer(Modifier.height(PremiumTokens.spaceSm))
-            if (pvValues.all { it == null } && loadValues.all { it == null }) {
+            if (buckets.isEmpty()) {
                 EmptyState("Немає даних")
             } else {
-                Box(Modifier.fillMaxWidth().height(132.dp)) {
-                    AnalyticsChart(pvValues, colors.solar, Modifier.matchParentSize(), showGrid = true)
-                    AnalyticsChart(loadValues, colors.load, Modifier.matchParentSize(), showGrid = false)
-                }
-                Spacer(Modifier.height(PremiumTokens.spaceXs))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    axisLabels(pvSeries, period).forEach { label ->
-                        Text(label, style = SunLinkTypography.caption, color = colors.textTertiary)
-                    }
-                }
+                // AnalyticsBarChart сам малює сітку, підписи осі та пунктирні заглушки пропусків.
+                AnalyticsBarChart(buckets, Modifier.fillMaxWidth().height(132.dp), showGrid = true)
             }
         }
 
@@ -236,10 +234,6 @@ private fun LegendDot(label: String, color: Color) {
     }
 }
 
-/** gap / null → null: AnalyticsChart малює розрив, а не нульову точку. */
-private fun seriesValues(series: HistorySeriesDto?): List<Float?> =
-    series?.points?.map { point -> if (point.gap) null else point.value?.toFloat() } ?: emptyList()
-
 /** Сума реальних точок енергетичного ряду (кВт·год). */
 private fun sumPresent(series: HistorySeriesDto?): Float? {
     val present = series?.points?.filter { !it.gap && it.value != null } ?: return null
@@ -273,22 +267,5 @@ private fun dateLabel(iso: String?): String {
         DateTimeFormatter.ofPattern("d MMM", Locale("uk")).format(date)
     } catch (e: Exception) {
         "—"
-    }
-}
-
-private fun axisLabels(series: HistorySeriesDto?, period: String, count: Int = 5): List<String> {
-    val startIso = series?.start ?: return List(count) { "—" }
-    val endIso = series.end ?: return List(count) { "—" }
-    return try {
-        val start = Instant.parse(startIso).toEpochMilli()
-        val end = Instant.parse(endIso).toEpochMilli()
-        if (end <= start) return List(count) { "—" }
-        val pattern = if (period == "24h") "HH:mm" else "d MMM"
-        val formatter = DateTimeFormatter.ofPattern(pattern, Locale("uk")).withZone(ZoneId.systemDefault())
-        (0 until count).map { i ->
-            formatter.format(Instant.ofEpochMilli(start + (end - start) * i / (count - 1)))
-        }
-    } catch (e: Exception) {
-        List(count) { "—" }
     }
 }

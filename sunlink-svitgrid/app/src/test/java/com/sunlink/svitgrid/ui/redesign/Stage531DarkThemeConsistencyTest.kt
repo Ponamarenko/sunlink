@@ -50,7 +50,7 @@ class Stage531DarkThemeConsistencyTest {
             assertFalse(it.contains("surfaceVariant = Color(0xFFF"))
             assertFalse(it.contains("background = Color(0xFFF"))
         }
-        assertTrue(analytics.contains("AnalyticsChart"))
+        assertTrue(analytics.contains("AnalyticsBarChart("))
         assertTrue(diagnostics.contains("freshnessLabel(") || diagnostics.contains("DataFreshnessIndicator("))
     }
 
@@ -67,7 +67,7 @@ class Stage531DarkThemeConsistencyTest {
     @Test
     fun `version is bumped to stage 53 dot 1`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 78"))
-        assertTrue(gradle.contains("versionName = \"2.54.0\""))
+        assertTrue(gradle.contains("versionCode = 79"))
+        assertTrue(gradle.contains("versionName = \"2.54.1\""))
     }
 }
