@@ -420,10 +420,7 @@ private fun hhmm(iso: String?): String? {
 }
 
 /** gap == true або value == null перетворюється на null — лінія розривається. */
-private fun batteryChartValues(series: HistorySeriesDto?): List<Float?> =
-    series?.points?.map { point ->
-        if (point.gap || point.value == null) null else point.value.toFloat()
-    } ?: emptyList()
+private fun batteryChartValues(series: HistorySeriesDto?): List<Float?> = sanitizedSocSeries(series)
 
 private fun socStateLabel(soc: Float?): String {
     if (soc == null) return "Немає даних"

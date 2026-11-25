@@ -619,9 +619,15 @@ fun EnergyFlowCanvas(
 
     Canvas(modifier) {
         drawRect(brush = Brush.verticalGradient(listOf(colors.surface, colors.background)), size = size)
-        drawCircle(Color(0xFFF5B942).copy(alpha = 0.07f), size.width * 0.5f, Offset(size.width * 0.5f, size.height * 0.12f))
-        drawCircle(Color(0xFF10B981).copy(alpha = 0.05f), size.width * 0.38f, Offset(size.width * 0.18f, size.height * 0.5f))
-        drawCircle(Color(0xFFF59E0B).copy(alpha = 0.08f), size.width * 0.5f, Offset(size.width * 0.5f, size.height * 0.9f))
+        // Stitch uses a dusk photo here. It is not obtainable via MCP, so a restrained
+        // horizon glow approximates the depth without overlapping the diagram.
+        drawRect(
+            brush = Brush.verticalGradient(
+                listOf(Color.Transparent, Color(0xFFF59E0B).copy(alpha = 0.06f))
+            ),
+            topLeft = Offset(0f, size.height * 0.72f),
+            size = Size(size.width, size.height * 0.28f)
+        )
         drawLine(colors.border.copy(alpha = 0.5f), Offset(0f, size.height * 0.86f), Offset(size.width, size.height * 0.86f), 1.dp.toPx())
 
         val hub = Offset(size.width * 0.5f, size.height * 0.5f)

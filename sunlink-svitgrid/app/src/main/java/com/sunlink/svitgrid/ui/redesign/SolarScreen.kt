@@ -101,11 +101,14 @@ private fun SolarScreenContent(vm: MainViewModel) {
             .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        val pv1Variant = pvVariant(full, stale, "pv1")
+        val pv2Variant = pvVariant(full, stale, "pv2")
+        val pv3Variant = pvVariant(full, stale, "pv3")
         SolarHeader(full?.timestamp, totalPower)
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            PvInputCard("Вхід PV1", "Підтверджено", full, stale, PVVariant.CONFIRMED)
-            PvInputCard("Вхід PV2", "Очікування", full, stale, PVVariant.STANDBY)
-            PvInputCard("Вхід PV3", "Недоступно", full, stale, PVVariant.UNAVAILABLE)
+            PvInputCard("Вхід PV1", pvVariantLabel(pv1Variant), full, stale, pv1Variant)
+            PvInputCard("Вхід PV2", pvVariantLabel(pv2Variant), full, stale, pv2Variant)
+            PvInputCard("Вхід PV3", pvVariantLabel(pv3Variant), full, stale, pv3Variant)
         }
         GenerationCard(totalPower, dailyEnergy, peak, series[SolarPowerHistoryParam], values)
     }
@@ -164,6 +167,24 @@ private fun SolarHeader(timestamp: String?, totalPower: Float?) {
 
 /** Stitch renders PV1, PV2 and PV3 with three distinct surface treatments. */
 private enum class PVVariant { CONFIRMED, STANDBY, UNAVAILABLE }
+
+private fun pvVariant(full: TelemetryFullDto?, stale: Boolean, prefix: String): PVVariant {
+    val item = telemetryValue(full, "pv", "${prefix}_power")
+    val value = item?.normalized_value?.toFloat()
+    val hasAny = item != null || telemetryValue(full, "pv", "${prefix}_voltage") != null ||
+        telemetryValue(full, "pv", "${prefix}_current") != null
+    return when {
+        isConfirmed(item, stale) && value != null && value > 1f -> PVVariant.CONFIRMED
+        hasAny -> PVVariant.STANDBY
+        else -> PVVariant.UNAVAILABLE
+    }
+}
+
+private fun pvVariantLabel(variant: PVVariant): String = when (variant) {
+    PVVariant.CONFIRMED -> "Підтверджено"
+    PVVariant.STANDBY -> "Очікування"
+    PVVariant.UNAVAILABLE -> "Недоступно"
+}
 
 @Composable
 private fun PvInputCard(title: String, fallbackStatus: String, full: TelemetryFullDto?, stale: Boolean, variant: PVVariant) {

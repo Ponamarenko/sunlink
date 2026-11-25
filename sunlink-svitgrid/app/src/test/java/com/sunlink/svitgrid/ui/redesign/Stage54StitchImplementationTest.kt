@@ -91,7 +91,7 @@ class Stage54StitchImplementationTest {
     @Test
     fun `version is bumped to stage 54`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 81"))
-        assertTrue(gradle.contains("versionName = \"2.56.0\""))
+        assertTrue(gradle.contains("versionCode = 82"))
+        assertTrue(gradle.contains("versionName = \"2.57.0\""))
     }
 }

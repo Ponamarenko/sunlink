@@ -30,9 +30,10 @@ class Stage55VisualRedesignTest {
     fun `home flow has atmospheric depth and no primitive placeholder`() {
         val ds = s("DesignSystem.kt")
         assertTrue(ds.contains("Brush.verticalGradient(listOf(colors.surface, colors.background))"))
-        assertTrue(ds.contains("Color(0xFFF5B942).copy(alpha = 0.07f)"))
-        assertTrue(ds.contains("Color(0xFF10B981).copy(alpha = 0.05f)"))
-        assertTrue(ds.contains("Color(0xFFF59E0B).copy(alpha = 0.08f)"))
+        assertFalse(ds.contains("drawCircle(Color(0xFFF5B942).copy(alpha = 0.07f)"))
+        assertFalse(ds.contains("drawCircle(Color(0xFF10B981).copy(alpha = 0.05f)"))
+        assertFalse(ds.contains("drawCircle(Color(0xFFF59E0B).copy(alpha = 0.08f)"))
+        assertTrue(ds.contains("horizon glow"))
         assertTrue(ds.contains("DEYE"))
         assertTrue(ds.contains("drawLine("))
     }
@@ -74,7 +75,7 @@ class Stage55VisualRedesignTest {
     @Test
     fun `version is bumped to stage 55`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 81"))
-        assertTrue(gradle.contains("versionName = \"2.56.0\""))
+        assertTrue(gradle.contains("versionCode = 82"))
+        assertTrue(gradle.contains("versionName = \"2.57.0\""))
     }
 }

@@ -128,3 +128,14 @@ fun displayLoadPower(value: Float?): Float? = value
 /** Повний баланс можна показувати тільки коли всі чотири вузли мають реальні значення. */
 fun isBalanceComplete(values: List<Float?>): Boolean =
     values.size == 4 && values.all { it != null && !it.isNaN() && !it.isInfinite() }
+
+/** SOC must be a physically valid percentage. Production history may contain bad samples. */
+fun isValidSoc(value: Float?): Boolean =
+    value != null && !value.isNaN() && !value.isInfinite() && value >= 0f && value <= 100f
+
+/** Bad SOC samples from history become gaps; they are never clamped to 0..100. */
+fun sanitizedSocSeries(series: com.sunlink.svitgrid.data.dto.HistorySeriesDto?): List<Float?> =
+    series?.points?.map { point ->
+        val value = point.value?.toFloat()
+        if (point.gap || !isValidSoc(value)) null else value
+    } ?: emptyList()
