@@ -9,6 +9,16 @@ import java.io.File
 class Stage57QualityFixTest {
 
     @Test
+    fun `physically verified telemetry is confirmed not treated as waiting`() {
+        val item = com.sunlink.svitgrid.data.dto.MeasurementValueDto(
+            normalized_value = 1012.0, confidence = "physically_verified", quality = "valid"
+        )
+        assertTrue(isConfirmed(item, false))
+        assertFalse(isConfirmed(item, true))
+        assertFalse(isConfirmed(item.copy(confidence = "model_compatible"), false))
+    }
+
+    @Test
     fun `physically impossible SOC samples become gaps not max values`() {
         assertTrue(isValidSoc(93f))
         assertTrue(isValidSoc(0f))
@@ -41,6 +51,16 @@ class Stage57QualityFixTest {
     }
 
     @Test
+    fun `pv cards read their own channel not a shared prefix`() {
+        val solar = File("src/main/java/com/sunlink/svitgrid/ui/redesign/SolarScreen.kt").readText()
+        assertTrue(solar.contains("PvInputCard("))
+        assertTrue(solar.contains("Вхід PV1"))
+        assertTrue(solar.contains("\"pv1\""))
+        assertTrue(solar.contains("\"pv2\""))
+        assertTrue(solar.contains("\"pv3\""))
+    }
+
+    @Test
     fun `home has no huge decorative circles`() {
         val ds = File("src/main/java/com/sunlink/svitgrid/ui/redesign/DesignSystem.kt").readText()
         assertFalse(ds.contains("drawCircle(Color(0xFFF5B942).copy(alpha = 0.07f)"))
@@ -52,7 +72,7 @@ class Stage57QualityFixTest {
     @Test
     fun `version is bumped to stage 57`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 82"))
-        assertTrue(gradle.contains("versionName = \"2.57.0\""))
+        assertTrue(gradle.contains("versionCode = 83"))
+        assertTrue(gradle.contains("versionName = \"2.58.0\""))
     }
 }

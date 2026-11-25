@@ -179,9 +179,9 @@ private fun LegacyRedirect(navController: NavHostController, from: String, to: S
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(vm: MainViewModel = viewModel()) {
+fun SettingsScreen(vm: MainViewModel = viewModel(), previewRepo: SettingsRepository? = null) {
     val context = LocalContext.current
-    val repo = remember { SettingsRepository(context) }
+    val repo = remember { previewRepo ?: SettingsRepository(context) }
     val scope = rememberCoroutineScope()
     val colors = LocalSunLinkColors.current
     val uiState by vm.uiState.collectAsState()

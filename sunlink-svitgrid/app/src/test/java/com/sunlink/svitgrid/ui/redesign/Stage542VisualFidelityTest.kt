@@ -123,7 +123,7 @@ class Stage542VisualFidelityTest {
     @Test
     fun `version is bumped to stage 54 dot 2`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 82"))
-        assertTrue(gradle.contains("versionName = \"2.57.0\""))
+        assertTrue(gradle.contains("versionCode = 83"))
+        assertTrue(gradle.contains("versionName = \"2.58.0\""))
     }
 }

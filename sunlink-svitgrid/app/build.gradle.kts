@@ -1,4 +1,5 @@
 plugins {
+    id("app.cash.paparazzi")
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
@@ -11,8 +12,8 @@ android {
         applicationId = "com.sunlink.svitgrid"
         minSdk = 26
         targetSdk = 34
-        versionCode = 82
-        versionName = "2.57.0"
+        versionCode = 83
+        versionName = "2.58.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -98,6 +99,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("app.cash.paparazzi:paparazzi:1.3.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("androidx.test:core:1.5.0")

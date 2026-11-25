@@ -106,9 +106,9 @@ private fun SolarScreenContent(vm: MainViewModel) {
         val pv3Variant = pvVariant(full, stale, "pv3")
         SolarHeader(full?.timestamp, totalPower)
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            PvInputCard("Вхід PV1", pvVariantLabel(pv1Variant), full, stale, pv1Variant)
-            PvInputCard("Вхід PV2", pvVariantLabel(pv2Variant), full, stale, pv2Variant)
-            PvInputCard("Вхід PV3", pvVariantLabel(pv3Variant), full, stale, pv3Variant)
+            PvInputCard("Вхід PV1", pvVariantLabel(pv1Variant), full, stale, pv1Variant, "pv1")
+            PvInputCard("Вхід PV2", pvVariantLabel(pv2Variant), full, stale, pv2Variant, "pv2")
+            PvInputCard("Вхід PV3", pvVariantLabel(pv3Variant), full, stale, pv3Variant, "pv3")
         }
         GenerationCard(totalPower, dailyEnergy, peak, series[SolarPowerHistoryParam], values)
     }
@@ -187,13 +187,8 @@ private fun pvVariantLabel(variant: PVVariant): String = when (variant) {
 }
 
 @Composable
-private fun PvInputCard(title: String, fallbackStatus: String, full: TelemetryFullDto?, stale: Boolean, variant: PVVariant) {
+private fun PvInputCard(title: String, fallbackStatus: String, full: TelemetryFullDto?, stale: Boolean, variant: PVVariant, prefix: String) {
     val colors = LocalSunLinkColors.current
-    val prefix = when (variant) {
-        PVVariant.CONFIRMED -> "pv1"
-        PVVariant.STANDBY -> "pv2"
-        PVVariant.UNAVAILABLE -> "pv3"
-    }
     val powerItem = telemetryValue(full, "pv", "${prefix}_power")
     val voltageItem = telemetryValue(full, "pv", "${prefix}_voltage")
     val currentItem = telemetryValue(full, "pv", "${prefix}_current")

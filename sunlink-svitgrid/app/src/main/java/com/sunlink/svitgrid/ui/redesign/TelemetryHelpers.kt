@@ -57,7 +57,7 @@ fun telemetryErrorNote(error: String?, hasFreshTelemetry: Boolean): String? = wh
 fun isConfirmed(item: MeasurementValueDto?, stale: Boolean): Boolean {
     if (item == null || stale) return false
     if (item.quality == "stale" || item.quality == "unavailable") return false
-    return item.confidence in setOf("verified", "corroborated", "calculated")
+    return item.confidence in setOf("verified", "physically_verified", "corroborated", "calculated")
 }
 
 /** Розриває ряд на сегменти з індексами: null/NaN не з'єднуються лінією. */

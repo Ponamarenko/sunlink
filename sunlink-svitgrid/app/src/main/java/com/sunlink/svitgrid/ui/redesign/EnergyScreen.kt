@@ -212,14 +212,14 @@ private fun CoverageCard(solarPct: Int?, pvValue: Float?, otherValue: Float?, lo
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     Box(
                         Modifier
-                            .weight(solarPct.toFloat())
+                            .weight(solarPct.coerceIn(1, 99).toFloat())
                             .height(8.dp)
                             .clip(RoundedCornerShape(topStart = 50.dp, bottomStart = 50.dp))
                             .background(colors.solar)
                     )
                     Box(
                         Modifier
-                            .weight((100 - solarPct).toFloat())
+                            .weight((100 - solarPct).coerceIn(1, 99).toFloat())
                             .height(8.dp)
                             .clip(RoundedCornerShape(topEnd = 50.dp, bottomEnd = 50.dp))
                             .background(colors.battery.copy(alpha = 0.6f))
