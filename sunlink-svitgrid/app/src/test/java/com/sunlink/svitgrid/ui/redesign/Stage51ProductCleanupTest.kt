@@ -96,7 +96,7 @@ class Stage51ProductCleanupTest {
     @Test
     fun `version is bumped to stage 51`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 80"))
-        assertTrue(gradle.contains("versionName = \"2.55.0\""))
+        assertTrue(gradle.contains("versionCode = 81"))
+        assertTrue(gradle.contains("versionName = \"2.56.0\""))
     }
 }

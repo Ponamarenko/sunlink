@@ -579,7 +579,9 @@ enum class FlowDirection { TO_HUB, FROM_HUB, UNKNOWN }
 data class FlowNode(
     val value: Float?,
     val confirmed: Boolean = value != null,
-    val direction: FlowDirection = FlowDirection.UNKNOWN
+    val direction: FlowDirection = FlowDirection.UNKNOWN,
+    val secondary: String? = null,
+    val status: String? = null
 )
 
 private data class FlowEdge(
@@ -587,7 +589,8 @@ private data class FlowEdge(
     val color: Color,
     val label: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val angleRad: Float,
+    val nx: Float,
+    val ny: Float,
     val dashedWhenUnknown: Boolean = false
 )
 
@@ -606,128 +609,64 @@ fun EnergyFlowCanvas(
         infiniteRepeatable(tween(2200, easing = LinearEasing), RepeatMode.Restart),
         label = "flow-phase"
     )
-    // Stitch viewBox 334 x 332: nodes at top / left / right / bottom of a straight cross.
+    // Stitch viewBox 334 x 332, scaled to the Compose container.
     val edges = listOf(
-        FlowEdge(pv, colors.solar, "Сонце (PV)", Icons.Default.SolarPower, -Math.PI.toFloat() / 2f),
-        FlowEdge(battery, colors.battery, "Батарея", Icons.Default.BatteryChargingFull, Math.PI.toFloat(), true),
-        FlowEdge(grid, colors.grid, "Мережа", Icons.Default.ElectricalServices, 0f, true),
-        FlowEdge(load, colors.load, "Будинок", Icons.Default.Home, Math.PI.toFloat() / 2f)
+        FlowEdge(pv, colors.solar, "Сонце (PV)", Icons.Default.SolarPower, 0.50f, 74f / 332f),
+        FlowEdge(battery, colors.battery, "Батарея", Icons.Default.BatteryChargingFull, 104f / 334f, 0.50f, true),
+        FlowEdge(grid, colors.grid, "Мережа", Icons.Default.ElectricalServices, 230f / 334f, 0.50f, true),
+        FlowEdge(load, colors.load, "Будинок", Icons.Default.Home, 0.50f, 256f / 332f)
     )
+
     Canvas(modifier) {
-        val hub = Offset(size.width / 2, size.height / 2)
-        val radius = minOf(size.width, size.height) * 0.36f
-        val hubEdge = 34.dp.toPx()
+        drawRect(brush = Brush.verticalGradient(listOf(colors.surface, colors.background)), size = size)
+        drawCircle(Color(0xFFF5B942).copy(alpha = 0.07f), size.width * 0.5f, Offset(size.width * 0.5f, size.height * 0.12f))
+        drawCircle(Color(0xFF10B981).copy(alpha = 0.05f), size.width * 0.38f, Offset(size.width * 0.18f, size.height * 0.5f))
+        drawCircle(Color(0xFFF59E0B).copy(alpha = 0.08f), size.width * 0.5f, Offset(size.width * 0.5f, size.height * 0.9f))
+        drawLine(colors.border.copy(alpha = 0.5f), Offset(0f, size.height * 0.86f), Offset(size.width, size.height * 0.86f), 1.dp.toPx())
 
-        // Stitch uses a dusk photo under a gradient. Compose recreates the depth with
-        // layered translucent gradients: no image placeholder, no fake telemetry.
-        drawRect(
-            brush = Brush.verticalGradient(listOf(colors.surface, colors.background)),
-            size = size
-        )
-        drawCircle(Color(0xFFF5B942).copy(alpha = 0.07f), radius * 1.7f, Offset(hub.x, hub.y - radius))
-        drawCircle(Color(0xFF10B981).copy(alpha = 0.05f), radius * 1.4f, Offset(hub.x - radius, hub.y))
-        drawCircle(Color(0xFFF59E0B).copy(alpha = 0.08f), radius * 1.7f, Offset(hub.x, hub.y + radius))
-        drawLine(
-            color = colors.border.copy(alpha = 0.5f),
-            start = Offset(0f, size.height * 0.86f),
-            end = Offset(size.width, size.height * 0.86f),
-            strokeWidth = 1.dp.toPx()
-        )
-
+        val hub = Offset(size.width * 0.5f, size.height * 0.5f)
         val dash = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f)
-
         edges.forEach { edge ->
-            val nodePoint = Offset(
-                hub.x + cos(edge.angleRad) * radius,
-                hub.y + sin(edge.angleRad) * radius
-            )
+            val node = Offset(size.width * edge.nx, size.height * edge.ny)
             val active = edge.node.confirmed && edge.node.value != null && abs(edge.node.value!!) > 1f
-            val start: Offset
-            val end: Offset
-            when (edge.node.direction) {
-                FlowDirection.TO_HUB -> { start = nodePoint; end = hub }
-                FlowDirection.FROM_HUB -> { start = hub; end = nodePoint }
-                FlowDirection.UNKNOWN -> { start = hub; end = nodePoint }
+            val (start, end) = when (edge.node.direction) {
+                FlowDirection.TO_HUB -> node to hub
+                else -> hub to node
             }
-            if (start != end) {
-                val effect = if (edge.dashedWhenUnknown && !active) dash else null
-                drawLine(
-                    color = edge.color.copy(alpha = if (active) 0.2f else 0.08f),
-                    start = start, end = end,
-                    strokeWidth = 6.dp.toPx(), cap = StrokeCap.Round,
-                    pathEffect = effect
-                )
-                drawLine(
-                    color = edge.color.copy(alpha = if (active) 0.85f else 0.28f),
-                    start = start, end = end,
-                    strokeWidth = 2.2.dp.toPx(), cap = StrokeCap.Round,
-                    pathEffect = effect
-                )
-                // Arrowhead only for a confirmed direction and active power (Stitch polygons).
-                if (active && edge.node.direction != FlowDirection.UNKNOWN) {
-                    val dx = end.x - start.x
-                    val dy = end.y - start.y
-                    val len = kotlin.math.sqrt(dx * dx + dy * dy)
-                    if (len > 0f) {
-                        val ux = dx / len
-                        val uy = dy / len
-                        val tip = if (edge.node.direction == FlowDirection.TO_HUB)
-                            Offset(hub.x + ux * hubEdge, hub.y + uy * hubEdge)
-                        else
-                            Offset(nodePoint.x - ux * 16.dp.toPx(), nodePoint.y - uy * 16.dp.toPx())
-                        val base = Offset(tip.x - ux * 10.dp.toPx(), tip.y - uy * 10.dp.toPx())
-                        val perp = Offset(-uy * 4.dp.toPx(), ux * 4.dp.toPx())
-                        drawPath(
-                            Path().apply {
-                                moveTo(tip.x, tip.y)
-                                lineTo(base.x + perp.x, base.y + perp.y)
-                                lineTo(base.x - perp.x, base.y - perp.y)
-                                close()
-                            },
-                            color = edge.color
-                        )
-                    }
-                }
-                // Animated dot only along a confirmed active direction.
-                if (active && edge.node.direction != FlowDirection.UNKNOWN) {
-                    val measure = PathMeasure().apply {
-                        setPath(Path().apply { moveTo(start.x, start.y); lineTo(end.x, end.y) }, false)
-                    }
-                    val pos = measure.getPosition(phase * measure.length)
-                    drawCircle(edge.color.copy(alpha = 0.2f), 7.dp.toPx(), pos)
+            val effect = if (edge.dashedWhenUnknown && !active) dash else null
+            drawLine(edge.color.copy(alpha = if (active) 0.22f else 0.08f), start, end, 4.dp.toPx(), StrokeCap.Round, effect)
+            drawLine(edge.color.copy(alpha = if (active) 0.9f else 0.3f), start, end, 2.2.dp.toPx(), StrokeCap.Round, effect)
+            if (active && edge.node.direction != FlowDirection.UNKNOWN) {
+                val dx = end.x - start.x
+                val dy = end.y - start.y
+                val len = kotlin.math.sqrt(dx * dx + dy * dy)
+                if (len > 0f) {
+                    val ux = dx / len
+                    val uy = dy / len
+                    val tip = if (edge.node.direction == FlowDirection.TO_HUB)
+                        Offset(hub.x + ux * 30.dp.toPx(), hub.y + uy * 30.dp.toPx())
+                    else Offset(node.x - ux * 14.dp.toPx(), node.y - uy * 14.dp.toPx())
+                    val base = Offset(tip.x - ux * 9.dp.toPx(), tip.y - uy * 9.dp.toPx())
+                    val perp = Offset(-uy * 4.dp.toPx(), ux * 4.dp.toPx())
+                    drawPath(Path().apply {
+                        moveTo(tip.x, tip.y); lineTo(base.x + perp.x, base.y + perp.y); lineTo(base.x - perp.x, base.y - perp.y); close()
+                    }, edge.color)
+                    val measure = PathMeasure().apply { setPath(Path().apply { moveTo(start.x, start.y); lineTo(end.x, end.y) }, false) }
+                    val pos = measure.getPosition(if (edge.node.direction == FlowDirection.TO_HUB) 1f - phase else phase * measure.length)
                     drawCircle(edge.color, 3.dp.toPx(), pos)
                 }
             }
         }
-
-        // Stitch hub: rounded square, not a circle.
         val hubSize = 64.dp.toPx()
-        drawRoundRect(
-            color = colors.surfaceElevated,
-            topLeft = Offset(hub.x - hubSize / 2, hub.y - hubSize / 2),
-            size = Size(hubSize, hubSize),
-            cornerRadius = CornerRadius(6.dp.toPx())
-        )
-        drawRoundRect(
-            color = colors.border,
-            topLeft = Offset(hub.x - hubSize / 2, hub.y - hubSize / 2),
-            size = Size(hubSize, hubSize),
-            cornerRadius = CornerRadius(6.dp.toPx()),
-            style = Stroke(1.dp.toPx())
-        )
+        drawRoundRect(colors.surfaceElevated, Offset(hub.x - hubSize / 2, hub.y - hubSize / 2), Size(hubSize, hubSize), CornerRadius(6.dp.toPx()))
+        drawRoundRect(colors.border, Offset(hub.x - hubSize / 2, hub.y - hubSize / 2), Size(hubSize, hubSize), CornerRadius(6.dp.toPx()), style = Stroke(1.dp.toPx()))
     }
 }
 
 @Composable
 fun EnergyFlowCanvas(
-    pv: Float?,
-    battery: Float?,
-    grid: Float?,
-    load: Float?,
-    modifier: Modifier = Modifier
-) = EnergyFlowCanvas(
-    FlowNode(pv), FlowNode(battery), FlowNode(grid), FlowNode(load), modifier
-)
+    pv: Float?, battery: Float?, grid: Float?, load: Float?, modifier: Modifier = Modifier
+) = EnergyFlowCanvas(FlowNode(pv), FlowNode(battery), FlowNode(grid), FlowNode(load), modifier)
 
 @Composable
 fun PremiumEnergyFlow(
@@ -738,31 +677,15 @@ fun PremiumEnergyFlow(
     modifier: Modifier = Modifier
 ) {
     val colors = LocalSunLinkColors.current
-    Box(modifier.fillMaxWidth().height(300.dp)) {
+    Box(modifier.fillMaxWidth().height(332.dp)) {
         EnergyFlowCanvas(pv, battery, grid, load, Modifier.matchParentSize())
-        FlowChip(
-            "Сонце (PV)", pv.value, colors.solar, Icons.Default.SolarPower,
-            Modifier.align(Alignment.TopCenter).width(156.dp)
-        )
-        FlowChip(
-            "Батарея", battery.value, colors.battery, Icons.Default.BatteryChargingFull,
-            Modifier.align(Alignment.CenterStart).width(104.dp)
-        )
-        FlowChip(
-            "Мережа", grid.value, colors.grid, Icons.Default.ElectricalServices,
-            Modifier.align(Alignment.CenterEnd).width(104.dp)
-        )
-        FlowChip(
-            "Будинок", load.value, colors.load, Icons.Default.Home,
-            Modifier.align(Alignment.BottomCenter).width(156.dp)
-        )
+        StitchNode(pv, "Сонце (PV)", colors.solar, Icons.Default.SolarPower, Modifier.align(Alignment.TopCenter).width(160.dp))
+        StitchNode(battery, "Батарея", colors.battery, Icons.Default.BatteryChargingFull, Modifier.align(Alignment.CenterStart).width(104.dp))
+        StitchNode(grid, "Мережа", colors.grid, Icons.Default.ElectricalServices, Modifier.align(Alignment.CenterEnd).width(104.dp))
+        StitchNode(load, "Будинок", colors.load, Icons.Default.Home, Modifier.align(Alignment.BottomCenter).width(160.dp))
         Box(
-            Modifier
-                .align(Alignment.Center)
-                .size(64.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(colors.surfaceElevated)
-                .border(1.dp, colors.border, RoundedCornerShape(6.dp)),
+            Modifier.align(Alignment.Center).size(64.dp).clip(RoundedCornerShape(6.dp))
+                .background(colors.surfaceElevated).border(1.dp, colors.border, RoundedCornerShape(6.dp)),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -774,9 +697,9 @@ fun PremiumEnergyFlow(
 }
 
 @Composable
-private fun FlowChip(
+private fun StitchNode(
+    node: FlowNode,
     label: String,
-    value: Float?,
     color: Color,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     modifier: Modifier = Modifier
@@ -784,19 +707,23 @@ private fun FlowChip(
     val colors = LocalSunLinkColors.current
     Column(
         modifier = modifier
-            .background(colors.surface.copy(alpha = 0.92f), PremiumTokens.chip)
-            .border(1.dp, color.copy(alpha = 0.45f), PremiumTokens.chip)
+            .background(colors.surface.copy(alpha = 0.9f), RoundedCornerShape(12.dp))
+            .border(1.dp, color.copy(alpha = 0.45f), RoundedCornerShape(12.dp))
             .padding(PremiumTokens.spaceSm),
-        verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
             Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
         }
         Text(
-            if (value == null) "—" else "${value.toInt()} W",
+            if (node.value == null) "—" else "${node.value!!.toInt()} W",
             style = SunLinkTypography.title,
-            color = if (value == null) colors.textTertiary else color
+            color = if (node.value == null) colors.textTertiary else color
         )
+        when {
+            node.status != null -> Text(node.status!!, style = SunLinkTypography.caption, color = colors.textTertiary)
+            node.secondary != null -> Text(node.secondary!!, style = SunLinkTypography.mono, color = colors.textTertiary)
+        }
     }
 }

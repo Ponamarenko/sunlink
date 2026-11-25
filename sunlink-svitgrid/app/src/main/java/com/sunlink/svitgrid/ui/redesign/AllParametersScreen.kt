@@ -1,18 +1,23 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -32,7 +37,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sunlink.svitgrid.data.dto.MeasurementValueDto
 import com.sunlink.svitgrid.data.dto.TelemetryFullDto
@@ -105,19 +112,19 @@ private val FIELD_LABELS = mapOf(
 )
 
 /**
- * Екран «Усі параметри» (Stitch sunlink_ux_v2_12): сім згрупованих панелей.
- * Каталог будується виключно з реальних даних `/api/telemetry/full`; відсутні
- * значення лишаються «—», а пошук працює за назвою та api_name.
+ * Прямий порт Stitch-екану «Усі параметри»: context header, search input і сім
+ * group-catalog секцій з розділювачами. Каталог будується виключно з реальних
+ * даних `/api/telemetry/full`; жодних вигаданих параметрів.
  */
 @Composable
 fun AllParametersScreen(vm: MainViewModel = viewModel()) {
     CompositionLocalProvider(LocalSunLinkColors provides sunLinkDarkColors()) {
-        AllParametersScreenContent(vm)
+        AllParametersContent(vm)
     }
 }
 
 @Composable
-private fun AllParametersScreenContent(vm: MainViewModel) {
+private fun AllParametersContent(vm: MainViewModel) {
     val full by vm.fullTelemetry.collectAsState()
     val error by vm.fullTelemetryError.collectAsState()
     val colors = LocalSunLinkColors.current
@@ -133,63 +140,238 @@ private fun AllParametersScreenContent(vm: MainViewModel) {
     val visibleCount = filtered.sumOf { it.items.size }
     val timestamp = formatTelemetryTimestamp(full?.timestamp)
     val subtitle = if (timestamp == "—") "Каталог телеметрії" else "Каталог телеметрії · $timestamp"
+    val globalStale = full?.stale == true
+    val offline = !error.isNullOrBlank()
 
-    SunLinkScreen(title = "Усі параметри", subtitle = subtitle) {
-        // Hero: обсяг каталогу та чесна позначка часу останньої телеметрії.
-        HeroPanel(accent = colors.primary) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceLg)
-            ) {
-                Column(Modifier.weight(1f)) {
-                    GroupCaption("Каталог", colors.primary)
-                    Text(
-                        if (groups.isEmpty()) "Телеметрія недоступна" else "Реальні параметри пристрою",
-                        style = SunLinkTypography.headline,
-                        color = colors.textPrimary
-                    )
-                    Text(
-                        if (timestamp == "—") "Без позначки часу" else "Оновлено $timestamp",
-                        style = SunLinkTypography.caption,
-                        color = colors.textTertiary
-                    )
-                }
-                StatusPill("$visibleCount", colors.primary)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colors.background)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Contextual header: title, subtitle and the real visible-parameter count.
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Усі параметри",
+                    style = SunLinkTypography.headline,
+                    color = colors.textPrimary
+                )
+                Text(subtitle, style = SunLinkTypography.caption, color = colors.textSecondary)
             }
+            CountBadge(visibleCount)
         }
 
         SearchField(query = query, onQueryChange = { query = it })
 
-        if (!error.isNullOrBlank()) {
+        if (offline) {
             Text(error!!, style = SunLinkTypography.caption, color = colors.error)
         }
 
         when {
-            groups.isEmpty() -> EmptyState("Телеметрія недоступна — реальних параметрів немає")
-            visibleCount == 0 -> EmptyState("Параметрів не знайдено")
+            groups.isEmpty() -> CatalogEmptyState("Телеметрія недоступна — реальних параметрів немає")
+            visibleCount == 0 -> CatalogEmptyState("Параметрів не знайдено")
             else -> filtered.forEach { group ->
-                val (label, accent) = groupStyle(group.key, colors)
-                val globalStale = full?.stale == true
-                val confirmed = group.items.count { item ->
-                    item.value != null && isConfirmed(item.value, globalStale)
-                }
-                DataPanel(
-                    title = label,
-                    subtitle = "${group.items.size} параметрів",
-                    trailing = { StatusPill("$confirmed / ${group.items.size}", accent) }
-                ) {
-                    group.items.forEachIndexed { index, item ->
-                        if (index > 0) ParameterDivider()
-                        ParameterRow(
-                            item = item,
-                            globalStale = globalStale,
-                            offline = !error.isNullOrBlank()
-                        )
-                    }
-                }
+                CatalogueGroup(group, globalStale, offline)
             }
         }
+    }
+}
+
+@Composable
+private fun CountBadge(count: Int) {
+    val colors = LocalSunLinkColors.current
+    Box(
+        modifier = Modifier
+            .background(colors.surface, RoundedCornerShape(50))
+            .border(1.dp, colors.border, RoundedCornerShape(50))
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+    ) {
+        Text(
+            "$count",
+            style = SunLinkTypography.mono.copy(fontSize = 11.sp),
+            color = colors.textSecondary,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+    val colors = LocalSunLinkColors.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colors.surface, RoundedCornerShape(12.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            Icons.Default.Search,
+            contentDescription = null,
+            tint = colors.textSecondary,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.width(8.dp))
+        Box(modifier = Modifier.weight(1f)) {
+            BasicTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                singleLine = true,
+                textStyle = SunLinkTypography.body.copy(
+                    fontSize = 12.sp,
+                    color = colors.textPrimary
+                ),
+                cursorBrush = SolidColor(colors.primary),
+                modifier = Modifier.fillMaxWidth()
+            )
+            if (query.isEmpty()) {
+                Text(
+                    "Пошук за назвою або ідентифікатором...",
+                    style = SunLinkTypography.body.copy(fontSize = 12.sp),
+                    color = colors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        if (query.isNotEmpty()) {
+            IconButton(onClick = { onQueryChange("") }, modifier = Modifier.size(24.dp)) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Очистити пошук",
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CatalogueGroup(group: ParamGroupData, globalStale: Boolean, offline: Boolean) {
+    val colors = LocalSunLinkColors.current
+    val (label, accent) = groupStyle(group.key, colors)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            label,
+            style = SunLinkTypography.caption,
+            color = accent,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(colors.surface, RoundedCornerShape(12.dp))
+                .border(1.dp, colors.border, RoundedCornerShape(12.dp))
+        ) {
+            group.items.forEachIndexed { index, item ->
+                if (index > 0) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(colors.border.copy(alpha = 0.6f))
+                    )
+                }
+                CatalogueRow(item, globalStale, offline)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CatalogueRow(item: ParamItem, globalStale: Boolean, offline: Boolean) {
+    val colors = LocalSunLinkColors.current
+    val value = item.value
+    val number = value?.normalized_value?.toFloat()
+    val stale = globalStale || value?.quality == "stale"
+    val freshness = freshnessOf(
+        stale = stale,
+        quality = value?.quality,
+        confidence = value?.confidence,
+        online = if (offline) false else null
+    )
+    val unavailable = number == null || value?.quality == "unavailable"
+    val modelCompatible = value?.confidence == "model_compatible"
+
+    val status = when {
+        unavailable -> "Недоступно"
+        stale || freshness == Freshness.STALE -> "Застаріло"
+        modelCompatible -> "Сумісне з моделлю"
+        else -> telemetryLabel(value)
+    }
+    val statusColor = when {
+        unavailable -> colors.textSecondary
+        stale || freshness == Freshness.STALE -> colors.load
+        freshness == Freshness.PROVISIONAL -> colors.warning
+        modelCompatible -> colors.primary
+        else -> colors.battery
+    }
+    val dotColor = when {
+        unavailable -> colors.offline
+        stale || freshness == Freshness.STALE -> colors.load
+        modelCompatible -> colors.primary
+        freshness == Freshness.PROVISIONAL -> colors.warning
+        else -> colors.success
+    }
+    val displayValue = if (unavailable || number == null) "—" else formatQuantity(number, value?.unit)
+    val valueColor = when {
+        unavailable -> colors.textSecondary
+        stale || freshness == Freshness.STALE -> colors.load
+        else -> colors.textPrimary
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+            Text(
+                item.label,
+                style = SunLinkTypography.body.copy(fontSize = 12.sp),
+                color = if (unavailable) colors.textSecondary else colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                item.apiName,
+                style = SunLinkTypography.mono.copy(fontSize = 11.sp),
+                color = colors.textSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text(displayValue, style = SunLinkTypography.mono.copy(fontSize = 12.sp), color = valueColor)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Box(Modifier.size(6.dp).background(dotColor, CircleShape))
+                Text(status, style = SunLinkTypography.caption, color = statusColor)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CatalogEmptyState(text: String) {
+    val colors = LocalSunLinkColors.current
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colors.surface, RoundedCornerShape(12.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        Text(text, style = SunLinkTypography.caption, color = colors.textSecondary)
     }
 }
 
@@ -201,127 +383,9 @@ private fun groupStyle(key: ParamGroupKey, colors: SunLinkColors): Pair<String, 
         ParamGroupKey.GRID -> "Мережа" to colors.grid
         ParamGroupKey.LOAD -> "Навантаження" to colors.load
         ParamGroupKey.ENERGY -> "Енергія" to colors.textSecondary
-        ParamGroupKey.TEMPERATURE -> "Температура" to colors.load
+        ParamGroupKey.TEMPERATURE -> "Температура" to colors.textSecondary
         ParamGroupKey.SYSTEM -> "Система" to colors.textSecondary
     }
-
-@Composable
-private fun GroupCaption(label: String, accent: Color) {
-    Text(
-        label,
-        style = SunLinkTypography.caption,
-        color = accent,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(bottom = 2.dp)
-    )
-}
-
-@Composable
-private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
-    val colors = LocalSunLinkColors.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(colors.surface, RoundedCornerShape(12.dp))
-            .padding(horizontal = PremiumTokens.spaceMd, vertical = PremiumTokens.spaceSm),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            Icons.Default.Search,
-            contentDescription = null,
-            tint = colors.textTertiary,
-            modifier = Modifier.size(18.dp)
-        )
-        Spacer(Modifier.width(8.dp))
-        Box(modifier = Modifier.weight(1f)) {
-            BasicTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                singleLine = true,
-                textStyle = SunLinkTypography.body.copy(color = colors.textPrimary),
-                cursorBrush = SolidColor(colors.primary),
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (query.isEmpty()) {
-                Text("Пошук...", style = SunLinkTypography.body, color = colors.textTertiary)
-            }
-        }
-        if (query.isNotEmpty()) {
-            IconButton(onClick = { onQueryChange("") }, modifier = Modifier.size(24.dp)) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Очистити пошук",
-                    tint = colors.textTertiary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ParameterDivider() {
-    val colors = LocalSunLinkColors.current
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(colors.border.copy(alpha = 0.6f))
-    )
-}
-
-@Composable
-private fun ParameterRow(item: ParamItem, globalStale: Boolean, offline: Boolean) {
-    val colors = LocalSunLinkColors.current
-    val value = item.value
-    val number = value?.normalized_value?.toFloat()
-    val stale = globalStale || value?.quality == "stale"
-    val freshness = freshnessOf(
-        stale = stale,
-        quality = value?.quality,
-        confidence = value?.confidence,
-        online = if (offline) false else null
-    )
-    val secondary = when {
-        number == null -> "Недоступно"
-        freshness == Freshness.STALE -> "Застаріло"
-        else -> telemetryLabel(value)
-    }
-    val valueColor = when {
-        number == null -> colors.textTertiary
-        freshness == Freshness.STALE -> colors.warning
-        value?.confidence == "model_compatible" -> colors.primary
-        else -> colors.textPrimary
-    }
-    val dotColor = when (freshness) {
-        Freshness.FRESH -> colors.success
-        Freshness.STALE, Freshness.PROVISIONAL -> colors.warning
-        Freshness.UNAVAILABLE -> colors.offline
-        Freshness.OFFLINE -> colors.error
-    }
-
-    Column(Modifier.fillMaxWidth().padding(vertical = PremiumTokens.spaceXs)) {
-        InlineMetric(
-            label = item.label,
-            value = if (number == null) "—" else formatQuantity(number, value?.unit),
-            accent = valueColor
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(item.apiName, style = SunLinkTypography.mono, color = colors.textTertiary)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)
-            ) {
-                Box(Modifier.size(6.dp).background(dotColor, RoundedCornerShape(50)))
-                Text(secondary, style = SunLinkTypography.caption, color = dotColor)
-            }
-        }
-    }
-}
 
 private fun buildGroups(full: TelemetryFullDto?): List<ParamGroupData> {
     val items = full?.categories.orEmpty().flatMap { (category, fields) ->

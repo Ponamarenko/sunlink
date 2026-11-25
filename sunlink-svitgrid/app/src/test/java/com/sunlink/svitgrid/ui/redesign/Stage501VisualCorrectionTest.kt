@@ -51,7 +51,7 @@ class Stage501VisualCorrectionTest {
 
         val home = File("src/main/java/com/sunlink/svitgrid/ui/redesign/HomeScreen.kt").readText()
         assertTrue(home.contains("formatTelemetryTimestamp(full?.timestamp)"))
-        assertTrue(home.contains("compact = true"))
+        assertTrue(home.contains("freshnessLabel("))
 
         val ds = File("src/main/java/com/sunlink/svitgrid/ui/redesign/DesignSystem.kt").readText()
         assertTrue(ds.contains("bottom = PremiumTokens.spaceXl"))
@@ -78,6 +78,6 @@ class Stage501VisualCorrectionTest {
         assertTrue("versionCode must be >= 72, got $code", code != null && code >= 72)
         val name = Regex("versionName = \"([^\"]+)\"").find(gradle)?.groupValues?.get(1) ?: ""
         assertTrue("versionName must be >= 2.50.0, got $name", name == "2.50.0" || name == "2.50.1" ||
-            name == "2.50.2" || name == "2.51.0" || name == "2.52.0" || name == "2.53.0" || name == "2.53.1" || name == "2.54.0" || name == "2.54.1" || name == "2.55.0")
+            name == "2.50.2" || name == "2.51.0" || name == "2.52.0" || name == "2.53.0" || name == "2.53.1" || name == "2.54.0" || name == "2.54.1" || name == "2.55.0" || name == "2.56.0")
     }
 }

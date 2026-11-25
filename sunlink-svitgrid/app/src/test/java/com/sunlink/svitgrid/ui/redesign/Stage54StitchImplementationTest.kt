@@ -64,7 +64,7 @@ class Stage54StitchImplementationTest {
     @Test
     fun `settings are read only for server and persist user preferences`() {
         val settings = File("src/main/java/com/sunlink/svitgrid/ui/SvitGridApp.kt").readText()
-        assertTrue(settings.contains("Лише перегляд"))
+        assertTrue(settings.contains("ReadOnlyRow("))
         assertFalse(settings.contains("settings_invalid_address"))
         assertFalse(settings.contains("onValueChange = { serverAddress"))
         assertTrue(settings.contains("repo.pollIntervalSeconds = seconds"))
@@ -91,7 +91,7 @@ class Stage54StitchImplementationTest {
     @Test
     fun `version is bumped to stage 54`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 80"))
-        assertTrue(gradle.contains("versionName = \"2.55.0\""))
+        assertTrue(gradle.contains("versionCode = 81"))
+        assertTrue(gradle.contains("versionName = \"2.56.0\""))
     }
 }

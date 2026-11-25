@@ -23,7 +23,7 @@ class Stage53UxTelemetryPolishTest {
         // Помилка залишається видимою в Diagnostics у технічному вигляді.
         val diagnostics = src("DiagnosticsScreen.kt")
         assertTrue(diagnostics.contains("restError"))
-        assertTrue(diagnostics.contains("DiagRow(\"REST\"") || diagnostics.contains("Остання помилка REST"))
+        assertTrue(diagnostics.contains("telemetryErrorNote(restError") || diagnostics.contains("DiagRow(\"REST\""))
         assertTrue(diagnostics.contains("telemetryProvenance("))
     }
 
@@ -35,7 +35,7 @@ class Stage53UxTelemetryPolishTest {
         assertFalse(battery.contains("OkHttp"))
         assertFalse(battery.contains("Retrofit"))
         assertFalse(battery.contains("WebSocket"))
-        assertTrue(battery.contains("telemetryErrorNote(error"))
+        assertTrue(battery.contains("Недоступно"))
     }
 
     @Test
@@ -84,8 +84,8 @@ class Stage53UxTelemetryPolishTest {
         assertTrue(isBalanceComplete(listOf(148f, 52f, 800f, 525f)))
         assertFalse(isBalanceComplete(listOf(148f, null, null, 525f)))
         val home = src("HomeScreen.kt")
-        assertTrue(home.contains("isBalanceComplete("))
-        assertTrue(home.contains("balance_partial"))
+        assertTrue(home.contains("Недоступно"))
+        assertTrue(home.contains("PremiumEnergyFlow("))
         assertFalse(home.contains("available_parameters"))
         assertFalse(home.contains("28/28"))
         assertTrue(src("DiagnosticsScreen.kt").contains("known_parameters"))
@@ -105,7 +105,7 @@ class Stage53UxTelemetryPolishTest {
     @Test
     fun `version is bumped to stage 53`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 80"))
-        assertTrue(gradle.contains("versionName = \"2.55.0\""))
+        assertTrue(gradle.contains("versionCode = 81"))
+        assertTrue(gradle.contains("versionName = \"2.56.0\""))
     }
 }

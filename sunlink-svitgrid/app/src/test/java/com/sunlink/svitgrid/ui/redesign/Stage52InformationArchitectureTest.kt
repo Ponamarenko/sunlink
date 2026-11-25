@@ -66,7 +66,7 @@ class Stage52InformationArchitectureTest {
         assertFalse(energy.contains("AnalyticsChart("))
         assertFalse(energy.contains("loadSeriesFor("))
         assertTrue(energy.contains("onNavigate(\"analytics\")"))
-        assertTrue(energy.contains("InlineMetric("))
+        assertTrue(energy.contains("Потоки потужності"))
     }
 
     @Test
@@ -92,7 +92,7 @@ class Stage52InformationArchitectureTest {
     @Test
     fun `version is bumped to stage 52`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 80"))
-        assertTrue(gradle.contains("versionName = \"2.55.0\""))
+        assertTrue(gradle.contains("versionCode = 81"))
+        assertTrue(gradle.contains("versionName = \"2.56.0\""))
     }
 }

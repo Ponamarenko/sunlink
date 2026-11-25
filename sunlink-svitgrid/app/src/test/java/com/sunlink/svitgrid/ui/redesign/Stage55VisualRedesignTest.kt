@@ -18,14 +18,12 @@ class Stage55VisualRedesignTest {
     fun `layered surface roles replace uniform card stacks`() {
         listOf("HomeScreen.kt", "BatteryScreen.kt", "SolarScreen.kt", "GridScreen.kt", "LoadScreen.kt", "AnalyticsScreen.kt")
             .forEach { name ->
-                assertTrue("$name must use HeroPanel", allScreens[name]!!.contains("HeroPanel("))
-                assertTrue("$name must use DataPanel", allScreens[name]!!.contains("DataPanel("))
+                listOf("HeroPanel(", "StatTile(", "DataPanel(", "InlineMetric(").forEach { token ->
+                    assertFalse("$name still uses generic $token", allScreens[name]!!.contains(token))
+                }
             }
         val ds = s("DesignSystem.kt")
-        assertTrue(ds.contains("fun HeroPanel("))
-        assertTrue(ds.contains("fun StatTile("))
-        assertTrue(ds.contains("fun DataPanel("))
-        assertTrue(ds.contains("fun InlineMetric("))
+        assertTrue(ds.contains("fun PremiumEnergyFlow("))
     }
 
     @Test
@@ -76,7 +74,7 @@ class Stage55VisualRedesignTest {
     @Test
     fun `version is bumped to stage 55`() {
         val gradle = File("build.gradle.kts").readText()
-        assertTrue(gradle.contains("versionCode = 80"))
-        assertTrue(gradle.contains("versionName = \"2.55.0\""))
+        assertTrue(gradle.contains("versionCode = 81"))
+        assertTrue(gradle.contains("versionName = \"2.56.0\""))
     }
 }

@@ -1,17 +1,22 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.BarChart
@@ -28,9 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
@@ -42,13 +47,13 @@ private data class MoreItem(
     val subtitle: String? = null,
     val monoSubtitle: Boolean = false,
     val icon: ImageVector,
-    val accent: Color? = null,
-    val compact: Boolean = false
+    val accent: Color? = null
 )
 
 /**
- * Екран «Більше» (Stitch sunlink_ux_v2_9): hero-ідентифікатор меню та дві
- * згруповані панелі з тонкими рядками. Головні вкладки не дублюються.
+ * Прямий порт Stitch node_2967584733526758360: компактний заголовок із tune,
+ * група вторинних функцій із 36px плитками та група детального моніторингу
+ * з компактними рядками. Активний маршрут підсвічується всередині списку.
  */
 @Composable
 fun MoreScreen(currentRoute: String, onNavigate: (String) -> Unit) {
@@ -85,52 +90,27 @@ private fun MoreScreenContent(currentRoute: String, onNavigate: (String) -> Unit
     )
 
     val monitoring = listOf(
-        MoreItem("analytics", "Аналітика", icon = Icons.Default.BarChart, accent = colors.solar, compact = true),
-        MoreItem("grid", "Мережа", icon = Icons.Default.ElectricalServices, accent = colors.grid, compact = true),
-        MoreItem("load", "Навантаження", icon = Icons.Default.Home, accent = colors.load, compact = true),
-        MoreItem("diagnostics", "Діагностика", icon = Icons.Default.Troubleshoot, accent = colors.battery, compact = true)
+        MoreItem("analytics", "Аналітика", icon = Icons.Default.BarChart, accent = colors.solar),
+        MoreItem("grid", "Мережа", icon = Icons.Default.ElectricalServices, accent = colors.grid),
+        MoreItem("load", "Навантаження", icon = Icons.Default.Home, accent = colors.load),
+        MoreItem("diagnostics", "Діагностика", icon = Icons.Default.Troubleshoot, accent = colors.battery)
     )
 
-    SunLinkScreen(
-        title = "Більше",
-        subtitle = "Додаткові розділи та система"
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colors.background)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        HeroPanel(accent = colors.primary) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceLg)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(colors.primarySoft, RoundedCornerShape(14.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Tune,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-                Column(Modifier.weight(1f)) {
-                    SectionLabel("Меню")
-                    Text("Всі розділи застосунку", style = SunLinkTypography.title, color = colors.textPrimary)
-                    Text(
-                        "Налаштування та детальний моніторинг",
-                        style = SunLinkTypography.caption,
-                        color = colors.textTertiary
-                    )
-                }
-                StatusPill("${secondary.size + monitoring.size} розділів", colors.primary)
-            }
-        }
+        MoreHeader()
 
-        GroupCard(title = "Вторинні функції", subtitle = "Налаштування та пристрій") {
+        // Вторинні функції: Settings / Inverter / All parameters.
+        MoreGroupCard {
             secondary.forEachIndexed { index, item ->
-                if (index > 0) GroupDivider()
-                MoreRow(
+                if (index > 0) MoreDivider()
+                MoreLargeRow(
                     item = item,
                     selected = currentRoute == item.route,
                     onClick = { onNavigate(item.route) }
@@ -138,107 +118,147 @@ private fun MoreScreenContent(currentRoute: String, onNavigate: (String) -> Unit
             }
         }
 
-        GroupCard(title = "Детальний моніторинг", subtitle = "Канали, графіки, діагностика") {
-            monitoring.forEachIndexed { index, item ->
-                if (index > 0) GroupDivider()
-                MoreRow(
-                    item = item,
-                    selected = currentRoute == item.route,
-                    onClick = { onNavigate(item.route) }
-                )
+        // Детальний моніторинг: компактні рядки з кольоровими іконками.
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                "Детальний моніторинг",
+                style = SunLinkTypography.caption,
+                color = colors.textSecondary,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+            MoreGroupCard {
+                monitoring.forEachIndexed { index, item ->
+                    if (index > 0) MoreDivider()
+                    MoreCompactRow(
+                        item = item,
+                        selected = currentRoute == item.route,
+                        onClick = { onNavigate(item.route) }
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SectionLabel(text: String) {
+private fun MoreHeader() {
     val colors = LocalSunLinkColors.current
-    Text(
-        text,
-        style = SunLinkTypography.caption,
-        color = colors.primary,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(bottom = 2.dp)
-    )
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(colors.surface, RoundedCornerShape(16.dp))
+                .border(1.dp, colors.border, RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Tune, contentDescription = null, tint = colors.textPrimary, modifier = Modifier.size(22.dp))
+        }
+        Spacer(Modifier.size(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text("Більше", style = SunLinkTypography.headline, color = colors.textPrimary)
+            Text("Додаткові розділи та система", style = SunLinkTypography.caption, color = colors.textSecondary)
+        }
+    }
 }
 
-/** Групова поверхня: DataPanel із заголовком замість окремої картки. */
 @Composable
-private fun GroupCard(
-    title: String,
-    subtitle: String? = null,
-    content: @Composable ColumnScope.() -> Unit
-) = DataPanel(title = title, subtitle = subtitle, content = content)
-
-@Composable
-private fun GroupDivider() {
+private fun MoreGroupCard(content: @Composable ColumnScope.() -> Unit) {
     val colors = LocalSunLinkColors.current
-    Box(
-        Modifier
+    Column(
+        modifier = Modifier
             .fillMaxWidth()
-            .height(1.dp)
-            .background(colors.border.copy(alpha = 0.6f))
+            .background(colors.surface, RoundedCornerShape(20.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(20.dp)),
+        content = content
     )
 }
 
 @Composable
-private fun MoreRow(item: MoreItem, selected: Boolean, onClick: () -> Unit) {
+private fun MoreDivider() {
+    val colors = LocalSunLinkColors.current
+    Box(Modifier.fillMaxWidth().height(1.dp).background(colors.border.copy(alpha = 0.6f)))
+}
+
+@Composable
+private fun MoreLargeRow(item: MoreItem, selected: Boolean, onClick: () -> Unit) {
     val colors = LocalSunLinkColors.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(if (selected) colors.primarySoft else Color.Transparent)
             .clickable { onClick() }
-            .padding(vertical = if (item.compact) PremiumTokens.spaceSm else PremiumTokens.spaceMd),
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceMd)
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(colors.surfaceElevated, RoundedCornerShape(6.dp))
+                .border(1.dp, colors.border, RoundedCornerShape(6.dp)),
+            contentAlignment = Alignment.Center
         ) {
-            if (item.compact) {
-                Icon(
-                    item.icon,
-                    contentDescription = null,
-                    tint = item.accent ?: colors.textPrimary,
-                    modifier = Modifier.size(20.dp)
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(colors.surfaceElevated, RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        item.icon,
-                        contentDescription = null,
-                        tint = item.accent ?: colors.textPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-            Column {
+            Icon(
+                item.icon,
+                contentDescription = null,
+                tint = if (selected) colors.primary else item.accent ?: colors.textPrimary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(Modifier.size(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                item.label,
+                style = SunLinkTypography.title,
+                color = if (selected) colors.primary else colors.textPrimary
+            )
+            if (item.subtitle != null) {
                 Text(
-                    item.label,
-                    style = if (item.compact) SunLinkTypography.body else SunLinkTypography.title,
-                    color = if (selected) colors.primary else colors.textPrimary
+                    item.subtitle,
+                    style = if (item.monoSubtitle) SunLinkTypography.mono else SunLinkTypography.caption,
+                    color = colors.textSecondary
                 )
-                if (item.subtitle != null) {
-                    Text(
-                        item.subtitle,
-                        style = if (item.monoSubtitle) SunLinkTypography.mono else SunLinkTypography.caption,
-                        color = colors.textTertiary
-                    )
-                }
             }
         }
+        MoreChevron()
+    }
+}
+
+@Composable
+private fun MoreCompactRow(item: MoreItem, selected: Boolean, onClick: () -> Unit) {
+    val colors = LocalSunLinkColors.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(if (selected) colors.primarySoft else Color.Transparent)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Icon(
-            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            item.icon,
             contentDescription = null,
-            tint = colors.textTertiary,
+            tint = if (selected) colors.primary else item.accent ?: colors.textSecondary,
             modifier = Modifier.size(20.dp)
         )
+        Spacer(Modifier.size(12.dp))
+        Text(
+            item.label,
+            style = SunLinkTypography.body,
+            color = if (selected) colors.primary else colors.textPrimary,
+            modifier = Modifier.weight(1f)
+        )
+        MoreChevron()
     }
+}
+
+@Composable
+private fun MoreChevron() {
+    val colors = LocalSunLinkColors.current
+    Icon(
+        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+        contentDescription = null,
+        tint = colors.textSecondary,
+        modifier = Modifier.size(20.dp)
+    )
 }

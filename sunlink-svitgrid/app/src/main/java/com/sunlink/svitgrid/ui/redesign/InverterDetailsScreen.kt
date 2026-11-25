@@ -1,17 +1,22 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -26,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,8 +50,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * Екран «Інвертор» (Stitch sunlink_ux_v2_11): hero-паспорт пристрою,
- * згрупований стан звʼязку та чесні заглушки для даних, яких backend не передає.
+ * Прямий порт Stitch node_1334021055661215071: заголовок із назад, картка
+ * паспорта пристрою, стан підключення, чесні заглушки ідентифікації та
+ * окремий перехід до діагностики. Без узагальнених Hero/Stat/Data/Inline.
  */
 @Composable
 fun InverterDetailsScreen(
@@ -71,177 +78,186 @@ private fun InverterDetailsScreenContent(vm: MainViewModel, onNavigate: (String)
     }
 
     val success = uiState as? InverterUiState.Success
-    val online = success?.status?.online == true ||
-        transport == TelemetryWebSocketClient.WsTransportState.OPEN
-    val stale = full?.stale == true || success?.stale == true
-    val freshness = freshnessOf(
-        stale = stale,
-        quality = if (online) "verified" else "unavailable",
-        confidence = if (online) "verified" else null,
-        online = online
-    )
+    val wsConnected = transport == TelemetryWebSocketClient.WsTransportState.OPEN
+    val online = success?.status?.online == true || wsConnected || full?.connection_status == true
+    val statusColor = if (online) colors.battery else colors.error
 
-    SunLinkScreen(
-        title = "Інвертор",
-        subtitle = "Паспорт пристрою та звʼязок"
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colors.background)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Hero: ідентифікація пристрою, стан каналу та повернення в меню.
-        HeroPanel(accent = if (online) colors.battery else colors.error) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(colors.surfaceElevated, RoundedCornerShape(50))
-                        .clickable { onNavigate("more") },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Назад до меню Більше",
-                        tint = colors.textPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(Modifier.size(PremiumTokens.spaceMd))
-                Column(Modifier.weight(1f)) {
-                    SectionCaption("Паспорт пристрою")
-                    Text("Виробник: Deye", style = SunLinkTypography.caption, color = colors.textTertiary)
-                    Text(
-                        "SUN-12K-SG02LP1-EU-AM3",
-                        style = SunLinkTypography.title,
-                        color = colors.textPrimary
-                    )
-                    Text(
-                        "Гібридний сонячний інвертор",
-                        style = SunLinkTypography.caption,
-                        color = colors.textTertiary
-                    )
-                }
-                Icon(
-                    Icons.Default.Memory,
-                    contentDescription = null,
-                    tint = colors.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            Spacer(Modifier.height(PremiumTokens.spaceMd))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                StatusPill(
-                    text = if (online) "Онлайн" else "Офлайн",
-                    color = if (online) colors.battery else colors.error
-                )
-                DataFreshnessIndicator(freshness, full?.timestamp, compact = true)
-            }
-        }
+        InverterHeader(online = online, statusColor = statusColor, onBack = { onNavigate("more") })
 
-        // Стан підключення: тонкі рядки в одній панелі.
-        DataPanel(title = "Стан підключення", subtitle = "Локальний шлюз") {
-            InlineMetric("Тип підключення", "WebSocket · Локальний шлюз", colors.textPrimary)
+        // 1. Виробник і модель
+        InverterIdentityCard()
+
+        // 2. Стан підключення
+        InverterDetailCard {
+            DetailLine("Тип підключення", "WebSocket · Локальний шлюз", colors.textPrimary, mono = false)
             DetailDivider()
-            InlineMetric(
+            DetailLine(
                 "Поточний стан",
                 if (online) "Підключено" else "Відключено",
-                if (online) colors.battery else colors.error
+                statusColor
             )
             DetailDivider()
-            InlineMetric("Останній успішний обмін", lastExchangeLabel(lastSuccess), colors.textPrimary)
+            DetailLine("Останній успішний обмін", lastExchangeLabel(lastSuccess), colors.textPrimary, mono = true)
         }
 
-        // Ідентифікація та прошивка — тільки чесні заглушки, без вигаданих номерів.
-        DataPanel(title = "Ідентифікація та прошивка", subtitle = "Поля не передаються backend") {
-            DetailRow("Серійний номер", "— · Не передається", colors.textTertiary, mono = true)
-            DetailDivider()
-            DetailRow("Ідентифікатор логера", "— · Не передається", colors.textTertiary, mono = true)
-            DetailDivider()
-            DetailRow("Версія прошивки", "— · Недоступно", colors.textTertiary, mono = true)
-        }
-
-        // Перехід до діагностики — окрема дія, не ще одна одинакова картка.
-        DataPanel(
-            title = "Діагностика звʼязку",
-            subtitle = "Стан каналів і пакетів",
-            modifier = Modifier.clickable { onNavigate("diagnostics") },
-            trailing = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)
-                ) {
-                    Icon(
-                        Icons.Default.Troubleshoot,
-                        contentDescription = null,
-                        tint = colors.battery,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Icon(
-                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = colors.textTertiary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+        // 3. Ідентифікація та прошивка — тільки чесні заглушки.
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                "Ідентифікація та прошивка",
+                style = SunLinkTypography.caption,
+                color = colors.textSecondary,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+            InverterDetailCard(low = true) {
+                DetailLine("Серійний номер", "— · Не передається", colors.textSecondary, mono = true)
+                DetailDivider()
+                DetailLine("Ідентифікатор логера", "— · Не передається", colors.textSecondary, mono = true)
+                DetailDivider()
+                DetailLine("Версія прошивки", "— · Недоступно", colors.textSecondary, mono = true)
             }
+        }
+
+        // 4. Перехід до діагностики
+        InverterDiagnosticsLink(onClick = { onNavigate("diagnostics") })
+    }
+}
+
+@Composable
+private fun InverterHeader(online: Boolean, statusColor: Color, onBack: () -> Unit) {
+    val colors = LocalSunLinkColors.current
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(colors.surface, RoundedCornerShape(50))
+                .border(1.dp, colors.border, RoundedCornerShape(50))
+                .clickable { onBack() },
+            contentAlignment = Alignment.Center
         ) {
-            InlineMetric("Дія", "Відкрити діагностику", colors.battery)
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Назад до меню Більше",
+                tint = colors.textPrimary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(Modifier.size(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text("Інвертор", style = SunLinkTypography.headline, color = colors.textPrimary)
+            Text("Паспорт пристрою та звʼязок", style = SunLinkTypography.caption, color = colors.textSecondary)
+        }
+        Row(
+            modifier = Modifier
+                .background(statusColor.copy(alpha = 0.12f), RoundedCornerShape(50))
+                .border(1.dp, statusColor.copy(alpha = 0.4f), RoundedCornerShape(50))
+                .padding(horizontal = 10.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Box(Modifier.size(6.dp).background(statusColor, RoundedCornerShape(50)))
+            Text(
+                if (online) "Онлайн" else "Офлайн",
+                style = SunLinkTypography.caption,
+                color = statusColor,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
 
 @Composable
-private fun SectionCaption(text: String) {
+private fun InverterIdentityCard() {
     val colors = LocalSunLinkColors.current
-    Text(
-        text,
-        style = SunLinkTypography.caption,
-        color = colors.primary,
-        fontWeight = FontWeight.SemiBold
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colors.surface, RoundedCornerShape(28.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(28.dp))
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(colors.surfaceElevated, RoundedCornerShape(16.dp))
+                .border(1.dp, colors.border, RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Memory, contentDescription = null, tint = colors.primary, modifier = Modifier.size(24.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            Text("Виробник: Deye", style = SunLinkTypography.caption, color = colors.textSecondary)
+            Text("SUN-12K-SG02LP1-EU-AM3", style = SunLinkTypography.title, color = colors.textPrimary)
+            Text("Гібридний сонячний інвертор", style = SunLinkTypography.caption, color = colors.textSecondary)
+        }
+    }
+}
+
+@Composable
+private fun InverterDetailCard(low: Boolean = false, content: @Composable ColumnScope.() -> Unit) {
+    val colors = LocalSunLinkColors.current
+    val shape = RoundedCornerShape(12.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(if (low) colors.background else colors.surface, shape)
+            .border(1.dp, colors.border.copy(alpha = if (low) 0.6f else 1f), shape)
+            .clip(shape),
+        content = content
     )
+}
+
+@Composable
+private fun DetailLine(label: String, value: String, valueColor: Color, mono: Boolean = false) {
+    val colors = LocalSunLinkColors.current
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, style = SunLinkTypography.caption, color = colors.textSecondary, modifier = Modifier.weight(1f))
+        Text(value, style = if (mono) SunLinkTypography.mono else SunLinkTypography.label, color = valueColor)
+    }
 }
 
 @Composable
 private fun DetailDivider() {
     val colors = LocalSunLinkColors.current
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(colors.border.copy(alpha = 0.6f))
-    )
+    Box(Modifier.fillMaxWidth().height(1.dp).background(colors.border.copy(alpha = 0.6f)))
 }
 
 @Composable
-private fun DetailRow(
-    label: String,
-    value: String,
-    valueColor: Color,
-    mono: Boolean = false,
-    bold: Boolean = false
-) {
+private fun InverterDiagnosticsLink(onClick: () -> Unit) {
     val colors = LocalSunLinkColors.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = PremiumTokens.spaceSm),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .background(colors.surface, RoundedCornerShape(12.dp))
+            .border(1.dp, colors.border, RoundedCornerShape(12.dp))
+            .clickable { onClick() }
+            .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            label,
-            style = SunLinkTypography.caption,
-            color = colors.textTertiary,
-            modifier = Modifier.weight(1f)
-        )
-        Text(
-            value,
-            style = if (mono) SunLinkTypography.mono else SunLinkTypography.caption,
-            color = valueColor,
-            fontWeight = if (bold) FontWeight.SemiBold else FontWeight.Normal
+        Icon(Icons.Default.Troubleshoot, contentDescription = null, tint = colors.battery, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.size(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text("Діагностика звʼязку", style = SunLinkTypography.body, color = colors.textPrimary)
+            Text("Переглянути стан каналів і пакетів", style = SunLinkTypography.caption, color = colors.textSecondary)
+        }
+        Icon(
+            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = colors.textSecondary,
+            modifier = Modifier.size(20.dp)
         )
     }
 }

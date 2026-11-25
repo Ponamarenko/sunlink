@@ -1,6 +1,7 @@
 package com.sunlink.svitgrid.ui.redesign
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,11 +10,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.ElectricalServices
+import androidx.compose.material.icons.filled.Troubleshoot
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,16 +26,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sunlink.svitgrid.data.dto.TelemetryFullDto
 import com.sunlink.svitgrid.ui.designsystem.LocalSunLinkColors
 import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 
 /**
- * Мережа — чесний стан зовнішньої лінії. Інвертор зараз не віддає grid-канали,
- * тому відсутні значення показуються як «—» / «Недоступно», а не як нулі.
- * Одна hero-поверхня стану, GROUPED-панелі параметрів і обміну, без стосу карток.
+ * Stitch «Мережа»: статусна картка підключення, чотири чесні параметри
+ * електричної лінії, добовий обмін та посилання на діагностику.
+ * Значення, яких інвертор не віддає, залишаються «— / Недоступно», а не нулями.
  */
 @Composable
 fun GridScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {}) {
@@ -41,10 +48,10 @@ fun GridScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
 
     LaunchedEffect(Unit) { vm.loadFullTelemetry() }
 
+    val gridFields = listOf("power", "voltage_l1", "frequency", "current_l1")
+    val hasGridData = gridFields.any { telemetryNumber(full, "grid", it) != null }
+    val accent = if (hasGridData) colors.warning else colors.grid
     val powerItem = telemetryValue(full, "grid", "power")
-    val hasGridData = listOf("power", "voltage_l1", "frequency", "current")
-        .any { telemetryNumber(full, "grid", it) != null }
-    val statusColor = if (hasGridData) colors.warning else colors.grid
     val freshness = freshnessOf(
         full?.stale, powerItem?.quality, powerItem?.confidence, full?.connection_status
     )
@@ -55,116 +62,252 @@ fun GridScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
         refreshing = refreshing,
         onRefresh = { vm.loadFullTelemetry() }
     ) {
-        // Єдина hero-поверхня: стан підключення та свіжість даних.
-        HeroPanel(accent = statusColor) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier
-                        .size(44.dp)
-                        .background(colors.surfaceElevated, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.Bolt, contentDescription = null, tint = statusColor, modifier = Modifier.size(22.dp))
-                }
-                Spacer(Modifier.size(PremiumTokens.spaceMd))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        if (hasGridData) "Дані мережі частково доступні" else "Дані мережі недоступні",
-                        style = SunLinkTypography.headline,
-                        color = colors.textPrimary
+        GridStatusCard(hasGridData, accent, freshness, full?.timestamp)
+
+        val parameters = listOf(
+            "Активна потужність" to "power",
+            "Напруга" to "voltage_l1",
+            "Частота" to "frequency",
+            "Струм" to "current_l1"
+        )
+        parameters.chunked(2).forEach { pair ->
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                pair.forEach { (label, field) ->
+                    GridParameterCard(
+                        label = label,
+                        value = gridParameterValue(telemetryNumber(full, "grid", field), field),
+                        caption = gridParameterCaption(full, field),
+                        muted = telemetryNumber(full, "grid", field) == null,
+                        modifier = Modifier.weight(1f)
                     )
-                    Spacer(Modifier.height(PremiumTokens.spaceXs))
-                    Text(
-                        if (hasGridData) {
-                            "Частина параметрів мережі надходить від інвертора."
-                        } else {
-                            "Потужність, напруга та частота мережі зараз не надходять від інвертора."
-                        },
-                        style = SunLinkTypography.body,
-                        color = colors.textSecondary
-                    )
-                    Spacer(Modifier.height(PremiumTokens.spaceSm))
-                    DataFreshnessIndicator(freshness, full?.timestamp, compact = true)
                 }
             }
         }
 
-        // Електричні параметри — чотири чесні рядки замість чотирьох карток.
-        DataPanel(title = "Електричні параметри", subtitle = "Миттєві вимірювання") {
-            val power = telemetryNumber(full, "grid", "power")
-            val voltage = telemetryNumber(full, "grid", "voltage_l1")
-            val frequency = telemetryNumber(full, "grid", "frequency")
-            val current = telemetryNumber(full, "grid", "current")
-            InlineMetric(
-                label = "Активна потужність",
-                value = gridParameterValue(power, "W", gridStatus(full, "grid", "power")),
-                accent = if (power == null) colors.textTertiary else colors.grid
-            )
-            InlineMetric(
-                label = "Напруга",
-                value = gridParameterValue(voltage, "V", gridStatus(full, "grid", "voltage_l1")),
-                accent = if (voltage == null) colors.textTertiary else colors.grid
-            )
-            InlineMetric(
-                label = "Частота",
-                value = gridParameterValue(frequency, "Гц", gridStatus(full, "grid", "frequency")),
-                accent = if (frequency == null) colors.textTertiary else colors.grid
-            )
-            InlineMetric(
-                label = "Струм",
-                value = gridParameterValue(current, "A", gridStatus(full, "grid", "current")),
-                accent = if (current == null) colors.textTertiary else colors.grid
-            )
-        }
+        GridExchangeCard(full)
+        GridDiagnosticLink(onNavigate)
+    }
+}
 
-        // Обмін з мережею за добу — компактні плитки в одній панелі.
-        DataPanel(title = "Обмін з мережею за добу", subtitle = "Сьогодні") {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                StatTile(
-                    label = "Імпорт",
-                    value = telemetryNumber(full, "grid", "daily_import_energy"),
-                    unit = "kWh",
-                    accent = colors.gridImport,
-                    modifier = Modifier.weight(1f)
-                )
-                StatTile(
-                    label = "Експорт",
-                    value = telemetryNumber(full, "grid", "daily_export_energy"),
-                    unit = "kWh",
-                    accent = colors.gridExport,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-
-        // Stitch: клікабельний рядок переходу до діагностики якості телеметрії.
-        DataPanel(
-            title = "Діагностика телеметрії",
-            subtitle = "Перевірити якість даних",
-            modifier = Modifier.clickable { onNavigate("diagnostics") },
-            trailing = {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = colors.textTertiary,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+/** Stitch: сеція стану — іконка в квадраті, заголовок і чесне пояснення. */
+@Composable
+private fun GridStatusCard(
+    hasGridData: Boolean,
+    accent: Color,
+    freshness: Freshness,
+    timestamp: String?
+) {
+    val colors = LocalSunLinkColors.current
+    val shape = RoundedCornerShape(20.dp)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colors.surface)
+            .border(1.dp, colors.border, shape)
+            .padding(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            InlineMetric("Перевірити якість телеметрії", "Відкрити", colors.primary)
+            Box(
+                Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(colors.surfaceElevated)
+                    .border(1.dp, colors.border, RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.ElectricalServices,
+                    contentDescription = null,
+                    tint = accent,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    if (hasGridData) "Дані мережі частково доступні" else "Дані мережі недоступні",
+                    style = SunLinkTypography.title,
+                    color = colors.textPrimary
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    if (hasGridData) {
+                        "Частина параметрів мережі надходить від інвертора."
+                    } else {
+                        "Потужність, напруга та частота мережі зараз не надходять від інвертора."
+                    },
+                    style = SunLinkTypography.caption,
+                    color = colors.textSecondary
+                )
+            }
+        }
+        if (hasGridData) {
+            Spacer(Modifier.height(8.dp))
+            DataFreshnessIndicator(freshness, timestamp, compact = true)
         }
     }
 }
 
-private fun gridStatus(full: com.sunlink.svitgrid.data.dto.TelemetryFullDto?, category: String, field: String): String {
-    val item = telemetryValue(full, category, field)
-    return if (item == null) "Недоступно" else telemetryLabel(item)
+/** Stitch: окрема плитка параметра з підписом «— Недоступно». */
+@Composable
+private fun GridParameterCard(
+    label: String,
+    value: String,
+    caption: String,
+    muted: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val colors = LocalSunLinkColors.current
+    val shape = RoundedCornerShape(12.dp)
+    Column(
+        modifier
+            .clip(shape)
+            .background(colors.surface.copy(alpha = 0.55f))
+            .border(1.dp, colors.border.copy(alpha = 0.6f), shape)
+            .padding(14.dp)
+    ) {
+        Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            value,
+            style = SunLinkTypography.headline,
+            color = if (muted) colors.textTertiary else colors.textPrimary
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(caption, style = SunLinkTypography.caption, color = colors.textTertiary)
+    }
+}
+
+/** Stitch: «Обмін з мережею за добу / Сьогодні» з розділювачем між імпортом і експортом. */
+@Composable
+private fun GridExchangeCard(full: TelemetryFullDto?) {
+    val colors = LocalSunLinkColors.current
+    val shape = RoundedCornerShape(12.dp)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colors.surface)
+            .border(1.dp, colors.border, shape)
+            .padding(16.dp)
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Обмін з мережею за добу",
+                style = SunLinkTypography.title,
+                color = colors.textPrimary,
+                modifier = Modifier.weight(1f)
+            )
+            Text("Сьогодні", style = SunLinkTypography.caption, color = colors.textSecondary)
+        }
+        Spacer(Modifier.height(10.dp))
+        Row(Modifier.fillMaxWidth()) {
+            GridExchangeCell(
+                label = "Імпорт",
+                value = energyValue(telemetryNumber(full, "grid", "import_energy")),
+                color = colors.gridImport,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 12.dp)
+            )
+            Box(
+                Modifier
+                    .width(1.dp)
+                    .height(52.dp)
+                    .background(colors.border)
+            )
+            GridExchangeCell(
+                label = "Експорт",
+                value = energyValue(telemetryNumber(full, "grid", "export_energy")),
+                color = colors.gridExport,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 12.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun GridExchangeCell(label: String, value: String, color: Color, modifier: Modifier = Modifier) {
+    val colors = LocalSunLinkColors.current
+    Column(modifier) {
+        Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
+        Spacer(Modifier.height(2.dp))
+        Text(
+            value,
+            style = SunLinkTypography.title,
+            color = if (value == "—") colors.textTertiary else color
+        )
+    }
+}
+
+/** Stitch: клікабельний рядок переходу до діагностики з табличкою та стрілкою. */
+@Composable
+private fun GridDiagnosticLink(onNavigate: (String) -> Unit) {
+    val colors = LocalSunLinkColors.current
+    val shape = RoundedCornerShape(12.dp)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colors.surface)
+            .border(1.dp, colors.border, shape)
+            .clickable { onNavigate("diagnostics") }
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(
+            Icons.Default.Troubleshoot,
+            contentDescription = null,
+            tint = colors.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Column(Modifier.weight(1f)) {
+            Text(
+                "Перевірити якість телеметрії",
+                style = SunLinkTypography.body,
+                color = colors.textPrimary
+            )
+            Text(
+                "Відкрити діагностику",
+                style = SunLinkTypography.caption,
+                color = colors.textSecondary
+            )
+        }
+        Icon(
+            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = colors.textTertiary,
+            modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+private fun gridParameterValue(value: Float?, field: String): String {
+    if (value == null) return "—"
+    return when (field) {
+        "power" -> gridValue(value, "W")
+        "voltage_l1" -> gridValue(value, "V")
+        "frequency" -> gridValue(value, "Гц")
+        "current_l1" -> gridValue(value, "A")
+        else -> "%.2f".format(value)
+    }
+}
+
+private fun gridParameterCaption(full: TelemetryFullDto?, field: String): String {
+    if (telemetryNumber(full, "grid", field) == null) return "Недоступно"
+    return telemetryLabel(telemetryValue(full, "grid", field))
 }
 
 /** Відсутнє значення — окремий чесний стан, а не нуль і не підроблений підпис. */
-private fun gridParameterValue(value: Float?, unit: String, status: String): String =
-    if (value == null) "Недоступно" else "${gridValue(value, unit)} · $status"
-
 private fun gridValue(value: Float?, unit: String): String = when {
     value == null -> "—"
     unit == "W" && (value <= -1000f || value >= 1000f) -> "%.2f kW".format(value / 1000f)
@@ -174,3 +317,6 @@ private fun gridValue(value: Float?, unit: String): String = when {
     unit == "Гц" -> "%.2f Гц".format(value)
     else -> "%.2f %s".format(value, unit)
 }
+
+private fun energyValue(value: Float?): String =
+    if (value == null) "—" else "%.2f kWh".format(value)

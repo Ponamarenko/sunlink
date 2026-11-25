@@ -200,128 +200,242 @@ fun SettingsScreen(vm: MainViewModel = viewModel()) {
 
     LaunchedEffect(Unit) { vm.setPollInterval(pollSeconds) }
 
+    // Stitch-специфічні примітиви цього екрану: surface-container секції з
+    // hairline-розділювачами, read-only рядки та сегментовані чипи.
+    @Composable
+    fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = colors.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, colors.border)
+        ) {
+            Column(content = content)
+        }
+    }
+
+    @Composable
+    fun SettingsDivider() {
+        Surface(
+            modifier = Modifier.fillMaxWidth().height(1.dp),
+            color = colors.border.copy(alpha = 0.6f),
+            shadowElevation = 0.dp,
+            content = {}
+        )
+    }
+
+    @Composable
+    fun DetailRow(title: String, subtitle: String? = null, trailing: @Composable () -> Unit) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, style = SunLinkTypography.body, color = colors.textPrimary)
+                if (subtitle != null) {
+                    Text(subtitle, style = SunLinkTypography.caption, color = colors.textSecondary)
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            trailing()
+        }
+    }
+
+    @Composable
+    fun ReadOnlyRow(
+        label: String,
+        value: String,
+        valueColor: androidx.compose.ui.graphics.Color = colors.textPrimary,
+        mono: Boolean = true
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(label, style = SunLinkTypography.caption, color = colors.textSecondary)
+            Text(
+                value,
+                style = if (mono) SunLinkTypography.mono else SunLinkTypography.label,
+                color = valueColor,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+        }
+    }
+
+    @Composable
+    fun StitchChips(values: List<Int>, selected: Int, suffix: String, onSelect: (Int) -> Unit) {
+        Surface(
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
+            color = colors.surfaceElevated,
+            border = androidx.compose.foundation.BorderStroke(1.dp, colors.border)
+        ) {
+            Row(modifier = Modifier.padding(2.dp)) {
+                values.forEach { value ->
+                    Button(
+                        onClick = { onSelect(value) },
+                        modifier = Modifier.height(28.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (selected == value) colors.primary
+                            else androidx.compose.ui.graphics.Color.Transparent,
+                            contentColor = if (selected == value) colors.onPrimary else colors.textSecondary
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 0.dp
+                        )
+                    ) {
+                        Text(
+                            "$value$suffix",
+                            style = SunLinkTypography.caption,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     com.sunlink.svitgrid.ui.redesign.SunLinkScreen(
         title = "Налаштування",
         subtitle = "Параметри застосунку та звʼязку",
         refreshing = loading,
         onRefresh = { vm.checkConnection() }
     ) {
-        com.sunlink.svitgrid.ui.redesign.PremiumCard(accent = colors.primary) {
-            com.sunlink.svitgrid.ui.redesign.PremiumSectionHeader("Вигляд і мова")
-            Column(verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Тема інтерфейсу", style = SunLinkTypography.body, color = colors.textSecondary)
-                    com.sunlink.svitgrid.ui.redesign.StatusPill("Темна (Hybrid Premium) · Активна", colors.primary)
-                }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Мова", style = SunLinkTypography.body, color = colors.textSecondary)
-                    Text("Українська ✓", style = SunLinkTypography.label, color = colors.textPrimary)
+        // 1. Вигляд і мова — лише читання.
+        SettingsCard {
+            DetailRow("Тема інтерфейсу", "Темна (Hybrid Premium)") {
+                Surface(
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(50),
+                    color = colors.surfaceElevated,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, colors.border)
+                ) {
+                    Text(
+                        "Активна",
+                        style = SunLinkTypography.caption,
+                        color = colors.textSecondary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    )
                 }
             }
-        }
-
-        com.sunlink.svitgrid.ui.redesign.PremiumCard(accent = colors.grid) {
-            com.sunlink.svitgrid.ui.redesign.PremiumSectionHeader("Підключення та сервер", "Лише перегляд")
-            Column(verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)) {
-                settingRow("Транспорт", "WebSocket")
-                settingRow("Вузол сервера", repo.serverAddress.ifBlank { "Локальний шлюз" })
-                settingRow("Адреса", repo.getBaseUrl())
-                settingRow(
-                    "Стан з'єднання",
-                    if (success?.status?.online == true) "Підключено" else "Недоступно"
+            SettingsDivider()
+            DetailRow("Мова", "Українська") {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = "Українська",
+                    tint = colors.battery,
+                    modifier = Modifier.size(18.dp)
                 )
             }
-            if (BuildConfig.DEBUG) {
-                Spacer(Modifier.height(PremiumTokens.spaceSm))
-                Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                    OutlinedButton(onClick = {
-                        if (repo.useDebugLanEndpoint()) {
-                            RetrofitClient.setBaseUrl(repo.getBaseUrl())
-                            vm.checkConnection()
-                        }
-                    }) { Text("Debug LAN") }
-                    OutlinedButton(onClick = {
-                        repo.usePublicEndpoint()
+        }
+
+        // 2. Підключення та сервер — лише перегляд, без полів редагування.
+        SettingsCard {
+            ReadOnlyRow("Транспорт", "WebSocket")
+            SettingsDivider()
+            ReadOnlyRow("Вузол сервера", repo.serverAddress.ifBlank { "Локальний шлюз" })
+            SettingsDivider()
+            ReadOnlyRow(
+                "Стан з'єднання",
+                if (success?.status?.online == true) "Підключено" else "Недоступно",
+                valueColor = if (success?.status?.online == true) colors.battery else colors.textSecondary,
+                mono = false
+            )
+        }
+        if (BuildConfig.DEBUG) {
+            Spacer(Modifier.height(PremiumTokens.spaceSm))
+            Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
+                OutlinedButton(onClick = {
+                    if (repo.useDebugLanEndpoint()) {
                         RetrofitClient.setBaseUrl(repo.getBaseUrl())
                         vm.checkConnection()
-                    }) { Text("Публічний") }
-                }
+                    }
+                }) { Text("Debug LAN") }
+                OutlinedButton(onClick = {
+                    repo.usePublicEndpoint()
+                    RetrofitClient.setBaseUrl(repo.getBaseUrl())
+                    vm.checkConnection()
+                }) { Text("Публічний") }
             }
         }
 
-        com.sunlink.svitgrid.ui.redesign.PremiumCard(accent = colors.battery) {
-            com.sunlink.svitgrid.ui.redesign.PremiumSectionHeader("Оновлення та сповіщення")
-            Text("Інтервал опитування", style = SunLinkTypography.label, color = colors.textSecondary)
-            Spacer(Modifier.height(PremiumTokens.spaceXs))
-            Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                listOf(5, 15, 30).forEach { seconds ->
-                    FilterChip(
-                        selected = pollSeconds == seconds,
-                        onClick = {
-                            pollSeconds = seconds
-                            repo.pollIntervalSeconds = seconds
-                            vm.setPollInterval(seconds)
-                        },
-                        label = { Text("$seconds с") }
-                    )
+        // 3. Оновлення та сповіщення — збереження в SettingsRepository + VM.
+        SettingsCard {
+            DetailRow("Інтервал опитування", "Частота запитів телеметрії") {
+                StitchChips(listOf(5, 15, 30), pollSeconds, "с") { seconds ->
+                    pollSeconds = seconds
+                    repo.pollIntervalSeconds = seconds
+                    vm.setPollInterval(seconds)
                 }
             }
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Сповіщення про аварії", style = SunLinkTypography.body, color = colors.textSecondary)
+            SettingsDivider()
+            DetailRow("Сповіщення про аварії", "Повідомляти про втрату звʼязку") {
                 Switch(checked = alerts, onCheckedChange = { alerts = it; repo.alertsEnabled = it })
             }
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Низький заряд батареї", style = SunLinkTypography.body, color = colors.textSecondary)
+            SettingsDivider()
+            DetailRow("Низький заряд батареї", "Поріг попередження: $socThreshold% SOC") {
                 Switch(checked = lowSoc, onCheckedChange = { lowSoc = it; repo.lowSocWarningEnabled = it })
             }
-            Text("Поріг попередження: $socThreshold% SOC", style = SunLinkTypography.caption, color = colors.textTertiary)
-            Row(horizontalArrangement = Arrangement.spacedBy(PremiumTokens.spaceSm)) {
-                listOf(10, 20, 30).forEach { threshold ->
-                    FilterChip(
-                        selected = socThreshold == threshold,
-                        onClick = { socThreshold = threshold; repo.lowSocThreshold = threshold },
-                        label = { Text("$threshold%") }
-                    )
+            SettingsDivider()
+            DetailRow("Поріг попередження", "$socThreshold% SOC") {
+                StitchChips(listOf(10, 20, 30), socThreshold, "%") { threshold ->
+                    socThreshold = threshold
+                    repo.lowSocThreshold = threshold
                 }
             }
         }
 
-        com.sunlink.svitgrid.ui.redesign.PremiumCard(accent = colors.solar) {
-            com.sunlink.svitgrid.ui.redesign.PremiumSectionHeader("Про застосунок")
-            Column(verticalArrangement = Arrangement.spacedBy(PremiumTokens.spaceXs)) {
-                settingRow("Версія застосунку", BuildConfig.VERSION_NAME)
-                settingRow("Збірка", "${BuildConfig.BUILD_TIME} · ${BuildConfig.GIT_HASH}")
-                settingRow("Ліцензії", "MIT · Ponamarenko")
+        // 4. Про застосунок — версія, збірка, ліцензії та перевірка оновлень.
+        SettingsCard {
+            ReadOnlyRow("Версія застосунку", BuildConfig.VERSION_NAME)
+            SettingsDivider()
+            ReadOnlyRow(
+                "Збірка",
+                "${BuildConfig.BUILD_TIME} · ${BuildConfig.GIT_HASH}",
+                valueColor = colors.textSecondary
+            )
+            SettingsDivider()
+            DetailRow("Ліцензії відкритого коду") {
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = colors.textSecondary,
+                    modifier = Modifier.size(18.dp)
+                )
             }
-            Spacer(Modifier.height(PremiumTokens.spaceSm))
-            Button(
-                onClick = {
-                    checkingUpdate = true
-                    scope.launch {
-                        val result = UpdateManager.checkForUpdates()
-                        checkingUpdate = false
-                        result.onSuccess { info ->
-                            if (info != null) {
-                                updateInfo = info
-                                showUpdateDialog = true
-                            } else {
-                                Toast.makeText(context, "У вас остання версія", Toast.LENGTH_SHORT).show()
-                            }
-                        }.onFailure {
-                            Toast.makeText(context, context.getString(R.string.update_check_failed), Toast.LENGTH_LONG).show()
+        }
+        Button(
+            onClick = {
+                checkingUpdate = true
+                scope.launch {
+                    val result = UpdateManager.checkForUpdates()
+                    checkingUpdate = false
+                    result.onSuccess { info ->
+                        if (info != null) {
+                            updateInfo = info
+                            showUpdateDialog = true
+                        } else {
+                            Toast.makeText(context, "У вас остання версія", Toast.LENGTH_SHORT).show()
                         }
+                    }.onFailure {
+                        Toast.makeText(context, context.getString(R.string.update_check_failed), Toast.LENGTH_LONG).show()
                     }
-                },
-                enabled = !checkingUpdate && !downloading,
+                }
+            },
+            enabled = !checkingUpdate && !downloading,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (checkingUpdate) stringResource(R.string.checking) else stringResource(R.string.check_updates))
+        }
+        if (downloading) {
+            LinearProgressIndicator(
+                progress = { downloadProgress / 100f },
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (checkingUpdate) stringResource(R.string.checking) else stringResource(R.string.check_updates))
-            }
-            if (downloading) {
-                LinearProgressIndicator(progress = { downloadProgress / 100f }, modifier = Modifier.fillMaxWidth())
-                downloadError?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
-            }
+            )
+            downloadError?.let { Text(it, color = colors.error, style = SunLinkTypography.caption) }
         }
     }
 
