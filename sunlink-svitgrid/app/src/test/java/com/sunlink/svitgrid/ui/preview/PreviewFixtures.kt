@@ -14,7 +14,7 @@ import com.sunlink.svitgrid.data.repository.DataRepository
 
 /** Isolated preview fixtures. Never used by production telemetry. */
 object PreviewFixtures {
-    private const val TS = "2026-11-25T09:24:00+00:00"
+    private val TS: String = java.time.Instant.now().toString()
 
     private fun m(value: Double, unit: String, confidence: String, address: Int? = null) =
         MeasurementValueDto(
@@ -35,33 +35,33 @@ object PreviewFixtures {
         inverter_id = "deye_sg02lp1_am3",
         categories = mapOf(
             "pv" to mapOf(
-                "pv1_power" to m(1012.0, "W", "physically_verified", 186),
-                "pv1_voltage" to m(312.0, "V", "physically_verified", 109),
-                "pv1_current" to m(3.4, "A", "physically_verified", 110),
-                "pv2_power" to m(196.0, "W", "physically_verified", 187),
-                "pv2_voltage" to m(319.9, "V", "physically_verified", 111),
-                "pv2_current" to m(0.6, "A", "physically_verified", 112),
-                "pv3_power" to m(206.0, "W", "physically_verified", 188),
-                "pv3_voltage" to m(286.9, "V", "physically_verified", 113),
-                "pv3_current" to m(0.7, "A", "physically_verified", 114),
-                "total_power" to m(1414.0, "W", "calculated"),
+                "pv1_power" to m(148.0, "W", "physically_verified", 186),
+                "pv1_voltage" to m(186.0, "V", "physically_verified", 109),
+                "pv1_current" to m(0.8, "A", "physically_verified", 110),
+                "pv2_power" to m(0.0, "W", "model_compatible", 187),
+                "pv2_voltage" to m(0.0, "V", "model_compatible", 111),
+                "pv2_current" to m(0.0, "A", "model_compatible", 112),
+                "pv3_power" to null,
+                "pv3_voltage" to null,
+                "pv3_current" to null,
+                "total_power" to m(148.0, "W", "calculated"),
                 "daily_energy" to m(2.2, "kWh", "model_compatible", 108),
                 "total_energy" to m(733.1, "kWh", "model_compatible", 96)
             ),
             "battery" to mapOf(
-                "soc" to m(93.0, "%", "corroborated", 184),
-                "voltage" to m(53.1, "V", "physically_verified", 183),
-                "current" to m(6.91, "A", "physically_verified", 191),
+                "soc" to m(99.0, "%", "corroborated", 184),
+                "voltage" to m(53.7, "V", "physically_verified", 183),
+                "current" to m(1.1, "A", "model_compatible", 191),
                 "daily_charge_energy" to m(12.1, "kWh", "model_compatible", 70),
                 "daily_discharge_energy" to m(4.2, "kWh", "model_compatible", 71),
                 "total_charge_energy" to m(607.4, "kWh", "model_compatible", 72),
                 "total_discharge_energy" to m(573.6, "kWh", "model_compatible", 74)
             ),
             "grid" to mapOf(
-                "voltage_l1" to m(235.2, "V", "model_compatible", 150),
-                "frequency" to m(50.01, "Hz", "model_compatible", 192),
-                "import_energy" to m(15.4, "kWh", "model_compatible", 76),
-                "export_energy" to m(0.0, "kWh", "model_compatible", 77)
+                "voltage_l1" to null,
+                "frequency" to null,
+                "import_energy" to null,
+                "export_energy" to null
             ),
             "load" to mapOf(
                 "power" to m(525.0, "W", "verified", 175),
@@ -72,17 +72,19 @@ object PreviewFixtures {
     )
 
     fun series(parameter: String): HistorySeriesDto {
-        val points = (0..12).map { i ->
+        val hours = listOf("04", "05", "06", "07", "08") // UTC -> local +2 = 06:00..10:00
+        val points = hours.mapIndexed { i, h ->
             val value = when (parameter) {
-                "battery_soc" -> 80.0 + i
-                "pv_total_power" -> (i * 120.0).coerceAtMost(1414.0)
-                "load_power" -> 420.0 + (i % 4) * 45.0
+                "battery_soc" -> listOf(78.0, 84.0, 92.0, 96.0, 99.0)[i]
+                "pv_total_power" -> listOf(40.0, 280.0, 610.0, 420.0, null)[i]
+                "load_power" -> listOf(310.0, 420.0, 1420.0, 720.0, 525.0)[i]
                 else -> 100.0 + i * 10
             }
             HistorySeriesPointDto(
-                timestamp = "2026-11-25T${"%02d".format(6 + i / 2)}:${"%02d".format((i % 2) * 30)}:00+00:00",
-                value = if (i == 7) null else value,
-                gap = i == 7
+                timestamp = "2026-11-25T$h:00:00+00:00",
+                value = value,
+                gap = value == null,
+                samples = 6
             )
         }
         return HistorySeriesDto(
@@ -104,10 +106,10 @@ object PreviewFixtures {
     )
 
     fun inverterData(): InverterData = InverterData(
-        pSun = 1414f, pLoad = 525f, pBatt = -120f, pGrid = -769f,
-        batterySoc = 93f, batteryVoltage = 53.1f, batteryCurrent = 6.91f,
-        pv1Power = 1012f, pv2Power = 196f, pv3Power = 206f,
-        gridVoltageL1 = 235.2f, gridFrequency = 50.01f,
+        pSun = 148f, pLoad = 525f, pBatt = -120f, pGrid = -769f,
+        batterySoc = 99f, batteryVoltage = 53.7f, batteryCurrent = 1.1f,
+        pv1Power = 148f, pv2Power = 0f, pv3Power = 0f,
+        gridVoltageL1 = 0f, gridFrequency = 0f,
         dailyPvEnergy = 2.2f, dailyBatteryCharge = 12.1f, dailyBatteryDischarge = 4.2f,
         timestamp = TS, connectionStatus = true, source = "modbus_register",
         quality = "valid", confidence = "corroborated"
@@ -124,7 +126,7 @@ object PreviewFixtures {
         override suspend fun loadInverterData(): Result<Pair<InverterData, InverterStatus>> = success(inverterData() to status())
         override suspend fun loadStatus(): Result<InverterStatus> = success(status())
         override suspend fun loadStats(parameter: String, start: String, end: String): Result<StatsSummaryDto> = success(
-            StatsSummaryDto(parameter = parameter, count = 13, min = 300.0, max = 1414.0, avg = 720.0, sum = 9360.0)
+            StatsSummaryDto(parameter = parameter, count = 13, min = 310.0, max = 1420.0, avg = 720.0, sum = 3600.0)
         )
     }
 }
