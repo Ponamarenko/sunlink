@@ -600,7 +600,8 @@ fun EnergyFlowCanvas(
     battery: FlowNode,
     grid: FlowNode,
     load: FlowNode,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    drawBackdrop: Boolean = true
 ) {
     val colors = LocalSunLinkColors.current
     val transition = rememberInfiniteTransition(label = "flow")
@@ -618,17 +619,20 @@ fun EnergyFlowCanvas(
     )
 
     Canvas(modifier) {
-        drawRect(brush = Brush.verticalGradient(listOf(colors.surface, colors.background)), size = size)
-        // Stitch uses a dusk photo here. It is not obtainable via MCP, so a restrained
-        // horizon glow approximates the depth without overlapping the diagram.
-        drawRect(
-            brush = Brush.verticalGradient(
-                listOf(Color.Transparent, Color(0xFFF59E0B).copy(alpha = 0.06f))
-            ),
-            topLeft = Offset(0f, size.height * 0.72f),
-            size = Size(size.width, size.height * 0.28f)
-        )
-        drawLine(colors.border.copy(alpha = 0.5f), Offset(0f, size.height * 0.86f), Offset(size.width, size.height * 0.86f), 1.dp.toPx())
+        if (drawBackdrop) {
+            drawRect(brush = Brush.verticalGradient(listOf(colors.surface, colors.background)), size = size)
+            // Stitch uses a dusk photo here. It is not obtainable via MCP, so a restrained
+            // horizon glow approximates the depth without overlapping the diagram.
+            drawRect(
+                brush = Brush.verticalGradient(
+                    listOf(Color.Transparent, Color(0xFFF59E0B).copy(alpha = 0.06f))
+                ),
+                topLeft = Offset(0f, size.height * 0.72f),
+                size = Size(size.width, size.height * 0.28f)
+            )
+            drawLine(colors.border.copy(alpha = 0.5f), Offset(0f, size.height * 0.86f), Offset(size.width, size.height * 0.86f), 1.dp.toPx())
+    
+        }
 
         val hub = Offset(size.width * 0.5f, size.height * 0.5f)
         val dash = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()), 0f)
@@ -680,11 +684,12 @@ fun PremiumEnergyFlow(
     battery: FlowNode,
     grid: FlowNode,
     load: FlowNode,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    drawBackdrop: Boolean = true
 ) {
     val colors = LocalSunLinkColors.current
     Box(modifier.fillMaxWidth().height(332.dp)) {
-        EnergyFlowCanvas(pv, battery, grid, load, Modifier.matchParentSize())
+        EnergyFlowCanvas(pv, battery, grid, load, Modifier.matchParentSize(), drawBackdrop)
         StitchNode(pv, "Сонце (PV)", colors.solar, Icons.Default.SolarPower, Modifier.align(Alignment.TopCenter).width(160.dp))
         StitchNode(battery, "Батарея", colors.battery, Icons.Default.BatteryChargingFull, Modifier.align(Alignment.CenterStart).width(104.dp))
         StitchNode(grid, "Мережа", colors.grid, Icons.Default.ElectricalServices, Modifier.align(Alignment.CenterEnd).width(104.dp))

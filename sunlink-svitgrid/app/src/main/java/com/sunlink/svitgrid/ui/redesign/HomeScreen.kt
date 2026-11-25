@@ -32,9 +32,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.sunlink.svitgrid.R
 import com.sunlink.svitgrid.data.model.InverterUiState
 import com.sunlink.svitgrid.network.TelemetryWebSocketClient
@@ -43,9 +54,23 @@ import com.sunlink.svitgrid.ui.designsystem.SunLinkTypography
 import com.sunlink.svitgrid.ui.designsystem.sunLinkDarkColors
 import com.sunlink.svitgrid.viewmodel.MainViewModel
 
+enum class HomeWeather { SUN, CLOUDS, RAIN, SNOW, FOG }
+
+private fun weatherRes(weather: HomeWeather): Int = when (weather) {
+    HomeWeather.SUN -> R.raw.weather_effect_sun
+    HomeWeather.CLOUDS -> R.raw.weather_effect_clouds
+    HomeWeather.RAIN -> R.raw.weather_effect_rain
+    HomeWeather.SNOW -> R.raw.weather_effect_snow
+    HomeWeather.FOG -> R.raw.weather_effect_fog
+}
+
 /** Direct Compose port of Stitch node_12456895449774030424. */
 @Composable
-fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {}) {
+fun HomeScreen(
+    vm: MainViewModel = viewModel(),
+    onNavigate: (String) -> Unit = {},
+    weather: HomeWeather = HomeWeather.SUN
+) {
     CompositionLocalProvider(LocalSunLinkColors provides sunLinkDarkColors()) {
         val full by vm.fullTelemetry.collectAsState()
         val error by vm.fullTelemetryError.collectAsState()
@@ -147,7 +172,42 @@ fun HomeScreen(vm: MainViewModel = viewModel(), onNavigate: (String) -> Unit = {
                     .padding(12.dp)
                     .clickable { onNavigate("energy") }
             ) {
-                PremiumEnergyFlow(pvNode, batteryNode, gridNode, loadNode)
+                val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(weatherRes(weather)))
+                val progress by animateLottieCompositionAsState(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever
+                )
+                val house = ImageBitmap.imageResource(R.drawable.house_reference)
+                // Each weather variant is a different crop of the user's original photo.
+                val crop = when (weather) {
+                    HomeWeather.SUN -> IntOffset(0, 0) to IntSize((house.width * 0.34f).toInt(), (house.height * 0.50f).toInt())
+                    HomeWeather.CLOUDS -> IntOffset((house.width * 0.34f).toInt(), 0) to IntSize((house.width * 0.34f).toInt(), (house.height * 0.50f).toInt())
+                    HomeWeather.RAIN -> IntOffset((house.width * 0.68f).toInt(), 0) to IntSize((house.width * 0.32f).toInt(), (house.height * 0.50f).toInt())
+                    HomeWeather.SNOW -> IntOffset(0, (house.height * 0.50f).toInt()) to IntSize((house.width * 0.50f).toInt(), (house.height * 0.50f).toInt())
+                    HomeWeather.FOG -> IntOffset((house.width * 0.50f).toInt(), (house.height * 0.50f).toInt()) to IntSize((house.width * 0.50f).toInt(), (house.height * 0.50f).toInt())
+                }
+                Canvas(Modifier.matchParentSize()) {
+                    drawImage(
+                        image = house,
+                        srcOffset = crop.first,
+                        srcSize = crop.second,
+                        dstOffset = IntOffset.Zero,
+                        dstSize = IntSize(size.width.toInt(), size.height.toInt())
+                    )
+                    drawRect(
+                        brush = Brush.verticalGradient(
+                            listOf(colors.background.copy(alpha = 0.30f), colors.background.copy(alpha = 0.68f))
+                        ),
+                        size = size
+                    )
+                }
+                LottieAnimation(
+                    composition,
+                    { progress },
+                    modifier = Modifier.matchParentSize(),
+                    alignment = Alignment.TopCenter
+                )
+                PremiumEnergyFlow(pvNode, batteryNode, gridNode, loadNode, drawBackdrop = false)
             }
 
             // D. Three compact key metrics (no repeated card frames)

@@ -11,6 +11,7 @@ import com.sunlink.svitgrid.ui.redesign.DiagnosticsScreen
 import com.sunlink.svitgrid.ui.redesign.EnergyScreen
 import com.sunlink.svitgrid.ui.redesign.GridScreen
 import com.sunlink.svitgrid.ui.redesign.HomeScreen
+import com.sunlink.svitgrid.ui.redesign.HomeWeather
 import com.sunlink.svitgrid.ui.redesign.InverterDetailsScreen
 import com.sunlink.svitgrid.ui.redesign.LoadScreen
 import com.sunlink.svitgrid.ui.redesign.MoreScreen
@@ -59,7 +60,11 @@ class ScreenshotTest {
         paparazzi.snapshot(name = name) { SvitGridTheme { content() } }
     }
 
-    @Test fun home() = shot("01_home") { HomeScreen(vm = previewVm(), onNavigate = {}) }
+    @Test fun homeSun() = shot("01_home_sun") { HomeScreen(vm = previewVm(), onNavigate = {}, weather = HomeWeather.SUN) }
+    @Test fun homeClouds() = shot("01_home_clouds") { HomeScreen(vm = previewVm(), onNavigate = {}, weather = HomeWeather.CLOUDS) }
+    @Test fun homeRain() = shot("01_home_rain") { HomeScreen(vm = previewVm(), onNavigate = {}, weather = HomeWeather.RAIN) }
+    @Test fun homeSnow() = shot("01_home_snow") { HomeScreen(vm = previewVm(), onNavigate = {}, weather = HomeWeather.SNOW) }
+    @Test fun homeFog() = shot("01_home_fog") { HomeScreen(vm = previewVm(), onNavigate = {}, weather = HomeWeather.FOG) }
     @Test fun energy() = shot("02_energy") { EnergyScreen(vm = previewVm(), onNavigate = {}) }
     @Test fun battery() = shot("03_battery") { BatteryScreen(vm = previewVm()) }
     @Test fun solar() = shot("04_solar") { SolarScreen(vm = previewVm()) }
